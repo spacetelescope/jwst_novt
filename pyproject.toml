@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools>=61.2",
+            "setuptools_scm[toml]>=3.4.3",
+            "wheel"]
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = "novt"
+description = "Package description"
+authors = [{name = "STScI", email = "help@stsci.edu"}]
+license = {file = "LICENSE.rst"}
+dynamic = ["version"]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.24",
+    "astropy>=5.2",
+]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Physics"
+]
+
+[project.optional-dependencies]
+test = [
+    "flake8",
+    "pytest",
+    "pytest-astropy",
+]
+docs = [
+    "stsci_rtd_theme",
+    "sphinx-astropy",
+    "sphinx_rtd_theme",
+    "sphinx-automodapi",
+    "sphinx-issues",
+    "tomli"
+]
+
+[project.readme]
+text = """
+Project readme.
+"""
+content-type = "text/markdown"
+
+[project.scripts]
+novt_script = "novt.example_mod:main"
+
+[project.urls]
+Homepage = "https://github.com/spacetelescope/novt"
+
+[tool.setuptools.package-data]
+"*" = ["*.fits, *.csv"]
+"novt" = ["data/*"]
+"novt.tests" = ["data/*"]
+
+[tool.setuptools_scm]
+write_to = "novt/version.py"
+
+[tool.pytest.ini_options]
+minversion = "2.2"
+testpaths = [
+    "novt/tests",
+]
+norecursedirs = [
+    "build",
+    "docs/_build",
+]
+astropy_header = "true"
+doctest_plus = "enabled"
+text_file_format = "rst"
+addopts = "-p no:warnings"
+
+
+[tool.coverage.run]
+source = ["novt",]
+omit = [
+    "novt/tests/*",
+    "novt/version*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "except ImportError",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "def main(.*):",
+    "pragma: py{ignore_python_version}",
+]
+omit = [
+    "novt/tests/*",
+    "novt/version*",
+]

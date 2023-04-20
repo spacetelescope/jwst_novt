@@ -1,0 +1,48 @@
+# GitHub Actions workflow for testing and continuous integration.
+#
+# This file performs testing using tox and tox.ini to define and configure the test environments.
+
+name: CI
+
+on:
+  push:
+    branches:
+    - main  # GitHub now defaults to 'main' as the name of the primary branch. Change this as needed.
+  #  tags: # run CI if specific tags are pushed
+  pull_request:
+  #  branches: # only build on PRs against 'main' if you need to further limit when CI is run.
+  #  - main
+  # schedule: # schedule a regular run if needed
+  #  # Weekly Monday 9AM build
+  #  - cron: "0 9 * * 1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    with:
+      envs: |
+        - linux: check-style
+        - linux: check-security
+        - linux: build-dist
+  test:
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
+    with:
+      envs: |
+        - linux: test-oldestdeps
+          python-version: 3.9
+        - linux: test
+          python-version: 3.9
+        - linux: test
+          python-version: 3.10
+        - linux: test
+          python-version: 3.11
+        - macos: test
+          python-version: 3.11
+        - windows: test
+          python-version: 3.11
+        - linux: test-cov
+          coverage: codecov
