@@ -6,4 +6,4 @@ except ImportError:
     __version__ = ''
 
 # Expose subpackage API at package level.
-from .example_mod import *  # noqa
+from .footprints import *  # noqa
