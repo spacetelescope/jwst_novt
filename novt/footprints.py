@@ -1,11 +1,12 @@
 from astropy import coordinates
 import numpy as np
+import pandas as pd
 import pysiaf
 import regions
 
 __all__ = ['nirspec_footprint', 'nircam_short_footprint',
            'nircam_long_footprint', 'nircam_dither_footprint',
-           'nircam_mosaic_footprint']
+           'nircam_mosaic_footprint', 'source_catalog']
 
 
 def nirspec_footprint(ra, dec, pa):
@@ -41,6 +42,7 @@ def nirspec_footprint(ra, dec, pa):
     footprint : regions.Regions
         NIRSpec footprint regions.  MSA center is marked with a Point
         region; all other apertures are marked with Polygon regions.
+        Output regions are in sky coordinates.
     """
     # Siaf interface for NIRSpec
     nirspec = pysiaf.Siaf('NIRSpec')
@@ -107,6 +109,7 @@ def nircam_short_footprint(ra, dec, pa):
     footprint : regions.Regions
         NIRCam footprint regions.  NIRCam center is marked with a Point
         region; all other apertures are marked with Polygon regions.
+        Output regions are in sky coordinates.
     """
     # Siaf interface for NIRCam
     nircam = pysiaf.Siaf('NIRCam')
@@ -166,6 +169,7 @@ def nircam_long_footprint(ra, dec, pa):
     footprint : regions.Regions
         NIRCam footprint regions.  NIRCam center is marked with a Point
         region; all other apertures are marked with Polygon regions.
+        Output regions are in sky coordinates.
     """
     # Siaf interface for NIRCam
     nircam = pysiaf.Siaf('NIRCam')
@@ -203,3 +207,43 @@ def nircam_dither_footprint():
 
 def nircam_mosaic_footprint():
     raise NotImplementedError
+
+
+def source_catalog(catalog_file):
+    """
+    Create point regions for a source catalog.
+
+    The input catalog is in '.radec' form.  Three whitespace-separated
+    columns are expected: RA, Dec, and flag.  RA and Dec must be in degrees.
+    The flag may be 'P' for primary source or 'F' for filler.
+
+    Parameters
+    ----------
+    catalog_file : str
+        Path to a .radec catalog file.
+
+    Returns
+    -------
+    primary_sources, filler_sources : regions.Regions, regions.Regions
+        Catalog source regions, returned as 2 separate sets for primary
+        and filler sources. All contained regions are Point regions in
+        sky coordinates.
+    """
+    # load the source catalog
+    catalog = pd.read_table(catalog_file, names=['ra', 'dec', 'flag'],
+                            delim_whitespace=True, usecols=[0, 1, 2])
+
+    filler = (catalog['flag'] == 'F')
+    primary = ~filler
+
+    primary_regions = []
+    for ra, dec in zip(catalog['ra'][primary], catalog['dec'][primary]):
+        primary_regions.append(
+            regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit='deg')))
+
+    filler_regions = []
+    for ra, dec in zip(catalog['ra'][filler], catalog['dec'][filler]):
+        filler_regions.append(
+            regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit='deg')))
+
+    return regions.Regions(primary_regions), regions.Regions(filler_regions)

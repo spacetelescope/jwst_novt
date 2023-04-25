@@ -9,7 +9,7 @@ from novt import footprints as fp
                          [('nirspec', 11),
                           ('nircam_short', 9),
                           ('nircam_long', 3)])
-def test_footprints(instrument, n_reg):
+def test_instrument_footprints(instrument, n_reg):
     ra = 202.4695898
     dec = 47.1951868
     pa = 25.0
@@ -27,3 +27,11 @@ def test_footprints(instrument, n_reg):
     # other apertures
     for r in reg[1:]:
         assert isinstance(r, regions.PolygonSkyRegion)
+
+
+def test_source_catalog(catalog_file):
+    primary, filler = fp.source_catalog(catalog_file)
+    assert isinstance(primary, regions.Regions)
+    assert isinstance(filler, regions.Regions)
+    assert len(primary) == 2
+    assert len(filler) == 5
