@@ -34,9 +34,8 @@ def main(notebook_name):
                                     f'{os.path.basename(notebook_name)}')
 
     # run a copy of the notebook from a temp directory,
-    # but keep track of start directory for file loading
+    # but keep track of start directory to reset
     start_dir = os.path.abspath('.')
-    os.environ['JDAVIZ_START_DIR'] = start_dir
     nbdir = tempfile.mkdtemp()
     nbname = os.path.join(nbdir, os.path.basename(notebook_name))
     shutil.copyfile(notebook_name, nbname)

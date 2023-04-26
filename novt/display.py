@@ -26,7 +26,7 @@ FOOTPRINT_CONFIG = {
 
 def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
                      color=None, visible=True, fill='none',
-                     alpha=1.0):
+                     alpha=1.0, update_patches=None):
     instrument = INSTRUMENT_NAMES[instrument.strip().lower()]
 
     # get footprint configuration by instrument
@@ -41,27 +41,47 @@ def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
     scales = {'x': figure.interaction.x_scale, 'y': figure.interaction.y_scale}
 
     marks = []
-    for reg in regs:
+    for i, reg in enumerate(regs):
         pixel_region = reg.to_pixel(wcs)
         if isinstance(pixel_region, regions.PointPixelRegion):
-            # instrument center point
-            mark = bqplot.Scatter(x=[pixel_region.center.x],
-                                  y=[pixel_region.center.y],
-                                  scales=scales, colors=[color],
-                                  marker='plus')
+            if update_patches is not None:
+                mark = update_patches[i]
+                with mark.hold_sync():
+                    mark.x = [pixel_region.center.x]
+                    mark.y = [pixel_region.center.y]
+                    mark.colors = [color]
+                    mark.default_opacities = [alpha]
+            else:
+                # instrument center point
+                mark = bqplot.Scatter(x=[pixel_region.center.x],
+                                      y=[pixel_region.center.y],
+                                      scales=scales, colors=[color],
+                                      marker='plus')
+                mark.default_opacities = [alpha]
         else:
-            # instrument aperture regions
             x_coords = pixel_region.vertices.x
             y_coords = pixel_region.vertices.y
-            mark = bqplot.Lines(x=x_coords, y=y_coords, scales=scales,
-                                fill=fill, colors=[color], stroke_width=2,
-                                close_path=True, opacities=[alpha],
-                                fill_opacities=[alpha])
+            if update_patches is not None:
+                mark = update_patches[i]
+                with mark.hold_sync():
+                    mark.x = x_coords
+                    mark.y = y_coords
+                    mark.fill = fill
+                    mark.colors = [color]
+                    mark.opacities = [alpha]
+                    mark.fill_opacities = [alpha]
+            else:
+                # instrument aperture regions
+                mark = bqplot.Lines(x=x_coords, y=y_coords, scales=scales,
+                                    fill=fill, colors=[color], stroke_width=2,
+                                    close_path=True, opacities=[alpha],
+                                    fill_opacities=[alpha])
 
         mark.visible = visible
         marks.append(mark)
 
-    figure.marks = figure.marks + marks
+    if update_patches is None:
+        figure.marks = figure.marks + marks
     return marks
 
 
