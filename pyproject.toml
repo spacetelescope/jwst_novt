@@ -14,10 +14,15 @@ requires-python = ">=3.9"
 dependencies = [
     "astropy>=5.2",
     "bqplot>=0.12.37",
+    "ipykernel>=6.19.4",
+    "ipyvuetify>=1.7.0",
+    "ipywidgets",
+    "jdaviz>=3.4.0",
     "numpy>=1.24",
     "pandas>=1.3.0",
     "pysiaf>=0.19.1",
-    "regions>=0.6"
+    "regions>=0.6",
+    "voila>=0.4"
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
@@ -51,7 +56,7 @@ Project readme.
 content-type = "text/markdown"
 
 [project.scripts]
-novt_app = "novt.run_notebook:_main"
+novt = "novt.run_notebook:_main"
 
 [project.urls]
 Homepage = "https://github.com/spacetelescope/novt"
