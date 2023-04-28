@@ -4,6 +4,3 @@ try:
     from .version import version as __version__
 except ImportError:
     __version__ = ''
-
-# Expose subpackage API at package level.
-from .footprints import *  # noqa

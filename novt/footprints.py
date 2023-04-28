@@ -217,6 +217,12 @@ def source_catalog(catalog_file):
     columns are expected: RA, Dec, and flag.  RA and Dec must be in degrees.
     The flag may be 'P' for primary source or 'F' for filler.
 
+    Note that this method produces a single region for each source.
+    It is suitable for saving to DS9 region files, for example, but
+    for display purposes, it may be faster to make a scatter plot out
+    of all sources at once, directly from the catalog.  See
+    `novt.display.bqplot_catalog` for an example.
+
     Parameters
     ----------
     catalog_file : str

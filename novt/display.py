@@ -1,3 +1,5 @@
+import re
+
 import bqplot
 import pandas as pd
 import regions
@@ -8,8 +10,6 @@ from novt import footprints as fp
 # TODO - move to constants/defaults config?
 INSTRUMENT_NAMES = {
     'nirspec': 'NIRSpec',
-    'nircam long': 'NIRCam Long',
-    'nircam short': 'NIRCam Short',
     'nircam_long': 'NIRCam Long',
     'nircam_short': 'NIRCam Short',
 }
@@ -27,12 +27,13 @@ FOOTPRINT_CONFIG = {
 def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
                      color=None, visible=True, fill='none',
                      alpha=1.0, update_patches=None):
-    instrument = INSTRUMENT_NAMES[instrument.strip().lower()]
+    inst = re.sub(r'\s', '_', instrument.strip().lower())
+    inst = INSTRUMENT_NAMES[inst]
 
     # get footprint configuration by instrument
-    footprint = FOOTPRINT_CONFIG[instrument]['func']
+    footprint = FOOTPRINT_CONFIG[inst]['func']
     if color is None:
-        color = FOOTPRINT_CONFIG[instrument]['color']
+        color = FOOTPRINT_CONFIG[inst]['color']
 
     # make footprint regions
     regs = footprint(ra, dec, pa)
