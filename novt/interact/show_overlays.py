@@ -11,14 +11,14 @@ class ButtonWithValue(ipw.Button):
 
 
 class ShowOverlays(object):
-    def __init__(self, viz, uploaded_data, nirspec_controls, nircam_controls):
+    def __init__(self, viz, uploaded_data, nirspec=None, nircam=None):
         # internal data
         self.viz = viz
         self.viewer = viz.default_viewer
         self.uploaded_data = uploaded_data
-        self.nirspec_controls = nirspec_controls
-        self.nircam_controls = nircam_controls
-        self.instruments = ['NIRSpec', 'NIRCam Long', 'NIRCam Short']
+        self.nirspec_controls = nirspec
+        self.nircam_controls = nircam
+        self.instruments = []
         self.catalog_markers = {}
         self.footprint_patches = {}
 
@@ -27,6 +27,20 @@ class ShowOverlays(object):
                                        layout=ipw.Layout(width='auto'))
         self.catalog_show.on_click(self.toggle_catalog)
 
+        # watch for changes to catalog file
+        self.uploaded_data.observe(self.load_catalog, names='catalog_file')
+
+        # watch for changes to update footprint
+        if self.nirspec_controls is not None:
+            self.instruments.append('NIRSpec')
+
+            self.nirspec_controls.observe(self.update_nirspec_footprint,
+                                          names=['ra', 'dec', 'pa'])
+        if self.nircam_controls is not None:
+            self.instruments.extend(['NIRCam Long', 'NIRCam Short'])
+            self.nircam_controls.observe(self.update_nircam_footprint,
+                                         names=['ra', 'dec', 'pa'])
+        
         # toggle footprint overlays
         self.footprint_buttons = []
         for name in self.instruments:
@@ -35,15 +49,6 @@ class ShowOverlays(object):
                 value=name, layout=ipw.Layout(width='auto'))
             button.on_click(self.toggle_footprint)
             self.footprint_buttons.append(button)
-
-        # watch for changes to update footprint
-        nirspec_controls.observe(self.update_nirspec_footprint,
-                                 names=['ra', 'dec', 'pa'])
-        nircam_controls.observe(self.update_nircam_footprint,
-                                names=['ra', 'dec', 'pa'])
-
-        # watch for changes to catalog file
-        uploaded_data.observe(self.load_catalog, names='catalog_file')
 
         # layout widgets
         button_layout = ipw.Layout(display='flex', flex_flow='row',
