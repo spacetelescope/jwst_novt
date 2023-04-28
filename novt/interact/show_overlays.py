@@ -42,12 +42,27 @@ class ShowOverlays(object):
         nircam_controls.observe(self.update_nircam_footprint,
                                 names=['ra', 'dec', 'pa'])
 
+        # watch for changes to catalog file
+        uploaded_data.observe(self.load_catalog, names='catalog_file')
+
         # layout widgets
         button_layout = ipw.Layout(display='flex', flex_flow='row',
                                    justify_content='flex-start', padding='5px')
         self.widgets = ipw.Box(
             children=self.footprint_buttons + [self.catalog_show],
             layout=button_layout)
+
+    def load_catalog(self, change):
+        # clear any old markers on change in the catalog file
+        if 'primary' in self.catalog_markers:
+            nd.remove_bqplot_patches(
+               self.viewer.figure, [self.catalog_markers['primary']])
+            del self.catalog_markers['primary']
+        if 'filler' in self.catalog_markers:
+            nd.remove_bqplot_patches(
+               self.viewer.figure, [self.catalog_markers['filler']])
+            del self.catalog_markers['filler']
+        self.catalog_show.description = 'Show Catalog'
 
     def toggle_catalog(self, btn):
         # todo - separate into primary and filler catalogs

@@ -4,20 +4,22 @@ from astropy.io import fits
 
 import ipywidgets as ipw
 import ipyvuetify.extra as ve
+from traitlets import HasTraits, Any
 
 
-class UploadData(object):
+class UploadData(HasTraits):
+    catalog_file = Any(None, allow_none=True)
+
     def __init__(self, viz):
         # internal data
         self.viz = viz
         self.viewer = viz.default_viewer
-        self.image_file = None
-        self.catalog_file = None
+        self.image_files = {}
 
         # make widgets to display
         self.image_label = ipw.Label('Image file (.fits):',
                                      style={'font_weight': 'bold'})
-        self.image_file_upload = ve.FileInput(accept='.fits', multiple=False)
+        self.image_file_upload = ve.FileInput(accept='.fits', multiple=True)
 
         self.catalog_label = ipw.Label('Catalog file (.radec):',
                                        style={'font_weight': 'bold'})
@@ -39,23 +41,39 @@ class UploadData(object):
         self.image_file_upload.observe(self.load_image, names='file_info')
         self.catalog_file_upload.observe(self.load_catalog, names='file_info')
 
-    def load_image(self, event):
+    def load_image(self, change):
         # watch for uploaded files
-        # todo: clear viewer if file removed or replaced
-        # todo: consider allowing multiple, eg for mosaicked field
-        uploaded_files = event.owner.get_files()
-        if len(uploaded_files) > 0:
-            uploaded_file = uploaded_files[0]
-            self.image_file = uploaded_file
+        change.owner.disabled = True
+        if len(change['new']) > 0:
+            uploaded_files = change.owner.get_files()
+            if len(uploaded_files) > 0:
+                for uploaded_file in uploaded_files:
+                    self.image_files[uploaded_file['name']] = uploaded_file
 
-            hdul = fits.open(uploaded_file['file_obj'])
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
-                self.viz.load_data(hdul, data_label=uploaded_file['name'])
-            hdul.close()
+                    hdul = fits.open(uploaded_file['file_obj'])
+                    with warnings.catch_warnings():
+                        warnings.simplefilter('ignore')
+                        self.viz.load_data(
+                            hdul, data_label=uploaded_file['name'])
+                    hdul.close()
+        if len(change['old']) > 0:
+            # clear any removed data from viewer
+            for old_file in change['old']:
+                for data_set in self.viz.app.data_collection:
+                    if data_set.label.startswith(old_file['name']):
+                        self.viz.app.remove_data_from_viewer(
+                            self.viewer.reference_id, data_set.label)
+                del self.image_files[old_file['name']]
+        change.owner.disabled = False
 
-    def load_catalog(self, event):
+    def load_catalog(self, change):
         # watch for uploaded files
-        uploaded_files = event.owner.get_files()
-        if len(uploaded_files) > 0:
-            self.catalog_file = uploaded_files[0]
+        change.owner.disabled = True
+        if len(change['new']) > 0:
+            uploaded_files = change.owner.get_files()
+            if len(uploaded_files) > 0:
+                self.catalog_file = uploaded_files[0]
+        elif len(change['old']) > 0:
+            # clear any removed data from viewer
+            self.catalog_file = None
+        change.owner.disabled = False

@@ -1,3 +1,4 @@
+import ipywidgets as ipw
 from jdaviz.app import Application
 from jdaviz.core.config import get_configuration
 from jdaviz.configs.imviz.helper import Imviz
@@ -12,6 +13,13 @@ class ViewImage(object):
         # set up viewer sizing for voila app
         self.style = ".jdaviz__content--not-in-notebook " \
                      "{min-height: 80vh; max-height:80vh}"
+
+        style_html = ipw.HTML(f"<style>{self.style}</style>")
+
+        box_layout = ipw.Layout(display='flex', flex_flow='column',
+                                align_items='stretch')
+        self.widgets = ipw.Box(children=[style_html, self.app],
+                               layout=box_layout)
 
     def _config(self):
         # create a config dict that does not allow file import or viewer creation,
