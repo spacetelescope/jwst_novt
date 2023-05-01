@@ -1,3 +1,4 @@
+from contextlib import contextmanager, ExitStack
 import re
 
 import bqplot
@@ -5,38 +6,51 @@ import pandas as pd
 import regions
 
 from novt import footprints as fp
+from novt.constants import INSTRUMENT_NAMES, DEFAULT_COLOR
 
 
-# TODO - move to constants/defaults config?
-INSTRUMENT_NAMES = {
-    'nirspec': 'NIRSpec',
-    'nircam_long': 'NIRCam Long',
-    'nircam_short': 'NIRCam Short',
-}
+@contextmanager
+def hold_all_sync(marks):
+    """
+    Hold sync for a set of bqplot marks.
 
-FOOTPRINT_CONFIG = {
-    'NIRSpec': {'func': fp.nirspec_footprint,
-                'color': 'red'},
-    'NIRCam Long': {'func': fp.nircam_long_footprint,
-                    'color': 'blue'},
-    'NIRCam Short': {'func': fp.nircam_short_footprint,
-                     'color': 'green'}
-}
+    Each mark entry will have its own hold_sync context manager invoked,
+    so that syncing is performed only when all changes on the marks are
+    complete.
+
+    Parameters
+    ----------
+    marks : list of bqplot.Mark
+        A list of patches to update together.
+    """
+    with ExitStack() as stack:
+        for mark in marks:
+            stack.enter_context(mark.hold_sync())
+        yield
 
 
 def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
-                     color=None, visible=True, fill='none',
-                     alpha=1.0, update_patches=None):
+                     dither_pattern='NONE',
+                     mosaic_v2=0.0, mosaic_v3=0.0,
+                     color=None, visible=True, fill='inside',
+                     alpha=0.5, update_patches=None):
     inst = re.sub(r'\s', '_', instrument.strip().lower())
     inst = INSTRUMENT_NAMES[inst]
 
     # get footprint configuration by instrument
-    footprint = FOOTPRINT_CONFIG[inst]['func']
     if color is None:
-        color = FOOTPRINT_CONFIG[inst]['color']
+        color = DEFAULT_COLOR[inst]
 
-    # make footprint regions
-    regs = footprint(ra, dec, pa)
+    # make regions
+    if inst == 'NIRSpec':
+        regs = fp.nirspec_footprint(ra, dec, pa)
+    else:
+        # 'NIRCam Short' or 'NIRCam Long'
+        channel = inst.split()[-1].lower()
+        regs = fp.nircam_dither_footprint(
+            ra, dec, pa, channel=channel,
+            dither_pattern=dither_pattern,
+            mosaic_v2=mosaic_v2, mosaic_v3=mosaic_v3)
 
     # get scales from figure
     scales = {'x': figure.interaction.x_scale, 'y': figure.interaction.y_scale}
@@ -122,7 +136,9 @@ def bqplot_catalog(figure, catalog_file, wcs,
     filler_markers.visible = visible
     filler_markers.default_opacities = [alpha]
 
-    figure.marks = figure.marks + [primary_markers, filler_markers]
+    # place catalog markers at the front of the list, so it always appears
+    # behind any other overlays
+    figure.marks = [primary_markers, filler_markers] + figure.marks
 
     return primary_markers, filler_markers
 

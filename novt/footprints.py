@@ -4,9 +4,12 @@ import pandas as pd
 import pysiaf
 import regions
 
+from novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC
+
+
 __all__ = ['nirspec_footprint', 'nircam_short_footprint',
            'nircam_long_footprint', 'nircam_dither_footprint',
-           'nircam_mosaic_footprint', 'source_catalog']
+           'source_catalog']
 
 
 def nirspec_footprint(ra, dec, pa):
@@ -78,7 +81,7 @@ def nirspec_footprint(ra, dec, pa):
     return nrs_regions
 
 
-def nircam_short_footprint(ra, dec, pa):
+def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
     """
     Create NIRCam short channel footprint regions in sky coordinates.
 
@@ -103,6 +106,12 @@ def nircam_short_footprint(ra, dec, pa):
     pa : float
         Position angle for NIRCam, in degrees measured from North
         to central vertical axis in North to East direction.
+    v2_offset : float, optional
+        Additional V2 offset in telescope coordinates to apply to instrument
+        center, as from a dither pattern.
+    v3_offset : float, optional
+        Additional V3 offset in telescope coordinates to apply to instrument
+        center, as from a dither pattern.
 
     Returns
     -------
@@ -117,8 +126,8 @@ def nircam_short_footprint(ra, dec, pa):
     # Get center and PA offset from full aperture
     nrc_full = nircam.apertures['NRCALL_FULL']
     nrc_corners = nrc_full.corners('tel', rederive=False)
-    nrc_v2 = np.mean(nrc_corners[0])
-    nrc_v3 = np.mean(nrc_corners[1])
+    nrc_v2 = np.mean(nrc_corners[0]) - v2_offset
+    nrc_v3 = np.mean(nrc_corners[1]) + v3_offset
     pa_offset = nrc_full.V3IdlYAngle
 
     # Attitude matrix for sky coordinates
@@ -144,7 +153,7 @@ def nircam_short_footprint(ra, dec, pa):
     return nrc_regions
 
 
-def nircam_long_footprint(ra, dec, pa):
+def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
     """
     Create NIRCam long channel footprint regions in sky coordinates.
 
@@ -163,6 +172,12 @@ def nircam_long_footprint(ra, dec, pa):
     pa : float
         Position angle for NIRCam, in degrees measured from North
         to central vertical axis in North to East direction.
+    v2_offset : float, optional
+        Additional V2 offset in telescope coordinates to apply to instrument
+        center, as from a dither pattern.
+    v3_offset : float, optional
+        Additional V3 offset in telescope coordinates to apply to instrument
+        center, as from a dither pattern.
 
     Returns
     -------
@@ -177,8 +192,8 @@ def nircam_long_footprint(ra, dec, pa):
     # Get center and PA offset from full aperture
     nrc_full = nircam.apertures['NRCALL_FULL']
     nrc_corners = nrc_full.corners('tel', rederive=False)
-    nrc_v2 = np.mean(nrc_corners[0])
-    nrc_v3 = np.mean(nrc_corners[1])
+    nrc_v2 = np.mean(nrc_corners[0]) - v2_offset
+    nrc_v3 = np.mean(nrc_corners[1]) + v3_offset
     pa_offset = nrc_full.V3IdlYAngle
 
     # Attitude matrix for sky coordinates
@@ -201,12 +216,56 @@ def nircam_long_footprint(ra, dec, pa):
     return nrc_regions
 
 
-def nircam_dither_footprint():
-    raise NotImplementedError
+def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
+                            channel='long', mosaic_v2=0.0, mosaic_v3=0.0):
+    """
 
+    Parameters
+    ----------
+    ra
+    dec
+    pa
+    dither_pattern
+    channel
+    mosaic_v2
+    mosaic_v3
 
-def nircam_mosaic_footprint():
-    raise NotImplementedError
+    Returns
+    -------
+
+    """
+    pattern = dither_pattern.strip().upper()
+    if pattern not in NIRCAM_DITHER_OFFSETS:
+        raise ValueError(f'Dither pattern {dither_pattern} not recognized. '
+                         f'Options are: {list(NIRCAM_DITHER_OFFSETS.keys())}.')
+    dither_offsets = NIRCAM_DITHER_OFFSETS[pattern]
+
+    if channel.strip().lower() == 'short':
+        footprint_func = nircam_short_footprint
+    else:
+        footprint_func = nircam_long_footprint
+
+    if pattern in NO_MOSAIC:
+        mosaic_v2 = 0
+        mosaic_v3 = 0
+    if mosaic_v2 != 0 or mosaic_v3 != 0:
+        center_offset = [(mosaic_v2 / 2, -mosaic_v3 / 2),
+                         (-mosaic_v2 / 2, mosaic_v3 / 2)]
+    else:
+        center_offset = [(0, 0)]
+
+    dithers = []
+    for mosaic_position in center_offset:
+        for offset in dither_offsets:
+            v2 = offset[0] + mosaic_position[0]
+            v3 = offset[1] + mosaic_position[1]
+            reg_list = footprint_func(ra, dec, pa,
+                                      v2_offset=v2, v3_offset=v3)
+            for reg in reg_list:
+                dithers.append(reg)
+
+    dither_regions = regions.Regions(dithers)
+    return dither_regions
 
 
 def source_catalog(catalog_file):

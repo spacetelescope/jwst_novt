@@ -33,14 +33,17 @@ class ShowOverlays(object):
         # watch for changes to update footprint
         if self.nirspec_controls is not None:
             self.instruments.append('NIRSpec')
-
             self.nirspec_controls.observe(self.update_nirspec_footprint,
                                           names=['ra', 'dec', 'pa'])
         if self.nircam_controls is not None:
             self.instruments.extend(['NIRCam Long', 'NIRCam Short'])
             self.nircam_controls.observe(self.update_nircam_footprint,
                                          names=['ra', 'dec', 'pa'])
-        
+            self.nircam_controls.observe(self.update_nircam_dither,
+                                         names=['dither'])
+            self.nircam_controls.observe(self.update_nircam_mosaic,
+                                         names=['mosaic_v2', 'mosaic_v3'])
+
         # toggle footprint overlays
         self.footprint_buttons = []
         for name in self.instruments:
@@ -97,14 +100,8 @@ class ShowOverlays(object):
         else:
             btn.description = 'Show Catalog'
             if 'primary' in self.catalog_markers:
-                #nd.remove_bqplot_patches(
-                #    self.viewer.figure, [self.catalog_markers['primary']])
-                #del self.catalog_markers['primary']
                 self.catalog_markers['primary'].visible = False
             if 'filler' in self.catalog_markers:
-                #nd.remove_bqplot_patches(
-                #    self.viewer.figure, [self.catalog_markers['filler']])
-                #del self.catalog_markers['filler']
                 self.catalog_markers['filler'].visible = False
 
     def toggle_footprint(self, btn):
@@ -115,37 +112,92 @@ class ShowOverlays(object):
                     btn.description = f'Hide {btn.value} footprint'
 
                     if 'NIRS' in btn.value:
-                        ra = self.nirspec_controls.ra
-                        dec = self.nirspec_controls.dec
-                        pa = self.nirspec_controls.pa
+                        controls = self.nirspec_controls
                     else:
-                        ra = self.nircam_controls.ra
-                        dec = self.nircam_controls.dec
-                        pa = self.nircam_controls.pa
-                    self.footprint_patches[btn.value] = nd.bqplot_footprint(
-                        self.viewer.figure, btn.value, ra, dec, pa, wcs,
-                        fill='inside', alpha=0.6)
+                        controls = self.nircam_controls
+                    self._show_footprint([btn.value], controls)
         else:
-            btn.description = f'Show {btn.value} FOV'
+            btn.description = f'Show {btn.value} footprint'
             nd.remove_bqplot_patches(self.viewer.figure,
                                      self.footprint_patches[btn.value])
             del self.footprint_patches[btn.value]
 
-    def _update_footprint(self, instruments, controls):
-        if self.viewer.state.reference_data is not None:
-            wcs = self.viewer.state.reference_data.coords
+    def _show_footprint(self, instruments, controls):
+        if self.viewer.state.reference_data is None:
+            return
+        wcs = self.viewer.state.reference_data.coords
+        if wcs is None:
+            return
+        controls.disabled = True
+        with nd.hold_all_sync(self.viewer.figure.marks):
             for instrument in instruments:
-                if instrument in self.footprint_patches and wcs is not None:
+                # any old patches need to be removed first
+                if instrument in self.footprint_patches:
+                    nd.remove_bqplot_patches(
+                        self.viewer.figure,
+                        self.footprint_patches[instrument])
+                # make new patches
+                self.footprint_patches[instrument] = nd.bqplot_footprint(
+                    self.viewer.figure, instrument,
+                    controls.ra, controls.dec, controls.pa, wcs,
+                    dither_pattern=controls.dither,
+                    mosaic_v2=controls.mosaic_v2,
+                    mosaic_v3=controls.mosaic_v3)
+        controls.disabled = False
+
+    def _update_footprint(self, instruments, controls):
+        if self.viewer.state.reference_data is None:
+            return
+        wcs = self.viewer.state.reference_data.coords
+        if wcs is None:
+            return
+        controls.disabled = True
+        with nd.hold_all_sync(self.viewer.figure.marks):
+            for instrument in instruments:
+                if instrument in self.footprint_patches:
                     self.footprint_patches[instrument] = nd.bqplot_footprint(
                         self.viewer.figure, instrument,
                         controls.ra, controls.dec, controls.pa, wcs,
-                        fill='inside', alpha=0.6,
+                        dither_pattern=controls.dither,
+                        mosaic_v2=controls.mosaic_v2,
+                        mosaic_v3=controls.mosaic_v3,
                         update_patches=self.footprint_patches.get(instrument))
+        controls.disabled = False
+
+    def update_nircam_dither(self, *args):
+        instruments = []
+        for inst in ['NIRCam Short', 'NIRCam Long']:
+            if inst in self.footprint_patches:
+                instruments.append(inst)
+        controls = self.nircam_controls
+        self._show_footprint(instruments, controls)
 
     def update_nircam_footprint(self, *args):
         instruments = ['NIRCam Short', 'NIRCam Long']
         controls = self.nircam_controls
         self._update_footprint(instruments, controls)
+
+    def update_nircam_mosaic(self, change):
+        instruments = []
+        for inst in ['NIRCam Short', 'NIRCam Long']:
+            if inst in self.footprint_patches:
+                instruments.append(inst)
+        controls = self.nircam_controls
+
+        # if going to/from a mosaic, the overlays need recreation
+        # otherwise, they can just be updated
+        if change['name'] == 'mosaic_v2':
+            other_value = controls.mosaic_v3
+        else:
+            other_value = controls.mosaic_v2
+
+        # check for all zero values in either old or new state
+        if (change['old'] == 0 and other_value == 0) and change['new'] != 0:
+            self._show_footprint(instruments, controls)
+        elif (change['new'] == 0 and other_value == 0) and change['old'] != 0:
+            self._show_footprint(instruments, controls)
+        else:
+            self._update_footprint(instruments, controls)
 
     def update_nirspec_footprint(self, *args):
         instruments = ['NIRSpec']

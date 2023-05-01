@@ -1,11 +1,16 @@
 import ipywidgets as ipw
-from traitlets import HasTraits, Float
+from traitlets import HasTraits, Float, Unicode
+
+from novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC
 
 
 class ControlInstruments(HasTraits):
     ra = Float(0.0).tag(sync=True)
     dec = Float(0.0).tag(sync=True)
     pa = Float(0.0).tag(sync=True)
+    dither = Unicode('NONE').tag(sync=True)
+    mosaic_v2 = Float(0.0).tag(sync=True)
+    mosaic_v3 = Float(0.0).tag(sync=True)
 
     def __init__(self, instrument, viz):
         super().__init__(self)
@@ -14,10 +19,13 @@ class ControlInstruments(HasTraits):
         self.instrument = instrument
         self.viz = viz
         self.viewer = viz.default_viewer
+        self.dither_values = list(NIRCAM_DITHER_OFFSETS.keys())
 
         # make control widgets
         self.label = ipw.Label(f'{self.instrument} Configuration:',
                                style={'font_weight': 'bold'})
+
+        # for center and position angle
         self.set_ra = ipw.BoundedFloatText(
             description='RA (deg)', min=0, max=360,
             step=5 / 3600, continuous_update=False,
@@ -40,6 +48,33 @@ class ControlInstruments(HasTraits):
         self.set_pa.observe(self._wrap_angle, 'value')
         ipw.dlink((self, 'pa'), (self.set_pa, 'value'))
 
+        # select box and text entry for dither and
+        # mosaic patterns (NIRCam only)
+        if self.instrument == 'NIRCam':
+            self.set_dither = ipw.Dropdown(
+                description='Dither pattern',
+                options=self.dither_values,
+                style={'description_width': 'initial'})
+            ipw.link((self.set_dither, 'value'), (self, 'dither'))
+            self.set_dither.observe(self._check_mosaic, 'value')
+
+
+            self.set_mosaic_v2 = ipw.FloatText(
+                description='Mosaic offset horizontal (arcsec)',
+                step=5, continuous_update=False,
+                style={'description_width': 'initial'})
+            self.set_mosaic_v3 = ipw.FloatText(
+                description='Mosaic offset vertical (arcsec)',
+                step=5, continuous_update=False,
+                style={'description_width': 'initial'})
+            ipw.link((self.set_mosaic_v2, 'value'), (self, 'mosaic_v2'))
+            ipw.link((self.set_mosaic_v3, 'value'), (self, 'mosaic_v3'))
+
+        else:
+            self.set_dither = None
+            self.set_mosaic_v2 = None
+            self.set_mosaic_v3 = None
+
         # set a callback in the viewer to initialize RA/Dec
         # from WCS on data load
         self.viewer.state.add_callback('reference_data', self._set_from_wcs)
@@ -47,14 +82,28 @@ class ControlInstruments(HasTraits):
         # layout widgets
         button_layout = ipw.Layout(display='flex', flex_flow='row',
                                    justify_content='flex-start', padding='5px')
-
-        self.widgets = ipw.Box(children=[self.label, self.set_ra,
-                                         self.set_dec, self.set_pa],
-                               layout=button_layout)
+        box_layout = ipw.Layout(display='flex', flex_flow='column',
+                                align_items='stretch')
+        label = ipw.Box(children=[self.label],
+                        layout=button_layout)
+        center_buttons = ipw.Box(children=[self.set_ra,
+                                           self.set_dec, self.set_pa],
+                                 layout=button_layout)
+        children = [label, center_buttons]
+        if self.set_dither is not None:
+            dither_choices = ipw.Box(
+                children=[self.set_dither, self.set_mosaic_v2,
+                          self.set_mosaic_v3],
+                layout=button_layout)
+            children.append(dither_choices)
+        self.widgets = ipw.Box(children=children, layout=box_layout)
 
     def _wrap_angle(self, change):
         angle = change['new']
         if angle < 0 or angle >= 360:
+            # change angle in widget only:
+            # the change will trigger a new call to set the
+            # PA trait to the wrapped value
             angle = (angle + 360) % 360
             self.set_pa.value = angle
         else:
@@ -67,3 +116,13 @@ class ControlInstruments(HasTraits):
                 ra, dec = coords.wcs.crval
                 self.ra = ra
                 self.dec = dec
+
+    def _check_mosaic(self, change):
+        pattern = change['new']
+        if pattern in NO_MOSAIC:
+            # this dither pattern does not allow mosaics
+            self.set_mosaic_v2.disabled = True
+            self.set_mosaic_v3.disabled = True
+        else:
+            self.set_mosaic_v2.disabled = False
+            self.set_mosaic_v3.disabled = False
