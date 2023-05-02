@@ -1,4 +1,4 @@
-from .control_instruments import *
-from .show_overlays import *
-from .upload_data import *
-from .view_image import *
+from .control_instruments import ControlInstruments  # noqa: F401
+from .show_overlays import ShowOverlays  # noqa: F401
+from .upload_data import UploadData  # noqa: F401
+from .view_image import ViewImage  # noqa: F401

@@ -72,11 +72,11 @@ class ShowOverlays(object):
         # clear any old markers on change in the catalog file
         if 'primary' in self.catalog_markers:
             nd.remove_bqplot_patches(
-               self.viewer.figure, [self.catalog_markers['primary']])
+                self.viewer.figure, [self.catalog_markers['primary']])
             del self.catalog_markers['primary']
         if 'filler' in self.catalog_markers:
             nd.remove_bqplot_patches(
-               self.viewer.figure, [self.catalog_markers['filler']])
+                self.viewer.figure, [self.catalog_markers['filler']])
             del self.catalog_markers['filler']
         self.catalog_show.description = 'Show Catalog'
 

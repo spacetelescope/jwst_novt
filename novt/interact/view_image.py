@@ -35,11 +35,14 @@ class ViewImage(object):
         """
         # based on MAST Jdaviz configuration
         cc = get_configuration('imviz')
-        cc['settings']['viewer_spec'] = cc['settings'].get('configuration', 'default')
+        cc['settings']['viewer_spec'] = cc['settings'].get(
+            'configuration', 'default')
         cc['settings']['configuration'] = 'novt'
-        cc['settings']['visible'] = {'menu_bar': False, 'toolbar': False, 'tray': False,
-                                     'tab_headers': False}
-        for tool in ['g-data-tools', 'g-viewer-creator', 'g-image-viewer-creator']:
+        cc['settings']['visible'] = {
+            'menu_bar': False, 'toolbar': False,
+            'tray': False, 'tab_headers': False}
+        for tool in ['g-data-tools', 'g-viewer-creator',
+                     'g-image-viewer-creator']:
             if tool in cc['toolbar']:
                 cc['toolbar'].remove(tool)
         return cc

@@ -17,6 +17,7 @@ coverage.xml
 .coverage
 MANIFEST
 .ipynb_checkpoints
+requirements-min.txt
 
 # Sphinx
 docs/api

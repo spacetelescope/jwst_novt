@@ -24,24 +24,26 @@ class UploadData(HasTraits):
         self.image_files = {}
 
         # make widgets to display
-        self.image_label = ipw.Label('Image file (.fits):',
-                                     style={'font_weight': 'bold'})
+        self.image_label = ipw.Label(
+            'Image file (.fits):', style={'font_weight': 'bold'})
         self.image_file_upload = ve.FileInput(accept='.fits', multiple=True)
 
-        self.catalog_label = ipw.Label('Catalog file (.radec):',
-                                       style={'font_weight': 'bold'})
-        self.catalog_file_upload = ve.FileInput(accept='.radec', multiple=False)
+        self.catalog_label = ipw.Label(
+            'Catalog file (.radec):', style={'font_weight': 'bold'})
+        self.catalog_file_upload = ve.FileInput(
+            accept='.radec', multiple=False)
 
         # layout widgets
-        button_layout = ipw.Layout(display='flex', flex_flow='row',
-                                   justify_content='flex-start', padding='5px')
-        box_layout = ipw.Layout(display='flex', flex_flow='column',
-                                align_items='stretch')
+        button_layout = ipw.Layout(
+            display='flex', flex_flow='row',
+            justify_content='flex-start', padding='5px')
+        box_layout = ipw.Layout(
+            display='flex', flex_flow='column', align_items='stretch')
 
         b1 = ipw.Box(children=[self.image_label, self.image_file_upload],
-                               layout=button_layout)
+                     layout=button_layout)
         b2 = ipw.Box(children=[self.catalog_label, self.catalog_file_upload],
-                               layout=button_layout)
+                     layout=button_layout)
         self.widgets = ipw.Box(children=[b1, b2], layout=box_layout)
 
         # connect callbacks
