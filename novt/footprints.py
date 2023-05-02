@@ -219,20 +219,39 @@ def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
 def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
                             channel='long', mosaic_v2=0.0, mosaic_v3=0.0):
     """
+    Dither and/or mosaic the NIRCam aperture footprint.
 
     Parameters
     ----------
-    ra
-    dec
-    pa
-    dither_pattern
-    channel
-    mosaic_v2
-    mosaic_v3
+    ra : float
+        RA of NIRCam center, in degrees.
+    dec : float
+        Dec of NIRCam center, in degrees.
+    pa : float
+        Position angle for NIRCam, in degrees measured from North
+        to central vertical axis in North to East direction.
+    dither_pattern : str, optional
+        Name of the dither pattern to apply.  Options are: NONE, FULL3,
+        FULL3TIGHT, FULL6, 8NIRSPEC.
+    channel : {'short', 'long'}, optional
+        The NIRCam channel to generate aperture footprints for.
+    mosaic_v2 : float, optional
+        Additional V2 offset in telescope coordinates to apply as a two-tile
+        mosaic offset.  The offset is specified as a window width around
+        the pointing center: the mosaic position will be at the center +/-
+        offset / 2. Ignored if `dither_pattern` is 8NIRSPEC.
+    mosaic_v3 : float, optional
+        Additional V3 offset in telescope coordinates to apply as a two-tile
+        mosaic offset.  The offset is specified as a window width around
+        the pointing center: the mosaic position will be at the center +/-
+        offset / 2. Ignored if `dither_pattern` is 8NIRSPEC.
 
     Returns
     -------
-
+    footprint : regions.Regions
+        NIRCam footprint regions.  NIRCam center is marked with a Point
+        region; all other apertures are marked with Polygon regions.
+        Output regions are in sky coordinates.
     """
     pattern = dither_pattern.strip().upper()
     if pattern not in NIRCAM_DITHER_OFFSETS:

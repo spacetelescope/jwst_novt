@@ -3,8 +3,13 @@ from jdaviz.app import Application
 from jdaviz.core.config import get_configuration
 from jdaviz.configs.imviz.helper import Imviz
 
+__all__ = ['ViewImage']
+
 
 class ViewImage(object):
+    """
+    Widgets to view images and overlays.
+    """
     def __init__(self):
         # start imviz viewer with custom configuration
         self.app = Application(self._config())
@@ -14,15 +19,20 @@ class ViewImage(object):
         self.style = ".jdaviz__content--not-in-notebook " \
                      "{min-height: 80vh; max-height:80vh}"
 
+        # widgets to display
         style_html = ipw.HTML(f"<style>{self.style}</style>")
-
         box_layout = ipw.Layout(display='flex', flex_flow='column',
                                 align_items='stretch')
         self.widgets = ipw.Box(children=[style_html, self.app],
                                layout=box_layout)
 
     def _config(self):
-        # create a config dict that does not allow file import or viewer creation,
+        """
+        Custom configuration for remote viewer.
+
+        Local file imports and new viewer creation are removed from the
+        configuration.
+        """
         # based on MAST Jdaviz configuration
         cc = get_configuration('imviz')
         cc['settings']['viewer_spec'] = cc['settings'].get('configuration', 'default')

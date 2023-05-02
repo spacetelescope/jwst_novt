@@ -2,6 +2,10 @@
 Constants for use in standardizing names and generating instrument footprints.
 """
 
+__all__ = ['INSTRUMENT_NAMES', 'NIRCAM_DITHER_OFFSETS',
+           'NO_MOSAIC', 'DEFAULT_COLOR']
+
+
 INSTRUMENT_NAMES = {
     'nirspec': 'NIRSpec',
     'nircam_long': 'NIRCam Long',
@@ -23,16 +27,21 @@ NIRCAM_DITHER_OFFSETS = {
     '8NIRSPEC': [(-24.6, -64.1), (-24.4, -89.0), (24.6, -88.8), (24.4, -63.9),
                  (24.6, 64.1), (24.4, 89.0), (-24.6, 88.8), (-24.4, 63.9)],
 }
-"""dict : Dither offset values by pattern name, in telescope coordinates."""
+"""dict : Dither offset values by pattern name, in telescope coordinates.
+
+V2 offsets are subtracted; V3 offsets are added.
+"""
 
 
-NO_MOSAIC = {'8NIRSPEC', 'FULL6'}
+NO_MOSAIC = {'8NIRSPEC'}
 """set : Dither pattern values for which mosaic is not enabled."""
 
 
 DEFAULT_COLOR = {
     'NIRSpec': 'red',
     'NIRCam Long': 'blue',
-    'NIRCam Short': 'green'
+    'NIRCam Short': 'green',
+    'Primary Sources': 'red',
+    'Filler Sources': 'orange',
 }
 """dict : Default colors for instrument footprint overlays."""

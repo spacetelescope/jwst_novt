@@ -6,11 +6,18 @@ import ipywidgets as ipw
 import ipyvuetify.extra as ve
 from traitlets import HasTraits, Any
 
+__all__ = ['UploadData']
+
 
 class UploadData(HasTraits):
+    """
+    Widgets to upload user data files.
+    """
     catalog_file = Any(None, allow_none=True)
 
     def __init__(self, viz):
+        super().__init__(self)
+
         # internal data
         self.viz = viz
         self.viewer = viz.default_viewer
@@ -42,6 +49,13 @@ class UploadData(HasTraits):
         self.catalog_file_upload.observe(self.load_catalog, names='file_info')
 
     def load_image(self, change):
+        """
+        Watch for newly uploaded or removed files.
+
+        New images are loaded into the viewer. Removed files are removed
+        from the viewer. The loaded data remains accessible to the viewer
+        and can be manually reloaded by the user if desired.
+        """
         # watch for uploaded files
         change.owner.disabled = True
         if len(change['new']) > 0:
@@ -67,6 +81,12 @@ class UploadData(HasTraits):
         change.owner.disabled = False
 
     def load_catalog(self, change):
+        """
+        Watch for newly uploaded or removed catalog files.
+
+        Newly uploaded files are set in the `catalog_file`
+        traitlet. If files are removed, the traitlet is set to None.
+        """
         # watch for uploaded files
         change.owner.disabled = True
         if len(change['new']) > 0:
@@ -74,6 +94,5 @@ class UploadData(HasTraits):
             if len(uploaded_files) > 0:
                 self.catalog_file = uploaded_files[0]
         elif len(change['old']) > 0:
-            # clear any removed data from viewer
             self.catalog_file = None
         change.owner.disabled = False

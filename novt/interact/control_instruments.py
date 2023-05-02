@@ -3,8 +3,13 @@ from traitlets import HasTraits, Float, Unicode
 
 from novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC
 
+__all__ = ['ControlInstruments']
+
 
 class ControlInstruments(HasTraits):
+    """
+    Widgets to control instrument aperture overlay configuration.
+    """
     ra = Float(0.0).tag(sync=True)
     dec = Float(0.0).tag(sync=True)
     pa = Float(0.0).tag(sync=True)
@@ -58,14 +63,13 @@ class ControlInstruments(HasTraits):
             ipw.link((self.set_dither, 'value'), (self, 'dither'))
             self.set_dither.observe(self._check_mosaic, 'value')
 
-
-            self.set_mosaic_v2 = ipw.FloatText(
+            self.set_mosaic_v2 = ipw.BoundedFloatText(
                 description='Mosaic offset horizontal (arcsec)',
-                step=5, continuous_update=False,
+                min=0, max=3600, step=5, continuous_update=False,
                 style={'description_width': 'initial'})
-            self.set_mosaic_v3 = ipw.FloatText(
+            self.set_mosaic_v3 = ipw.BoundedFloatText(
                 description='Mosaic offset vertical (arcsec)',
-                step=5, continuous_update=False,
+                min=0, max=3600, step=5, continuous_update=False,
                 style={'description_width': 'initial'})
             ipw.link((self.set_mosaic_v2, 'value'), (self, 'mosaic_v2'))
             ipw.link((self.set_mosaic_v3, 'value'), (self, 'mosaic_v3'))
@@ -99,6 +103,7 @@ class ControlInstruments(HasTraits):
         self.widgets = ipw.Box(children=children, layout=box_layout)
 
     def _wrap_angle(self, change):
+        """Wrap input angles to expected range (0-360)."""
         angle = change['new']
         if angle < 0 or angle >= 360:
             # change angle in widget only:
@@ -110,6 +115,7 @@ class ControlInstruments(HasTraits):
             self.pa = angle
 
     def _set_from_wcs(self, event):
+        """Set default RA and Dec from a newly uploaded file."""
         if self.viewer.state.reference_data is not None:
             coords = self.viewer.state.reference_data.coords
             if coords is not None:
@@ -118,6 +124,7 @@ class ControlInstruments(HasTraits):
                 self.dec = dec
 
     def _check_mosaic(self, change):
+        """Enable or disable mosaic buttons based on dither value."""
         pattern = change['new']
         if pattern in NO_MOSAIC:
             # this dither pattern does not allow mosaics

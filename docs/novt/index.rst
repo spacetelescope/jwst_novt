@@ -1,7 +1,4 @@
-NOVT
-====
-
-.. automodapi:: novt
+.. automodapi:: novt.run_notebook
 
 .. automodapi:: novt.footprints
 

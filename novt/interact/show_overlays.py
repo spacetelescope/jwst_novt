@@ -2,6 +2,8 @@ import ipywidgets as ipw
 
 from novt import display as nd
 
+__all__ = ['ShowOverlays']
+
 
 class ButtonWithValue(ipw.Button):
     """Button widget with value metadata."""
@@ -11,6 +13,9 @@ class ButtonWithValue(ipw.Button):
 
 
 class ShowOverlays(object):
+    """
+    Widgets to control showing, hiding, and updating image overlays.
+    """
     def __init__(self, viz, uploaded_data, nirspec=None, nircam=None):
         # internal data
         self.viz = viz
@@ -60,7 +65,10 @@ class ShowOverlays(object):
             children=self.footprint_buttons + [self.catalog_show],
             layout=button_layout)
 
-    def load_catalog(self, change):
+    def load_catalog(self, *args):
+        """
+        Remove any existing catalog markers when a new catalog file is loaded.
+        """
         # clear any old markers on change in the catalog file
         if 'primary' in self.catalog_markers:
             nd.remove_bqplot_patches(
@@ -73,6 +81,7 @@ class ShowOverlays(object):
         self.catalog_show.description = 'Show Catalog'
 
     def toggle_catalog(self, btn):
+        """Toggle catalog visibility."""
         # todo - separate into primary and filler catalogs
         # make catalog show/hide button
         if btn.description.startswith('Show'):
@@ -105,6 +114,7 @@ class ShowOverlays(object):
                 self.catalog_markers['filler'].visible = False
 
     def toggle_footprint(self, btn):
+        """Toggle footprint visibility."""
         if btn.description.startswith('Show'):
             if self.viewer.state.reference_data is not None:
                 wcs = self.viewer.state.reference_data.coords
@@ -123,12 +133,24 @@ class ShowOverlays(object):
             del self.footprint_patches[btn.value]
 
     def _show_footprint(self, instruments, controls):
+        """
+        Show an instrument footprint.
+
+        Removes any existing patches for the instrument and creates new
+        ones from the `controls` configuration.
+
+        Parameters
+        ----------
+        instruments : list of str
+            The instruments to show.
+        controls : novt.interact.ControlInstruments
+            Controls widgets associated with the instrument.
+        """
         if self.viewer.state.reference_data is None:
             return
         wcs = self.viewer.state.reference_data.coords
         if wcs is None:
             return
-        controls.disabled = True
         with nd.hold_all_sync(self.viewer.figure.marks):
             for instrument in instruments:
                 # any old patches need to be removed first
@@ -136,6 +158,7 @@ class ShowOverlays(object):
                     nd.remove_bqplot_patches(
                         self.viewer.figure,
                         self.footprint_patches[instrument])
+
                 # make new patches
                 self.footprint_patches[instrument] = nd.bqplot_footprint(
                     self.viewer.figure, instrument,
@@ -143,15 +166,26 @@ class ShowOverlays(object):
                     dither_pattern=controls.dither,
                     mosaic_v2=controls.mosaic_v2,
                     mosaic_v3=controls.mosaic_v3)
-        controls.disabled = False
 
     def _update_footprint(self, instruments, controls):
+        """
+        Update an instrument footprint.
+
+        Existing patches for the instrument are updated in place from
+        the `controls` configuration.
+
+        Parameters
+        ----------
+        instruments : list of str
+            The instruments to update.
+        controls : novt.interact.ControlInstruments
+            Controls widgets associated with the instrument.
+        """
         if self.viewer.state.reference_data is None:
             return
         wcs = self.viewer.state.reference_data.coords
         if wcs is None:
             return
-        controls.disabled = True
         with nd.hold_all_sync(self.viewer.figure.marks):
             for instrument in instruments:
                 if instrument in self.footprint_patches:
@@ -162,9 +196,9 @@ class ShowOverlays(object):
                         mosaic_v2=controls.mosaic_v2,
                         mosaic_v3=controls.mosaic_v3,
                         update_patches=self.footprint_patches.get(instrument))
-        controls.disabled = False
 
     def update_nircam_dither(self, *args):
+        """Update NIRCam apertures after a dither pattern change."""
         instruments = []
         for inst in ['NIRCam Short', 'NIRCam Long']:
             if inst in self.footprint_patches:
@@ -173,11 +207,20 @@ class ShowOverlays(object):
         self._show_footprint(instruments, controls)
 
     def update_nircam_footprint(self, *args):
+        """Update NIRCam apertures after a center position or angle change."""
         instruments = ['NIRCam Short', 'NIRCam Long']
         controls = self.nircam_controls
         self._update_footprint(instruments, controls)
 
     def update_nircam_mosaic(self, change):
+        """
+        Update NIRCam apertures after a mosaic offset change.
+
+        If either old or new mosaic values are all zero,
+        the number of overlays changes, and the apertures need to
+        be recreated. Otherwise, the apertures are updated in place.
+        """
+
         instruments = []
         for inst in ['NIRCam Short', 'NIRCam Long']:
             if inst in self.footprint_patches:
@@ -200,6 +243,7 @@ class ShowOverlays(object):
             self._update_footprint(instruments, controls)
 
     def update_nirspec_footprint(self, *args):
+        """Update NIRSpec apertures in place."""
         instruments = ['NIRSpec']
         controls = self.nirspec_controls
         self._update_footprint(instruments, controls)

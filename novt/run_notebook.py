@@ -19,11 +19,10 @@ def main(notebook_name):
 
     Parameters
     ----------
-    notebook_name
-
-    Returns
-    -------
-
+    notebook_name : str
+        The notebook to run.  May be either a full path to an
+        existing notebook or else the base name of a notebook installed
+        in the novt/notebooks directory.
     """
     # Patterned on Jdaviz CLI script, simplified and adapted for
     # NOVT purposes

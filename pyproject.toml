@@ -41,6 +41,7 @@ test = [
     "pytest-coverage"
 ]
 docs = [
+    "graphviz",
     "stsci_rtd_theme",
     "sphinx-astropy",
     "sphinx_rtd_theme",
