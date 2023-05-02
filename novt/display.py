@@ -36,7 +36,7 @@ def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
                      dither_pattern='NONE',
                      mosaic_v2=0.0, mosaic_v3=0.0,
                      color=None, visible=True, fill='inside',
-                     alpha=0.5, update_patches=None):
+                     alpha=1.0, fill_alpha=0.5, update_patches=None):
     """
     Create an instrument footprint as an overlay in a bqplot figure.
 
@@ -157,13 +157,13 @@ def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
                     mark.fill = fill
                     mark.colors = [color]
                     mark.opacities = [alpha]
-                    mark.fill_opacities = [alpha]
+                    mark.fill_opacities = [fill_alpha]
             else:
                 # instrument aperture regions
                 mark = bqplot.Lines(x=x_coords, y=y_coords, scales=scales,
                                     fill=fill, colors=[color], stroke_width=2,
                                     close_path=True, opacities=[alpha],
-                                    fill_opacities=[alpha])
+                                    fill_opacities=[fill_alpha])
 
         mark.visible = visible
         marks.append(mark)
@@ -250,7 +250,7 @@ def bqplot_catalog(figure, catalog_file, wcs,
 
     # place catalog markers at the front of the list, so it always appears
     # behind any other overlays
-    figure.marks = [primary_markers, filler_markers] + figure.marks
+    figure.marks = [filler_markers, primary_markers] + figure.marks
 
     return primary_markers, filler_markers
 

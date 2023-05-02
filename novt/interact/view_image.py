@@ -11,6 +11,8 @@ class ViewImage(object):
     Widgets to view images and overlays.
     """
     def __init__(self):
+        self.title = 'Image Viewer'
+
         # start imviz viewer with custom configuration
         self.app = Application(self._config())
         self.viz = Imviz(self.app)

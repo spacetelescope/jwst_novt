@@ -18,22 +18,30 @@ class ShowOverlays(object):
     """
     def __init__(self, viz, uploaded_data, nirspec=None, nircam=None):
         # internal data
+        self.title = 'Show Overlays'
         self.viz = viz
         self.viewer = viz.default_viewer
         self.uploaded_data = uploaded_data
         self.nirspec_controls = nirspec
         self.nircam_controls = nircam
         self.instruments = []
+        self.catalogs = ['primary', 'filler']
         self.catalog_markers = {}
         self.footprint_patches = {}
 
-        # toggle catalog overlay
-        self.catalog_show = ipw.Button(description='Show Catalog',
-                                       layout=ipw.Layout(width='auto'))
-        self.catalog_show.on_click(self.toggle_catalog)
+        # toggle catalog overlays
+        self.catalog_buttons = []
+        for name in self.catalogs:
+            button = ButtonWithValue(
+                description=f'Show {name} sources',
+                value=name, layout=ipw.Layout(width='auto'))
+            button.on_click(self.toggle_catalog)
+            self.catalog_buttons.append(button)
 
-        # watch for changes to catalog file
-        self.uploaded_data.observe(self.load_catalog, names='catalog_file')
+        # watch for changes to uploaded files
+        self.uploaded_data.image_file_upload.observe(
+            self.clear_overlays, names='file_info')
+        self.uploaded_data.observe(self.clear_catalog, names='catalog_file')
 
         # watch for changes to update footprint
         if self.nirspec_controls is not None:
@@ -62,10 +70,24 @@ class ShowOverlays(object):
         button_layout = ipw.Layout(display='flex', flex_flow='row',
                                    justify_content='flex-start', padding='5px')
         self.widgets = ipw.Box(
-            children=self.footprint_buttons + [self.catalog_show],
+            children=self.footprint_buttons + self.catalog_buttons,
             layout=button_layout)
 
-    def load_catalog(self, *args):
+    def clear_overlays(self, *args):
+        """
+        Remove any existing catalog markers when a new catalog file is loaded.
+        """
+        # clear any old overlays on change in the image file
+        for instrument in self.footprint_patches:
+            nd.remove_bqplot_patches(self.viewer.figure,
+                                     self.footprint_patches[instrument])
+        for button in self.footprint_buttons:
+            button.description = button.description.replace('Hide', 'Show')
+
+        # also clear catalog
+        self.clear_catalog()
+
+    def clear_catalog(self, *args):
         """
         Remove any existing catalog markers when a new catalog file is loaded.
         """
@@ -78,40 +100,45 @@ class ShowOverlays(object):
             nd.remove_bqplot_patches(
                 self.viewer.figure, [self.catalog_markers['filler']])
             del self.catalog_markers['filler']
-        self.catalog_show.description = 'Show Catalog'
+        for button in self.catalog_buttons:
+            button.description = button.description.replace('Hide', 'Show')
 
     def toggle_catalog(self, btn):
         """Toggle catalog visibility."""
-        # todo - separate into primary and filler catalogs
-        # make catalog show/hide button
+        name = btn.value
         if btn.description.startswith('Show'):
-            if self.viewer.state.reference_data is not None:
-                if ('primary' in self.catalog_markers
-                        and 'filler' in self.catalog_markers):
-                    self.catalog_markers['primary'].visible = True
-                    self.catalog_markers['filler'].visible = True
-                    btn.description = 'Hide Catalog'
-                else:
-                    catalog_file = self.uploaded_data.catalog_file
-                    if catalog_file is not None:
-                        catalog = catalog_file['file_obj']
-                        wcs = self.viewer.state.reference_data.coords
-                        try:
-                            primary, filler = nd.bqplot_catalog(
-                                self.viewer.figure, catalog, wcs, alpha=0.6)
-                        except Exception as err:
-                            # todo: need error/status handling
-                            print(err)
-                        else:
-                            self.catalog_markers['primary'] = primary
-                            self.catalog_markers['filler'] = filler
-                            btn.description = 'Hide Catalog'
+            if self.viewer.state.reference_data is None:
+                return
+            wcs = self.viewer.state.reference_data.coords
+            if wcs is None:
+                return
+            if name in self.catalog_markers:
+                self.catalog_markers[name].visible = True
+                btn.description = btn.description.replace('Show', 'Hide')
+            else:
+                catalog_file = self.uploaded_data.catalog_file
+                if catalog_file is not None:
+                    catalog = catalog_file['file_obj']
+
+                    try:
+                        primary, filler = nd.bqplot_catalog(
+                            self.viewer.figure, catalog, wcs,
+                            visible=False)
+                    except Exception as err:
+                        # todo: need error/status handling
+                        print('Error from catalog read:', err)
+                    else:
+                        self.catalog_markers['primary'] = primary
+                        self.catalog_markers['filler'] = filler
+                        self.catalog_markers[name].visible = True
+                        btn.description = btn.description.replace(
+                            'Show', 'Hide')
+                    finally:
+                        catalog.seek(0)
         else:
-            btn.description = 'Show Catalog'
-            if 'primary' in self.catalog_markers:
-                self.catalog_markers['primary'].visible = False
-            if 'filler' in self.catalog_markers:
-                self.catalog_markers['filler'].visible = False
+            btn.description = btn.description.replace('Hide', 'Show')
+            if name in self.catalog_markers:
+                self.catalog_markers[name].visible = False
 
     def toggle_footprint(self, btn):
         """Toggle footprint visibility."""
@@ -119,7 +146,7 @@ class ShowOverlays(object):
             if self.viewer.state.reference_data is not None:
                 wcs = self.viewer.state.reference_data.coords
                 if wcs is not None:
-                    btn.description = f'Hide {btn.value} footprint'
+                    btn.description = btn.description.replace('Show', 'Hide')
 
                     if 'NIRS' in btn.value:
                         controls = self.nirspec_controls
@@ -127,10 +154,20 @@ class ShowOverlays(object):
                         controls = self.nircam_controls
                     self._show_footprint([btn.value], controls)
         else:
-            btn.description = f'Show {btn.value} footprint'
+            btn.description = btn.description.replace('Hide', 'Show')
             nd.remove_bqplot_patches(self.viewer.figure,
                                      self.footprint_patches[btn.value])
             del self.footprint_patches[btn.value]
+
+    def all_patches(self):
+        """Return all patches currently tracked."""
+        patches = []
+        for patch_set in self.footprint_patches.values():
+            for patch in patch_set:
+                patches.append(patch)
+        for patch in self.catalog_markers.values():
+            patches.append(patch)
+        return patches
 
     def _show_footprint(self, instruments, controls):
         """
@@ -151,7 +188,7 @@ class ShowOverlays(object):
         wcs = self.viewer.state.reference_data.coords
         if wcs is None:
             return
-        with nd.hold_all_sync(self.viewer.figure.marks):
+        with nd.hold_all_sync(self.all_patches()):
             for instrument in instruments:
                 # any old patches need to be removed first
                 if instrument in self.footprint_patches:
@@ -186,7 +223,7 @@ class ShowOverlays(object):
         wcs = self.viewer.state.reference_data.coords
         if wcs is None:
             return
-        with nd.hold_all_sync(self.viewer.figure.marks):
+        with nd.hold_all_sync(self.all_patches()):
             for instrument in instruments:
                 if instrument in self.footprint_patches:
                     self.footprint_patches[instrument] = nd.bqplot_footprint(

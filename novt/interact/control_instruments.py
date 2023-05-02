@@ -22,13 +22,14 @@ class ControlInstruments(HasTraits):
 
         # internal data
         self.instrument = instrument
+        self.title = f'Configure {instrument} Apertures'
         self.viz = viz
         self.viewer = viz.default_viewer
         self.dither_values = list(NIRCAM_DITHER_OFFSETS.keys())
 
         # make control widgets
-        self.label = ipw.Label(f'{self.instrument} Configuration:',
-                               style={'font_weight': 'bold'})
+        self.center_label = ipw.Label('Position center and angle',
+                                      style={'font_weight': 'bold'})
 
         # for center and position angle
         self.set_ra = ipw.BoundedFloatText(
@@ -56,6 +57,8 @@ class ControlInstruments(HasTraits):
         # select box and text entry for dither and
         # mosaic patterns (NIRCam only)
         if self.instrument == 'NIRCam':
+            self.dither_label = ipw.Label(
+                'Dither and mosaic options', style={'font_weight': 'bold'})
             self.set_dither = ipw.Dropdown(
                 description='Dither pattern',
                 options=self.dither_values,
@@ -75,6 +78,7 @@ class ControlInstruments(HasTraits):
             ipw.link((self.set_mosaic_v3, 'value'), (self, 'mosaic_v3'))
 
         else:
+            self.dither_label = None
             self.set_dither = None
             self.set_mosaic_v2 = None
             self.set_mosaic_v3 = None
@@ -88,19 +92,21 @@ class ControlInstruments(HasTraits):
                                    justify_content='flex-start', padding='5px')
         box_layout = ipw.Layout(display='flex', flex_flow='column',
                                 align_items='stretch')
-        label = ipw.Box(children=[self.label],
+        label = ipw.Box(children=[self.center_label],
                         layout=button_layout)
         center_buttons = ipw.Box(children=[self.set_ra,
                                            self.set_dec, self.set_pa],
                                  layout=button_layout)
         children = [label, center_buttons]
         if self.set_dither is not None:
-            dither_choices = ipw.Box(
-                children=[self.set_dither, self.set_mosaic_v2,
+            mosaic_fields = ipw.Box(
+                children=[self.set_mosaic_v2,
                           self.set_mosaic_v3],
                 layout=button_layout)
-            children.append(dither_choices)
-        self.widgets = ipw.Box(children=children, layout=box_layout)
+            children.extend([self.dither_label, self.set_dither,
+                             mosaic_fields])
+        box = ipw.Box(children=children, layout=box_layout)
+        self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
     def _wrap_angle(self, change):
         """Wrap input angles to expected range (0-360)."""

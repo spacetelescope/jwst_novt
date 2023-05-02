@@ -19,6 +19,7 @@ class UploadData(HasTraits):
         super().__init__(self)
 
         # internal data
+        self.title = 'Upload Data'
         self.viz = viz
         self.viewer = viz.default_viewer
         self.image_files = {}
@@ -44,7 +45,8 @@ class UploadData(HasTraits):
                      layout=button_layout)
         b2 = ipw.Box(children=[self.catalog_label, self.catalog_file_upload],
                      layout=button_layout)
-        self.widgets = ipw.Box(children=[b1, b2], layout=box_layout)
+        box = ipw.Box(children=[b1, b2], layout=box_layout)
+        self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
         # connect callbacks
         self.image_file_upload.observe(self.load_image, names='file_info')

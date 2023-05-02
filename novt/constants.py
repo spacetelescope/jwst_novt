@@ -38,10 +38,10 @@ NO_MOSAIC = {'8NIRSPEC'}
 
 
 DEFAULT_COLOR = {
-    'NIRSpec': 'red',
-    'NIRCam Long': 'blue',
-    'NIRCam Short': 'green',
-    'Primary Sources': 'red',
-    'Filler Sources': 'orange',
+    'NIRSpec': '#d62728',  # tab:red
+    'NIRCam Long': '#1f77b4',  # tab:blue
+    'NIRCam Short': '#2ca02c',  # tab:green
+    'Primary Sources': '#ff7f0e',  # tab:orange
+    'Filler Sources': '#9467bd'  # tab:purple
 }
 """dict : Default colors for instrument footprint overlays."""
