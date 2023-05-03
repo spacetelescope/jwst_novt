@@ -27,11 +27,7 @@ class ControlInstruments(HasTraits):
         self.viewer = viz.default_viewer
         self.dither_values = list(NIRCAM_DITHER_OFFSETS.keys())
 
-        # make control widgets
-        self.center_label = ipw.Label('Position center and angle',
-                                      style={'font_weight': 'bold'})
-
-        # for center and position angle
+        # controls for center and position angle
         self.set_ra = ipw.BoundedFloatText(
             description='RA (deg)', min=0, max=360,
             step=5 / 3600, continuous_update=False,
@@ -57,8 +53,6 @@ class ControlInstruments(HasTraits):
         # select box and text entry for dither and
         # mosaic patterns (NIRCam only)
         if self.instrument == 'NIRCam':
-            self.dither_label = ipw.Label(
-                'Dither and mosaic options', style={'font_weight': 'bold'})
             self.set_dither = ipw.Dropdown(
                 description='Dither pattern',
                 options=self.dither_values,
@@ -67,18 +61,17 @@ class ControlInstruments(HasTraits):
             self.set_dither.observe(self._check_mosaic, 'value')
 
             self.set_mosaic_v2 = ipw.BoundedFloatText(
-                description='Mosaic offset horizontal (arcsec)',
+                description='Horizontal (v2, arcsec)',
                 min=0, max=3600, step=5, continuous_update=False,
                 style={'description_width': 'initial'})
             self.set_mosaic_v3 = ipw.BoundedFloatText(
-                description='Mosaic offset vertical (arcsec)',
+                description='Vertical (v3, arcsec)',
                 min=0, max=3600, step=5, continuous_update=False,
                 style={'description_width': 'initial'})
             ipw.link((self.set_mosaic_v2, 'value'), (self, 'mosaic_v2'))
             ipw.link((self.set_mosaic_v3, 'value'), (self, 'mosaic_v3'))
 
         else:
-            self.dither_label = None
             self.set_dither = None
             self.set_mosaic_v2 = None
             self.set_mosaic_v3 = None
@@ -89,21 +82,22 @@ class ControlInstruments(HasTraits):
 
         # layout widgets
         button_layout = ipw.Layout(display='flex', flex_flow='row',
-                                   justify_content='flex-start', padding='5px')
+                                   justify_content='flex-start',
+                                   padding='0px')
         box_layout = ipw.Layout(display='flex', flex_flow='column',
                                 align_items='stretch')
-        label = ipw.Box(children=[self.center_label],
-                        layout=button_layout)
         center_buttons = ipw.Box(children=[self.set_ra,
                                            self.set_dec, self.set_pa],
                                  layout=button_layout)
-        children = [label, center_buttons]
+        children = [center_buttons]
         if self.set_dither is not None:
             mosaic_fields = ipw.Box(
                 children=[self.set_mosaic_v2,
                           self.set_mosaic_v3],
                 layout=button_layout)
-            children.extend([self.dither_label, self.set_dither,
+            children.extend([self.set_dither,
+                             ipw.Label('Mosaic offsets: ',
+                                       style={'font_weight': 'bold'}),
                              mosaic_fields])
         box = ipw.Box(children=children, layout=box_layout)
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])

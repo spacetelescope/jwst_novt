@@ -19,7 +19,10 @@ class ViewImage(object):
 
         # set up viewer sizing for voila app
         self.style = ".jdaviz__content--not-in-notebook " \
-                     "{min-height: 80vh; max-height:80vh}"
+                     "{min-height: 80vh; max-height: 80vh; " \
+                     "width:100%;" \
+                     "padding-left: 1px !important; " \
+                     "padding-right: 0.5px !important}"
 
         # widgets to display
         style_html = ipw.HTML(f"<style>{self.style}</style>")
