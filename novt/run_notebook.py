@@ -1,16 +1,14 @@
 import argparse
 import os
-import pathlib
-import shutil
 import sys
 import tempfile
 
 from voila.app import Voila
 from voila.configuration import VoilaConfiguration
 
-__all__ = ['main']
+from novt.constants import NOVT_DIR
 
-NOVT_DIR = pathlib.Path(__file__).parent.resolve()
+__all__ = ['main']
 
 
 def main(notebook_name):
@@ -37,11 +35,17 @@ def main(notebook_name):
     start_dir = os.path.abspath('.')
     nbdir = tempfile.mkdtemp()
     nbname = os.path.join(nbdir, os.path.basename(notebook_name))
-    shutil.copyfile(notebook_name, nbname)
-    os.chdir(nbdir)
 
+    with open(notebook_name) as f:
+        notebook_template = f.read()
+
+    with open(nbname, 'w') as nbf:
+        nbf.write(notebook_template.replace('novt_notebook', 'novt_voila'))
+
+    os.chdir(nbdir)
     try:
         Voila.notebook_path = nbname
+        VoilaConfiguration.theme = 'light'
         VoilaConfiguration.enable_nbextensions = True
         VoilaConfiguration.file_whitelist = ['.*']
         sys.exit(Voila().launch_instance(argv=[]))

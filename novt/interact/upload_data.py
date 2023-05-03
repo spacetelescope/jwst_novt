@@ -26,18 +26,21 @@ class UploadData(HasTraits):
 
         # make widgets to display
         self.image_label = ipw.Label(
-            'Image file (.fits):', style={'font_weight': 'bold'})
-        self.image_file_upload = ve.FileInput(accept='.fits', multiple=True)
+            'Image file (.fits):', style={'font_weight': 'bold'},
+            layout=ipw.Layout(width='150px'))
+        self.image_file_upload = ve.FileInput(
+            accept='.fits', multiple=True, layout=ipw.Layout(width='500px'))
 
         self.catalog_label = ipw.Label(
-            'Catalog file (.radec):', style={'font_weight': 'bold'})
+            'Catalog file (.radec):', style={'font_weight': 'bold'},
+            layout=ipw.Layout(width='150px'))
         self.catalog_file_upload = ve.FileInput(
-            accept='.radec', multiple=False)
+            accept='.radec', multiple=False, layout=ipw.Layout(width='500px'))
 
         # layout widgets
         button_layout = ipw.Layout(
-            display='flex', flex_flow='row',
-            justify_content='flex-start', padding='5px')
+            display='flex', flex_flow='row', align_items='center',
+            justify_content='flex-start', padding='0px')
         box_layout = ipw.Layout(
             display='flex', flex_flow='column', align_items='stretch')
 

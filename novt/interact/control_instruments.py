@@ -2,6 +2,7 @@ import ipywidgets as ipw
 from traitlets import HasTraits, Float, Unicode
 
 from novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC
+from novt.interact.utilities import read_image
 
 __all__ = ['ControlInstruments']
 
@@ -27,6 +28,12 @@ class ControlInstruments(HasTraits):
         self.viz = viz
         self.viewer = viz.default_viewer
         self.dither_values = list(NIRCAM_DITHER_OFFSETS.keys())
+
+        # instrument logo image
+        if self.instrument == 'NIRCam':
+            self.logo = read_image('nircamlogo.png', width='130px')
+        else:
+            self.logo = read_image('nirspeclogo.png')
 
         # controls for center and position angle
         self.set_ra = ipw.BoundedFloatText(
@@ -91,23 +98,28 @@ class ControlInstruments(HasTraits):
         self.viewer.state.add_callback('reference_data', self._set_from_wcs)
 
         # layout widgets
-        button_layout = ipw.Layout(display='flex', flex_flow='row',
-                                   justify_content='flex-start',
-                                   padding='0px')
-        box_layout = ipw.Layout(display='flex', flex_flow='column',
-                                align_items='stretch')
+        row_layout = ipw.Layout(display='flex', flex_flow='row',
+                                justify_content='flex-start',
+                                padding='0px')
+        column_layout = ipw.Layout(display='flex', flex_flow='column',
+                                   align_items='stretch')
         center_buttons = ipw.Box(children=[self.set_ra,
                                            self.set_dec, self.set_pa],
-                                 layout=button_layout)
+                                 layout=row_layout)
+
         children = [center_buttons]
         if self.set_dither is not None:
             mosaic_fields = ipw.Box(
                 children=[self.set_mosaic, self.set_mosaic_v2,
                           self.set_mosaic_v3],
-                layout=button_layout)
+                layout=row_layout)
             children.extend([mosaic_fields, self.set_dither])
-        box = ipw.Box(children=children, layout=box_layout)
-        self.widgets = ipw.Accordion(children=[box], titles=[self.title])
+        col = ipw.Box(children=children, layout=column_layout)
+        row = ipw.Box(children=[self.logo, col],
+                      layout=ipw.Layout(display='flex', flex_flow='row',
+                                        justify_content='flex-start',
+                                        align_items='center'))
+        self.widgets = ipw.Accordion(children=[row], titles=[self.title])
 
     def _wrap_angle(self, change):
         """Wrap input angles to expected range (0-360)."""

@@ -1,9 +1,14 @@
 """
 Constants for use in standardizing names and generating instrument footprints.
 """
+import pathlib
 
-__all__ = ['INSTRUMENT_NAMES', 'NIRCAM_DITHER_OFFSETS',
+__all__ = ['NOVT_DIR', 'INSTRUMENT_NAMES', 'NIRCAM_DITHER_OFFSETS',
            'NO_MOSAIC', 'DEFAULT_COLOR']
+
+
+NOVT_DIR = pathlib.Path(__file__).parent.resolve()
+"""pathlib.Path : Path to the top-level package directory."""
 
 
 INSTRUMENT_NAMES = {
