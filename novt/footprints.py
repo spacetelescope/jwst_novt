@@ -217,7 +217,8 @@ def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
 
 
 def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
-                            channel='long', mosaic_v2=0.0, mosaic_v3=0.0):
+                            channel='long', add_mosaic=False,
+                            mosaic_offset=None):
     """
     Dither and/or mosaic the NIRCam aperture footprint.
 
@@ -235,16 +236,15 @@ def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
         FULL3TIGHT, FULL6, 8NIRSPEC.
     channel : {'short', 'long'}, optional
         The NIRCam channel to generate aperture footprints for.
-    mosaic_v2 : float, optional
-        Additional V2 offset in telescope coordinates to apply as a two-tile
+    add_mosaic : bool, optional
+        If False, mosaic offsets are ignored. Otherwise, a two-tile
+        mosaic is computed with window width specified in `mosaic_offset`.
+    mosaic_offset : tuple or list, optional
+        (V2, V3) offset in telescope coordinates to apply as a two-tile
         mosaic offset.  The offset is specified as a window width around
         the pointing center: the mosaic position will be at the center +/-
-        offset / 2. Ignored if `dither_pattern` is 8NIRSPEC.
-    mosaic_v3 : float, optional
-        Additional V3 offset in telescope coordinates to apply as a two-tile
-        mosaic offset.  The offset is specified as a window width around
-        the pointing center: the mosaic position will be at the center +/-
-        offset / 2. Ignored if `dither_pattern` is 8NIRSPEC.
+        offset / 2. Ignored if `dither_pattern` is 8NIRSPEC or `instrument`
+        is NIRSpec or `add_mosaic` is not set.
 
     Returns
     -------
@@ -265,11 +265,15 @@ def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
         footprint_func = nircam_long_footprint
 
     if pattern in NO_MOSAIC:
-        mosaic_v2 = 0
-        mosaic_v3 = 0
-    if mosaic_v2 != 0 or mosaic_v3 != 0:
-        center_offset = [(mosaic_v2 / 2, -mosaic_v3 / 2),
-                         (-mosaic_v2 / 2, mosaic_v3 / 2)]
+        add_mosaic = False
+    if mosaic_offset is None:
+        mosaic_offset = (0.0, 0.0)
+
+    # note: if offsets are 0 but add_mosaic is set, two
+    # footprint tiles are still created
+    if add_mosaic:
+        center_offset = [(mosaic_offset[0] / 2, -mosaic_offset[1] / 2),
+                         (-mosaic_offset[0] / 2, mosaic_offset[1] / 2)]
     else:
         center_offset = [(0, 0)]
 

@@ -14,6 +14,7 @@ class ControlInstruments(HasTraits):
     dec = Float(0.0).tag(sync=True)
     pa = Float(0.0).tag(sync=True)
     dither = Unicode('NONE').tag(sync=True)
+    mosaic = Unicode('No').tag(sync=True)
     mosaic_v2 = Float(0.0).tag(sync=True)
     mosaic_v3 = Float(0.0).tag(sync=True)
 
@@ -58,21 +59,30 @@ class ControlInstruments(HasTraits):
                 options=self.dither_values,
                 style={'description_width': 'initial'})
             ipw.link((self.set_dither, 'value'), (self, 'dither'))
-            self.set_dither.observe(self._check_mosaic, 'value')
+            self.set_dither.observe(self._check_mosaic_from_dither, 'value')
+
+            self.set_mosaic = ipw.Dropdown(
+                description='Mosaic', options=['No', 'Yes'],
+                style={'description_width': 'initial'})
+            ipw.link((self.set_mosaic, 'value'), (self, 'mosaic'))
+            self.set_mosaic.observe(self._check_mosaic, 'value')
 
             self.set_mosaic_v2 = ipw.BoundedFloatText(
-                description='Horizontal (v2, arcsec)',
+                description='Horizontal offset (arcsec)',
                 min=0, max=3600, step=5, continuous_update=False,
                 style={'description_width': 'initial'})
             self.set_mosaic_v3 = ipw.BoundedFloatText(
-                description='Vertical (v3, arcsec)',
+                description='Vertical offset (arcsec)',
                 min=0, max=3600, step=5, continuous_update=False,
                 style={'description_width': 'initial'})
+            self.set_mosaic_v2.disabled = True
+            self.set_mosaic_v3.disabled = True
             ipw.link((self.set_mosaic_v2, 'value'), (self, 'mosaic_v2'))
             ipw.link((self.set_mosaic_v3, 'value'), (self, 'mosaic_v3'))
 
         else:
             self.set_dither = None
+            self.set_mosaic = None
             self.set_mosaic_v2 = None
             self.set_mosaic_v3 = None
 
@@ -92,13 +102,10 @@ class ControlInstruments(HasTraits):
         children = [center_buttons]
         if self.set_dither is not None:
             mosaic_fields = ipw.Box(
-                children=[self.set_mosaic_v2,
+                children=[self.set_mosaic, self.set_mosaic_v2,
                           self.set_mosaic_v3],
                 layout=button_layout)
-            children.extend([self.set_dither,
-                             ipw.Label('Mosaic offsets: ',
-                                       style={'font_weight': 'bold'}),
-                             mosaic_fields])
+            children.extend([mosaic_fields, self.set_dither])
         box = ipw.Box(children=children, layout=box_layout)
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
@@ -123,11 +130,26 @@ class ControlInstruments(HasTraits):
                 self.ra = ra
                 self.dec = dec
 
-    def _check_mosaic(self, change):
+    def _check_mosaic_from_dither(self, change):
         """Enable or disable mosaic buttons based on dither value."""
         pattern = change['new']
         if pattern in NO_MOSAIC:
             # this dither pattern does not allow mosaics
+            self.set_mosaic.disabled = True
+            self.set_mosaic_v2.disabled = True
+            self.set_mosaic_v3.disabled = True
+        elif self.mosaic != 'No':
+            self.set_mosaic.disabled = False
+            self.set_mosaic_v2.disabled = False
+            self.set_mosaic_v3.disabled = False
+        else:
+            self.set_mosaic.disabled = False
+
+    def _check_mosaic(self, change):
+        """Set offset state from mosaic choice."""
+        mosaic = change['new']
+        if mosaic == 'No':
+            # turn off mosaic offsets
             self.set_mosaic_v2.disabled = True
             self.set_mosaic_v3.disabled = True
         else:

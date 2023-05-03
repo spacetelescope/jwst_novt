@@ -33,8 +33,8 @@ def hold_all_sync(marks):
 
 
 def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
-                     dither_pattern='NONE',
-                     mosaic_v2=0.0, mosaic_v3=0.0,
+                     dither_pattern=None, add_mosaic=False,
+                     mosaic_offset=None,
                      color=None, visible=True, fill='inside',
                      alpha=1.0, fill_alpha=0.5, update_patches=None):
     """
@@ -75,18 +75,15 @@ def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
     dither_pattern : str, optional
         Name of the NIRCam dither pattern to apply.  Options are: NONE, FULL3,
         FULL3TIGHT, FULL6, 8NIRSPEC. Ignored if `instrument` is NIRSpec.
-    mosaic_v2 : float, optional
-        Additional V2 offset in telescope coordinates to apply as a two-tile
+    add_mosaic : bool or str, optional
+        If False or 'No', mosaic offsets are ignored. Otherwise, a two-tile
+        mosaic is computed with window width specified in `mosaic_offset`.
+    mosaic_offset : tuple or list, optional
+        (V2, V3) offset in telescope coordinates to apply as a two-tile
         mosaic offset.  The offset is specified as a window width around
         the pointing center: the mosaic position will be at the center +/-
         offset / 2. Ignored if `dither_pattern` is 8NIRSPEC or `instrument`
-        is NIRSpec.
-    mosaic_v3 : float, optional
-        Additional V3 offset in telescope coordinates to apply as a two-tile
-        mosaic offset.  The offset is specified as a window width around
-        the pointing center: the mosaic position will be at the center +/-
-        offset / 2. Ignored if `dither_pattern` is 8NIRSPEC or `instrument`
-        is NIRSpec.
+        is NIRSpec or `add_mosaic` is not set.
     color : str, optional
         Color to apply to the aperture footprint. If not specified, default
         colors are applied.
@@ -95,7 +92,9 @@ def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
     fill : str, optional
         Fill option to pass to `bqplot.Lines`.
     alpha : float, optional
-        Opacity setting for the overlay.
+        Opacity setting for the overlay border.
+    fill_alpha : float, optional
+        Opacity setting for the overlay fill.
     update_patches : list of bqplot.Mark, optional
         If provided, no new patches are created; the marks in `update_patches`
         are updated in place. This option can improve performance, but
@@ -107,8 +106,17 @@ def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
     marks : list of bqplot.Mark
         Marks added to the figure.
     """
+    # standardize input
     inst = re.sub(r'\s', '_', instrument.strip().lower())
     inst = INSTRUMENT_NAMES[inst]
+
+    dither_pattern = str(dither_pattern).strip().upper()
+
+    if not isinstance(add_mosaic, bool):
+        if str(add_mosaic).lower() in {'no', 'false', '0', 'none'}:
+            add_mosaic = False
+        else:
+            add_mosaic = True
 
     # get footprint configuration by instrument
     if color is None:
@@ -123,7 +131,8 @@ def bqplot_footprint(figure, instrument, ra, dec, pa, wcs,
         regs = fp.nircam_dither_footprint(
             ra, dec, pa, channel=channel,
             dither_pattern=dither_pattern,
-            mosaic_v2=mosaic_v2, mosaic_v3=mosaic_v3)
+            add_mosaic=add_mosaic,
+            mosaic_offset=mosaic_offset)
 
     # get scales from figure
     scales = {'x': figure.interaction.x_scale, 'y': figure.interaction.y_scale}

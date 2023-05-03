@@ -55,7 +55,8 @@ class ShowOverlays(object):
             self.nircam_controls.observe(self.update_nircam_dither,
                                          names=['dither'])
             self.nircam_controls.observe(self.update_nircam_mosaic,
-                                         names=['mosaic_v2', 'mosaic_v3'])
+                                         names=['mosaic', 'mosaic_v2',
+                                                'mosaic_v3'])
 
         # toggle footprint overlays
         self.footprint_buttons = []
@@ -200,9 +201,8 @@ class ShowOverlays(object):
                 self.footprint_patches[instrument] = nd.bqplot_footprint(
                     self.viewer.figure, instrument,
                     controls.ra, controls.dec, controls.pa, wcs,
-                    dither_pattern=controls.dither,
-                    mosaic_v2=controls.mosaic_v2,
-                    mosaic_v3=controls.mosaic_v3)
+                    dither_pattern=controls.dither, add_mosaic=controls.mosaic,
+                    mosaic_offset=(controls.mosaic_v2, controls.mosaic_v3))
 
     def _update_footprint(self, instruments, controls):
         """
@@ -230,8 +230,8 @@ class ShowOverlays(object):
                         self.viewer.figure, instrument,
                         controls.ra, controls.dec, controls.pa, wcs,
                         dither_pattern=controls.dither,
-                        mosaic_v2=controls.mosaic_v2,
-                        mosaic_v3=controls.mosaic_v3,
+                        add_mosaic=controls.mosaic,
+                        mosaic_offset=(controls.mosaic_v2, controls.mosaic_v3),
                         update_patches=self.footprint_patches.get(instrument))
 
     def update_nircam_dither(self, *args):
@@ -253,9 +253,9 @@ class ShowOverlays(object):
         """
         Update NIRCam apertures after a mosaic offset change.
 
-        If either old or new mosaic values are all zero,
-        the number of overlays changes, and the apertures need to
-        be recreated. Otherwise, the apertures are updated in place.
+        If a mosaic is being created or destroyed, the number of overlays
+        changes, and the apertures need to be recreated. Otherwise, the
+        apertures are updated in place.
         """
 
         instruments = []
@@ -264,17 +264,7 @@ class ShowOverlays(object):
                 instruments.append(inst)
         controls = self.nircam_controls
 
-        # if going to/from a mosaic, the overlays need recreation
-        # otherwise, they can just be updated
-        if change['name'] == 'mosaic_v2':
-            other_value = controls.mosaic_v3
-        else:
-            other_value = controls.mosaic_v2
-
-        # check for all zero values in either old or new state
-        if (change['old'] == 0 and other_value == 0) and change['new'] != 0:
-            self._show_footprint(instruments, controls)
-        elif (change['new'] == 0 and other_value == 0) and change['old'] != 0:
+        if change['name'] == 'mosaic':
             self._show_footprint(instruments, controls)
         else:
             self._update_footprint(instruments, controls)
