@@ -1,15 +1,9 @@
 import ipywidgets as ipw
 
 from novt import display as nd
+from novt.interact.utilities import ToggleButton
 
 __all__ = ['ShowOverlays']
-
-
-class ButtonWithValue(ipw.Button):
-    """Button widget with value metadata."""
-    def __init__(self, *args, **kwargs):
-        self.value = kwargs.pop('value', '')
-        super().__init__(*args, **kwargs)
 
 
 class ShowOverlays(object):
@@ -32,10 +26,10 @@ class ShowOverlays(object):
         # toggle catalog overlays
         self.catalog_buttons = []
         for name in self.catalogs:
-            button = ButtonWithValue(
-                description=f'Show {name} sources',
-                value=name, layout=ipw.Layout(width='auto'))
-            button.on_click(self.toggle_catalog)
+            button = ToggleButton(
+                children=[f'{name.capitalize()} sources'],
+                value=name)
+            button.on_event('click', self.toggle_catalog)
             self.catalog_buttons.append(button)
 
         # watch for changes to uploaded files
@@ -61,15 +55,13 @@ class ShowOverlays(object):
         # toggle footprint overlays
         self.footprint_buttons = []
         for name in self.instruments:
-            button = ButtonWithValue(
-                description=f'Show {name} footprint',
-                value=name, layout=ipw.Layout(width='auto'))
-            button.on_click(self.toggle_footprint)
+            button = ToggleButton(children=[name], value=name)
+            button.on_event('click', self.toggle_footprint)
             self.footprint_buttons.append(button)
 
         # layout widgets
         button_layout = ipw.Layout(display='flex', flex_flow='row',
-                                   justify_content='flex-start', padding='5px')
+                                   justify_content='flex-start')
         self.widgets = ipw.Box(
             children=self.footprint_buttons + self.catalog_buttons,
             layout=button_layout)
@@ -83,7 +75,7 @@ class ShowOverlays(object):
             nd.remove_bqplot_patches(self.viewer.figure,
                                      self.footprint_patches[instrument])
         for button in self.footprint_buttons:
-            button.description = button.description.replace('Hide', 'Show')
+            button.reset()
 
         # also clear catalog
         self.clear_catalog()
@@ -102,12 +94,12 @@ class ShowOverlays(object):
                 self.viewer.figure, [self.catalog_markers['filler']])
             del self.catalog_markers['filler']
         for button in self.catalog_buttons:
-            button.description = button.description.replace('Hide', 'Show')
+            button.reset()
 
-    def toggle_catalog(self, btn):
+    def toggle_catalog(self, button, event, data):
         """Toggle catalog visibility."""
-        name = btn.value
-        if btn.description.startswith('Show'):
+        name = button.value
+        if button.is_active():
             if self.viewer.state.reference_data is None:
                 return
             wcs = self.viewer.state.reference_data.coords
@@ -115,7 +107,7 @@ class ShowOverlays(object):
                 return
             if name in self.catalog_markers:
                 self.catalog_markers[name].visible = True
-                btn.description = btn.description.replace('Show', 'Hide')
+                button.toggle()
             else:
                 catalog_file = self.uploaded_data.catalog_file
                 if catalog_file is not None:
@@ -132,33 +124,32 @@ class ShowOverlays(object):
                         self.catalog_markers['primary'] = primary
                         self.catalog_markers['filler'] = filler
                         self.catalog_markers[name].visible = True
-                        btn.description = btn.description.replace(
-                            'Show', 'Hide')
+                        button.toggle()
                     finally:
                         catalog.seek(0)
         else:
-            btn.description = btn.description.replace('Hide', 'Show')
+            button.toggle()
             if name in self.catalog_markers:
                 self.catalog_markers[name].visible = False
 
-    def toggle_footprint(self, btn):
+    def toggle_footprint(self, button, event, data):
         """Toggle footprint visibility."""
-        if btn.description.startswith('Show'):
+        if button.is_active():
             if self.viewer.state.reference_data is not None:
                 wcs = self.viewer.state.reference_data.coords
                 if wcs is not None:
-                    btn.description = btn.description.replace('Show', 'Hide')
+                    button.toggle()
 
-                    if 'NIRS' in btn.value:
+                    if 'NIRS' in button.value:
                         controls = self.nirspec_controls
                     else:
                         controls = self.nircam_controls
-                    self._show_footprint([btn.value], controls)
+                    self._show_footprint([button.value], controls)
         else:
-            btn.description = btn.description.replace('Hide', 'Show')
+            button.toggle()
             nd.remove_bqplot_patches(self.viewer.figure,
-                                     self.footprint_patches[btn.value])
-            del self.footprint_patches[btn.value]
+                                     self.footprint_patches[button.value])
+            del self.footprint_patches[button.value]
 
     def all_patches(self):
         """Return all patches currently tracked."""
