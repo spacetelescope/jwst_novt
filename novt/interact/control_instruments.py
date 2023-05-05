@@ -41,7 +41,7 @@ class ControlInstruments(HasTraits):
             step=5 / 3600, continuous_update=False,
             style={'description_width': 'initial'})
         self.set_dec = ipw.BoundedFloatText(
-            description='Dec (deg)', min=0, max=90,
+            description='Dec (deg)', min=-90, max=90,
             step=5 / 3600, continuous_update=False,
             style={'description_width': 'initial'})
         self.set_pa = ipw.FloatText(
