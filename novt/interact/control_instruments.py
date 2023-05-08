@@ -1,7 +1,7 @@
 import ipywidgets as ipw
 from traitlets import HasTraits, Float, Unicode
 
-from novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC
+from novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC, DEFAULT_COLOR
 from novt.interact.utilities import read_image
 
 __all__ = ['ControlInstruments']
@@ -18,6 +18,9 @@ class ControlInstruments(HasTraits):
     mosaic = Unicode('No').tag(sync=True)
     mosaic_v2 = Float(0.0).tag(sync=True)
     mosaic_v3 = Float(0.0).tag(sync=True)
+    color_primary = Unicode('red').tag(sync=True)
+    color_alternate = Unicode('blue').tag(sync=True)
+    alpha = Float(0.5).tag(sync=True)
 
     def __init__(self, instrument, viz):
         super().__init__(self)
@@ -87,11 +90,40 @@ class ControlInstruments(HasTraits):
             ipw.link((self.set_mosaic_v2, 'value'), (self, 'mosaic_v2'))
             ipw.link((self.set_mosaic_v3, 'value'), (self, 'mosaic_v3'))
 
+            # color controls
+            self.color_pickers = [
+                ipw.ColorPicker(description='Short color',
+                                value=DEFAULT_COLOR['NIRCam Short'],
+                                style={'description_width': 'initial'}),
+                ipw.ColorPicker(description='Long color',
+                                value=DEFAULT_COLOR['NIRCam Long'],
+                                style={'description_width': 'initial'})
+            ]
+            ipw.link((self.color_pickers[0], 'value'),
+                     (self, 'color_primary'))
+            ipw.link((self.color_pickers[1], 'value'),
+                     (self, 'color_alternate'))
+
         else:
             self.set_dither = None
             self.set_mosaic = None
             self.set_mosaic_v2 = None
             self.set_mosaic_v3 = None
+
+            # color controls
+            self.color_pickers = [
+                ipw.ColorPicker(description='Color',
+                                value=DEFAULT_COLOR['NIRSpec'],
+                                style={'description_width': 'initial'})
+            ]
+            ipw.link((self.color_pickers[0], 'value'), (self, 'color_primary'))
+
+        # fill alpha for overlays
+        self.set_alpha = ipw.BoundedFloatText(
+            value=0.5, description='Fill opacity', min=0, max=1,
+            step=0.1, continuous_update=False,
+            style={'description_width': 'initial'})
+        ipw.link((self.set_alpha, 'value'), (self, 'alpha'))
 
         # set a callback in the viewer to initialize RA/Dec
         # from WCS on data load
@@ -103,9 +135,13 @@ class ControlInstruments(HasTraits):
                                 padding='0px')
         column_layout = ipw.Layout(display='flex', flex_flow='column',
                                    align_items='stretch')
-        center_buttons = ipw.Box(children=[self.set_ra,
-                                           self.set_dec, self.set_pa],
-                                 layout=row_layout)
+        center_buttons = ipw.Box(
+            children=[self.set_ra, self.set_dec, self.set_pa],
+            layout=row_layout)
+        appearance_tab = ipw.Accordion(
+            children=[ipw.Box(children=self.color_pickers + [self.set_alpha],
+                              layout=row_layout)],
+            titles=['Appearance'])
 
         children = [center_buttons]
         if self.set_dither is not None:
@@ -114,6 +150,11 @@ class ControlInstruments(HasTraits):
                           self.set_mosaic_v3],
                 layout=row_layout)
             children.extend([mosaic_fields, self.set_dither])
+        position_tab = ipw.Accordion(
+            children=[ipw.Box(children=children, layout=column_layout)],
+            titles=['Position'], selected_index=0)
+
+        children = [position_tab, appearance_tab]
         col = ipw.Box(children=children, layout=column_layout)
         row = ipw.Box(children=[self.logo, col],
                       layout=ipw.Layout(display='flex', flex_flow='row',

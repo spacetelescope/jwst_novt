@@ -41,11 +41,14 @@ class ShowOverlays(object):
         if self.nirspec_controls is not None:
             self.instruments.append('NIRSpec')
             self.nirspec_controls.observe(self.update_nirspec_footprint,
-                                          names=['ra', 'dec', 'pa'])
+                                          names=['ra', 'dec', 'pa',
+                                                 'color_primary', 'alpha'])
         if self.nircam_controls is not None:
             self.instruments.extend(['NIRCam Long', 'NIRCam Short'])
             self.nircam_controls.observe(self.update_nircam_footprint,
-                                         names=['ra', 'dec', 'pa'])
+                                         names=['ra', 'dec', 'pa',
+                                                'color_primary',
+                                                'color_alternate', 'alpha'])
             self.nircam_controls.observe(self.update_nircam_dither,
                                          names=['dither'])
             self.nircam_controls.observe(self.update_nircam_mosaic,
@@ -189,9 +192,14 @@ class ShowOverlays(object):
                         self.footprint_patches[instrument])
 
                 # make new patches
+                if 'long' in instrument.lower():
+                    color = controls.color_alternate
+                else:
+                    color = controls.color_primary
                 self.footprint_patches[instrument] = nd.bqplot_footprint(
                     self.viewer.figure, instrument,
                     controls.ra, controls.dec, controls.pa, wcs,
+                    color=color, fill_alpha=controls.alpha,
                     dither_pattern=controls.dither, add_mosaic=controls.mosaic,
                     mosaic_offset=(controls.mosaic_v2, controls.mosaic_v3))
 
@@ -217,9 +225,14 @@ class ShowOverlays(object):
         with nd.hold_all_sync(self.all_patches()):
             for instrument in instruments:
                 if instrument in self.footprint_patches:
+                    if 'long' in instrument.lower():
+                        color = controls.color_alternate
+                    else:
+                        color = controls.color_primary
                     self.footprint_patches[instrument] = nd.bqplot_footprint(
                         self.viewer.figure, instrument,
                         controls.ra, controls.dec, controls.pa, wcs,
+                        color=color, fill_alpha=controls.alpha,
                         dither_pattern=controls.dither,
                         add_mosaic=controls.mosaic,
                         mosaic_offset=(controls.mosaic_v2, controls.mosaic_v3),

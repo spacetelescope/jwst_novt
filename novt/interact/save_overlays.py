@@ -86,10 +86,13 @@ class SaveOverlays(object):
         # todo: add catalogs
 
         all_regions = []
+        colors = {}
         try:
             for instrument in self.show_overlays.footprint_patches:
                 if instrument == 'NIRSpec':
                     controls = self.show_overlays.nirspec_controls
+                    colors[instrument] = controls.color_primary
+
                     ra = controls.ra
                     dec = controls.dec
                     pa = controls.pa
@@ -98,6 +101,11 @@ class SaveOverlays(object):
                     # 'NIRCam Short' or 'NIRCam Long'
                     channel = instrument.split()[-1].lower()
                     controls = self.show_overlays.nircam_controls
+                    if channel == 'long':
+                        colors[instrument] = controls.color_alternate
+                    else:
+                        colors[instrument] = controls.color_primary
+
                     ra = controls.ra
                     dec = controls.dec
                     pa = controls.pa
@@ -110,8 +118,8 @@ class SaveOverlays(object):
                         add_mosaic=add_mosaic,
                         mosaic_offset=mosaic_offset)
 
-                # todo: add color, fill metadata
                 for region in regs:
+                    region.meta['tag'] = [instrument]
                     if coord == 'pixel':
                         region = region.to_pixel(wcs)
                     all_regions.append(region)
@@ -119,6 +127,13 @@ class SaveOverlays(object):
             if len(all_regions) > 0:
                 all_regions = regions.Regions(all_regions)
                 region_text = all_regions.serialize(format=file_format)
+
+                # patch color, shape into text, based on tag
+                for inst, value in colors.items():
+                    region_text = region_text.replace(
+                        f'tag={{{inst}}}',
+                        f'tag={{{inst}}} color={value} point=cross')
+
                 filename = self.set_filename.value
                 self.file_link.edit_link(filename, region_text)
 
