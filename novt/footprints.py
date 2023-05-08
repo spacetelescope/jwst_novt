@@ -12,7 +12,7 @@ __all__ = ['nirspec_footprint', 'nircam_short_footprint',
            'source_catalog']
 
 
-def nirspec_footprint(ra, dec, pa):
+def nirspec_footprint(ra, dec, pa, include_center=True):
     """
     Create NIRSpec footprint regions in sky coordinates.
 
@@ -39,6 +39,9 @@ def nirspec_footprint(ra, dec, pa):
     pa : float
         Position angle for NIRSpec, in degrees measured from North
         to central MSA vertical axis in North to East direction.
+    include_center : bool, optional
+        If set, the center is marked with a Point region. If not,
+        only the apertures are included in the output.
 
     Returns
     -------
@@ -62,8 +65,10 @@ def nirspec_footprint(ra, dec, pa):
         msa_v2, msa_v3, ra, dec, pa - pa_offset)
 
     # Aperture regions
-    nrs_regions = [regions.PointSkyRegion(
-        coordinates.SkyCoord(ra, dec, unit='deg'))]
+    nrs_regions = []
+    if include_center:
+        nrs_regions.append(regions.PointSkyRegion(
+            coordinates.SkyCoord(ra, dec, unit='deg')))
     for aperture_name in ['NRS_FULL_MSA1', 'NRS_FULL_MSA2',
                           'NRS_FULL_MSA3', 'NRS_FULL_MSA4',
                           'NRS_FULL_IFU', 'NRS_FULL_IFU',
@@ -81,7 +86,8 @@ def nirspec_footprint(ra, dec, pa):
     return nrs_regions
 
 
-def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
+def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
+                           include_center=True):
     """
     Create NIRCam short channel footprint regions in sky coordinates.
 
@@ -112,6 +118,9 @@ def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
     v3_offset : float, optional
         Additional V3 offset in telescope coordinates to apply to instrument
         center, as from a dither pattern.
+    include_center : bool, optional
+        If set, the center is marked with a Point region. If not,
+        only the apertures are included in the output.
 
     Returns
     -------
@@ -135,8 +144,10 @@ def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
         nrc_v2, nrc_v3, ra, dec, pa - pa_offset)
 
     # Aperture regions
-    nrc_regions = [regions.PointSkyRegion(
-        coordinates.SkyCoord(ra, dec, unit='deg'))]
+    nrc_regions = []
+    if include_center:
+        nrc_regions.append(regions.PointSkyRegion(
+            coordinates.SkyCoord(ra, dec, unit='deg')))
     for aperture_name in ['NRCA1_FULL', 'NRCA2_FULL',
                           'NRCA3_FULL', 'NRCA4_FULL',
                           'NRCB1_FULL', 'NRCB2_FULL',
@@ -153,7 +164,8 @@ def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
     return nrc_regions
 
 
-def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
+def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
+                          include_center=True):
     """
     Create NIRCam long channel footprint regions in sky coordinates.
 
@@ -178,6 +190,9 @@ def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
     v3_offset : float, optional
         Additional V3 offset in telescope coordinates to apply to instrument
         center, as from a dither pattern.
+    include_center : bool, optional
+        If set, the center is marked with a Point region. If not,
+        only the apertures are included in the output.
 
     Returns
     -------
@@ -201,8 +216,10 @@ def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0):
         nrc_v2, nrc_v3, ra, dec, pa - pa_offset)
 
     # Aperture regions
-    nrc_regions = [regions.PointSkyRegion(
-        coordinates.SkyCoord(ra, dec, unit='deg'))]
+    nrc_regions = []
+    if include_center:
+        nrc_regions.append(regions.PointSkyRegion(
+            coordinates.SkyCoord(ra, dec, unit='deg')))
     for aperture_name in ['NRCA5_FULL', 'NRCB5_FULL']:
         aperture = nircam.apertures[aperture_name]
         aperture.set_attitude_matrix(attmat)
@@ -278,12 +295,17 @@ def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
         center_offset = [(0, 0)]
 
     dithers = []
+    include_center = True
     for mosaic_position in center_offset:
         for offset in dither_offsets:
             v2 = offset[0] + mosaic_position[0]
             v3 = offset[1] + mosaic_position[1]
             reg_list = footprint_func(ra, dec, pa,
-                                      v2_offset=v2, v3_offset=v3)
+                                      v2_offset=v2, v3_offset=v3,
+                                      include_center=include_center)
+            # include center only once
+            include_center = False
+
             for reg in reg_list:
                 dithers.append(reg)
 

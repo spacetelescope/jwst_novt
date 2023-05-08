@@ -20,7 +20,7 @@ class ControlInstruments(HasTraits):
     mosaic_v3 = Float(0.0).tag(sync=True)
     color_primary = Unicode('red').tag(sync=True)
     color_alternate = Unicode('blue').tag(sync=True)
-    alpha = Float(0.2).tag(sync=True)
+    alpha = Float(0.1).tag(sync=True)
 
     def __init__(self, instrument, viz):
         super().__init__(self)
@@ -120,7 +120,7 @@ class ControlInstruments(HasTraits):
 
         # fill alpha for overlays
         self.set_alpha = ipw.BoundedFloatText(
-            value=0.2, description='Fill opacity', min=0, max=1,
+            value=0.1, description='Fill opacity', min=0, max=1,
             step=0.1, continuous_update=False,
             style={'description_width': 'initial'})
         ipw.link((self.set_alpha, 'value'), (self, 'alpha'))
