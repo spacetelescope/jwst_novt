@@ -33,7 +33,7 @@ class UploadData(HasTraits):
             'Image file (.fits):', style={'font_weight': 'bold'},
             layout=ipw.Layout(width='150px'))
         self.image_file_upload = ve.FileInput(
-            accept='.fits', multiple=True, layout=ipw.Layout(width='500px'))
+            accept='.fits', multiple=False, layout=ipw.Layout(width='500px'))
 
         self.catalog_label = ipw.Label(
             'Catalog file (.radec):', style={'font_weight': 'bold'},
@@ -87,6 +87,15 @@ class UploadData(HasTraits):
         """
         # watch for uploaded files
         change.owner.disabled = True
+        if len(change['old']) > 0:
+            # clear any removed data from viewer
+            for old_file in change['old']:
+                for data_set in self.viz.app.data_collection:
+                    if data_set.label.startswith(old_file['name']):
+                        self.viz.app.remove_data_from_viewer(
+                            self.viewer.reference_id, data_set.label)
+                        self.viz.app.data_collection.remove(data_set)
+                del self.image_files[old_file['name']]
         if len(change['new']) > 0:
             uploaded_files = change.owner.get_files()
             if len(uploaded_files) > 0:
@@ -96,17 +105,12 @@ class UploadData(HasTraits):
                     hdul = fits.open(uploaded_file['file_obj'])
                     with warnings.catch_warnings():
                         warnings.simplefilter('ignore')
-                        self.viz.load_data(
-                            hdul, data_label=uploaded_file['name'])
+                        try:
+                            self.viz.load_data(
+                                hdul, data_label=uploaded_file['name'])
+                        except Exception as err:
+                            print(f'Error loading image: {err}')
                     hdul.close()
-        if len(change['old']) > 0:
-            # clear any removed data from viewer
-            for old_file in change['old']:
-                for data_set in self.viz.app.data_collection:
-                    if data_set.label.startswith(old_file['name']):
-                        self.viz.app.remove_data_from_viewer(
-                            self.viewer.reference_id, data_set.label)
-                del self.image_files[old_file['name']]
         change.owner.disabled = False
 
     def load_catalog(self, change):

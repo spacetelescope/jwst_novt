@@ -120,7 +120,7 @@ class ShowOverlays(object):
             if self.viewer.state.reference_data is None:
                 return
             wcs = self.viewer.state.reference_data.coords
-            if wcs is None:
+            if wcs is None or not wcs.has_celestial:
                 return
             if name in self.catalog_markers:
                 self.catalog_markers[name].visible = True
@@ -155,7 +155,7 @@ class ShowOverlays(object):
         if button.is_active():
             if self.viewer.state.reference_data is not None:
                 wcs = self.viewer.state.reference_data.coords
-                if wcs is not None:
+                if wcs is not None and wcs.has_celestial:
                     button.toggle()
 
                     if 'NIRS' in button.value:
@@ -196,7 +196,7 @@ class ShowOverlays(object):
         if self.viewer.state.reference_data is None:
             return
         wcs = self.viewer.state.reference_data.coords
-        if wcs is None:
+        if wcs is None or not wcs.has_celestial:
             return
         with nd.hold_all_sync(self.all_patches()):
             for instrument in instruments:
@@ -235,7 +235,7 @@ class ShowOverlays(object):
         if self.viewer.state.reference_data is None:
             return
         wcs = self.viewer.state.reference_data.coords
-        if wcs is None:
+        if wcs is None or not wcs.has_celestial:
             return
         with nd.hold_all_sync(self.all_patches()):
             for instrument in instruments:

@@ -76,6 +76,8 @@ class SaveOverlays(object):
             wcs = self.show_overlays.viewer.state.reference_data.coords
         except AttributeError:
             return
+        if not wcs.has_celestial:
+            return
 
         if self.set_coordinates.value.startswith('pixel'):
             coord = 'pixel'
