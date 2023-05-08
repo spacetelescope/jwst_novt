@@ -4,7 +4,9 @@ from astropy.io import fits
 
 import ipywidgets as ipw
 import ipyvuetify.extra as ve
-from traitlets import HasTraits, Any
+from traitlets import HasTraits, Any, Unicode
+
+from novt.constants import DEFAULT_COLOR
 
 __all__ = ['UploadData']
 
@@ -13,7 +15,9 @@ class UploadData(HasTraits):
     """
     Widgets to upload user data files.
     """
-    catalog_file = Any(None, allow_none=True)
+    catalog_file = Any(None, allow_none=True).tag(sync=True)
+    color_primary = Unicode('orange').tag(sync=True)
+    color_alternate = Unicode('purple').tag(sync=True)
 
     def __init__(self, viz):
         super().__init__(self)
@@ -37,6 +41,19 @@ class UploadData(HasTraits):
         self.catalog_file_upload = ve.FileInput(
             accept='.radec', multiple=False, layout=ipw.Layout(width='500px'))
 
+        self.color_pickers = [
+            ipw.ColorPicker(description='Primary source color',
+                            value=DEFAULT_COLOR['Primary Sources'],
+                            style={'description_width': 'initial'}),
+            ipw.ColorPicker(description='Filler source color',
+                            value=DEFAULT_COLOR['Filler Sources'],
+                            style={'description_width': 'initial'})
+        ]
+        ipw.link((self.color_pickers[0], 'value'),
+                 (self, 'color_primary'))
+        ipw.link((self.color_pickers[1], 'value'),
+                 (self, 'color_alternate'))
+
         # layout widgets
         button_layout = ipw.Layout(
             display='flex', flex_flow='row', align_items='center',
@@ -48,7 +65,12 @@ class UploadData(HasTraits):
                      layout=button_layout)
         b2 = ipw.Box(children=[self.catalog_label, self.catalog_file_upload],
                      layout=button_layout)
-        box = ipw.Box(children=[b1, b2], layout=box_layout)
+        appearance_tab = ipw.Accordion(
+            children=[ipw.Box(children=self.color_pickers,
+                              layout=button_layout)],
+            titles=['Appearance'])
+
+        box = ipw.Box(children=[b1, b2, appearance_tab], layout=box_layout)
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
         # connect callbacks

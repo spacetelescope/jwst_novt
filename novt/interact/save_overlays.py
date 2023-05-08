@@ -83,59 +83,83 @@ class SaveOverlays(object):
             coord = 'sky'
         file_format = self.set_format.value
 
-        # todo: add catalogs
-
         all_regions = []
         colors = {}
-        try:
-            for instrument in self.show_overlays.footprint_patches:
-                if instrument == 'NIRSpec':
-                    controls = self.show_overlays.nirspec_controls
+        markers = {}
+        for instrument in self.show_overlays.footprint_patches:
+            markers[instrument] = 'cross'
+            if instrument == 'NIRSpec':
+                controls = self.show_overlays.nirspec_controls
+                colors[instrument] = controls.color_primary
+
+                ra = controls.ra
+                dec = controls.dec
+                pa = controls.pa
+                regs = fp.nirspec_footprint(ra, dec, pa)
+            else:
+                # 'NIRCam Short' or 'NIRCam Long'
+                channel = instrument.split()[-1].lower()
+                controls = self.show_overlays.nircam_controls
+                if channel == 'long':
+                    colors[instrument] = controls.color_alternate
+                else:
                     colors[instrument] = controls.color_primary
 
-                    ra = controls.ra
-                    dec = controls.dec
-                    pa = controls.pa
-                    regs = fp.nirspec_footprint(ra, dec, pa)
-                else:
-                    # 'NIRCam Short' or 'NIRCam Long'
-                    channel = instrument.split()[-1].lower()
-                    controls = self.show_overlays.nircam_controls
-                    if channel == 'long':
-                        colors[instrument] = controls.color_alternate
-                    else:
-                        colors[instrument] = controls.color_primary
+                ra = controls.ra
+                dec = controls.dec
+                pa = controls.pa
+                dither_pattern = controls.dither
+                add_mosaic = controls.mosaic,
+                mosaic_offset = (controls.mosaic_v2, controls.mosaic_v3)
+                regs = fp.nircam_dither_footprint(
+                    ra, dec, pa, channel=channel,
+                    dither_pattern=dither_pattern,
+                    add_mosaic=add_mosaic,
+                    mosaic_offset=mosaic_offset)
 
-                    ra = controls.ra
-                    dec = controls.dec
-                    pa = controls.pa
-                    dither_pattern = controls.dither
-                    add_mosaic = controls.mosaic,
-                    mosaic_offset = (controls.mosaic_v2, controls.mosaic_v3)
-                    regs = fp.nircam_dither_footprint(
-                        ra, dec, pa, channel=channel,
-                        dither_pattern=dither_pattern,
-                        add_mosaic=add_mosaic,
-                        mosaic_offset=mosaic_offset)
+            for region in regs:
+                region.meta['tag'] = [instrument]
+                if coord == 'pixel':
+                    region = region.to_pixel(wcs)
+                all_regions.append(region)
 
-                for region in regs:
-                    region.meta['tag'] = [instrument]
+        cat_file = self.show_overlays.uploaded_data.catalog_file
+        cat_markers = self.show_overlays.catalog_markers
+        cat_colors = [self.show_overlays.uploaded_data.color_primary,
+                      self.show_overlays.uploaded_data.color_alternate,]
+        test_catalogs = [p.visible for p in cat_markers.values()]
+        if any(test_catalogs) and cat_file is not None:
+            try:
+                primary, filler = fp.source_catalog(cat_file['file_obj'])
+            finally:
+                cat_file['file_obj'].seek(0)
+            if 'primary' in cat_markers and cat_markers['primary'].visible:
+                colors['primary'] = cat_colors[0]
+                markers['primary'] = 'circle'
+                for region in primary:
+                    region.meta['tag'] = ['primary']
+                    if coord == 'pixel':
+                        region = region.to_pixel(wcs)
+                    all_regions.append(region)
+            if 'filler' in cat_markers and cat_markers['filler'].visible:
+                colors['filler'] = cat_colors[1]
+                markers['filler'] = 'circle'
+                for region in filler:
+                    region.meta['tag'] = ['filler']
                     if coord == 'pixel':
                         region = region.to_pixel(wcs)
                     all_regions.append(region)
 
-            if len(all_regions) > 0:
-                all_regions = regions.Regions(all_regions)
-                region_text = all_regions.serialize(format=file_format)
+        if len(all_regions) > 0:
+            all_regions = regions.Regions(all_regions)
+            region_text = all_regions.serialize(format=file_format)
 
-                # patch color, shape into text, based on tag
-                for inst, value in colors.items():
-                    region_text = region_text.replace(
-                        f'tag={{{inst}}}',
-                        f'tag={{{inst}}} color={value} point=cross')
+            # patch color and marker into text, based on tag
+            # (regions package does not yet serialize style)
+            for inst, value in colors.items():
+                region_text = region_text.replace(
+                    f'tag={{{inst}}}',
+                    f'tag={{{inst}}} color={value} point={markers[inst]}')
 
-                filename = self.set_filename.value
-                self.file_link.edit_link(filename, region_text)
-
-        except Exception as err:
-            print(f'Error making regions: {err}')
+            filename = self.set_filename.value
+            self.file_link.edit_link(filename, region_text)

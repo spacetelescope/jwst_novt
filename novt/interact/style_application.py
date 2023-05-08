@@ -45,12 +45,13 @@ class StyleApplication(object):
             layout=self.row_layout)
 
         children = [self.header, uploaded_data.widgets,
-                    nirspec_controls.widgets, nircam_controls.widgets]
+                    nirspec_controls.widgets, nircam_controls.widgets,
+                    save_controls.widgets]
         if 'notebook' in self.context:
             # in a notebook, display the viewer inline at
             # 100% of cell width
             width = '100%'
-            children.extend([save_controls.widgets, overlay_controls.widgets,
+            children.extend([overlay_controls.widgets,
                              image_viewer.widgets])
         else:
             # in a web app, collapse the viewer and controls and set
@@ -62,7 +63,7 @@ class StyleApplication(object):
             viewer_tab = ipw.Accordion(
                 children=[viewer_with_controls],
                 layout=self.column_layout, titles=[image_viewer.title])
-            children.extend([viewer_tab, save_controls.widgets])
+            children.append(viewer_tab)
         children.append(self.footer)
 
         # set layout

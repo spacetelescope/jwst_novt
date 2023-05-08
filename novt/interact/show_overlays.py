@@ -36,6 +36,8 @@ class ShowOverlays(object):
         self.uploaded_data.image_file_upload.observe(
             self.clear_overlays, names='file_info')
         self.uploaded_data.observe(self.clear_catalog, names='catalog_file')
+        self.uploaded_data.observe(
+            self.update_catalog, names=['color_primary', 'color_alternate'])
 
         # watch for changes to update footprint
         if self.nirspec_controls is not None:
@@ -99,6 +101,18 @@ class ShowOverlays(object):
         for button in self.catalog_buttons:
             button.reset()
 
+    def update_catalog(self, *args):
+        """
+        Update existing catalog markers when a new color is chosen.
+        """
+        # clear any old markers on change in the catalog file
+        if 'primary' in self.catalog_markers:
+            self.catalog_markers['primary'].colors = [
+                self.uploaded_data.color_primary]
+        if 'filler' in self.catalog_markers:
+            self.catalog_markers['filler'].colors = [
+                self.uploaded_data.color_alternate]
+
     def toggle_catalog(self, button, event, data):
         """Toggle catalog visibility."""
         name = button.value
@@ -115,11 +129,12 @@ class ShowOverlays(object):
                 catalog_file = self.uploaded_data.catalog_file
                 if catalog_file is not None:
                     catalog = catalog_file['file_obj']
-
                     try:
                         primary, filler = nd.bqplot_catalog(
                             self.viewer.figure, catalog, wcs,
-                            visible=False)
+                            visible=False,
+                            colors=[self.uploaded_data.color_primary,
+                                    self.uploaded_data.color_alternate])
                     except Exception as err:
                         # todo: need error/status handling
                         print('Error from catalog read:', err)
