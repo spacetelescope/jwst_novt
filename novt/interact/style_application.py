@@ -27,7 +27,11 @@ class StyleApplication(object):
         # header banner
         self.jwst_logo = read_image('JWSTlogo.png')
         self.stsci_logo = read_image('STScIlogo.png')
-        self.docs_link = 'https://novt.readthedocs.io'
+        self.docs_link = (
+            'https://jwst-docs.stsci.edu/jwst-near-infrared-spectrograph/'
+            'nirspec-apt-templates/'
+            'nirspec-multi-object-spectroscopy-apt-template/'
+            'nirspec-observation-visualization-tool-help')
         self.header = ipw.Box(
             children=[ipw.HTML(f'<h1>{self.title}</h1>'
                                f'<p>For usage information, see the '
@@ -40,9 +44,7 @@ class StyleApplication(object):
             layout=self.row_layout)
 
         # footer links
-
-        self.footer = ipw.Box(children=[],
-            layout=self.row_layout)
+        self.footer = ipw.Box(children=[], layout=self.row_layout)
 
         children = [self.header, uploaded_data.widgets,
                     nirspec_controls.widgets, nircam_controls.widgets,
@@ -62,7 +64,8 @@ class StyleApplication(object):
                 layout=self.column_layout)
             viewer_tab = ipw.Accordion(
                 children=[viewer_with_controls],
-                layout=self.column_layout, titles=[image_viewer.title])
+                layout=self.column_layout, titles=[image_viewer.title],
+                selected_index=0)
             children.append(viewer_tab)
         children.append(self.footer)
 

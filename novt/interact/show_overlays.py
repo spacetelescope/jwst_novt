@@ -1,4 +1,5 @@
 import ipywidgets as ipw
+from jdaviz.core.events import SnackbarMessage
 
 from novt import display as nd
 from novt.interact.utilities import ToggleButton
@@ -80,7 +81,10 @@ class ShowOverlays(object):
             nd.remove_bqplot_patches(self.viewer.figure,
                                      self.footprint_patches[instrument])
         for button in self.footprint_buttons:
-            button.reset()
+            if self.uploaded_data.has_wcs:
+                button.reset()
+            else:
+                button.disabled = True
 
         # also clear catalog
         self.clear_catalog()
@@ -98,8 +102,40 @@ class ShowOverlays(object):
             nd.remove_bqplot_patches(
                 self.viewer.figure, [self.catalog_markers['filler']])
             del self.catalog_markers['filler']
+
+        available = (self.uploaded_data.has_wcs
+                     and self.uploaded_data.has_catalog)
+
+        # load catalog if it is available
+        if available:
+            wcs = self.viewer.state.reference_data.coords
+            catalog_file = self.uploaded_data.catalog_file
+            if catalog_file is not None:
+                catalog = catalog_file['file_obj']
+                try:
+                    primary, filler = nd.bqplot_catalog(
+                        self.viewer.figure, catalog, wcs,
+                        visible=False,
+                        colors=[self.uploaded_data.color_primary,
+                                self.uploaded_data.color_alternate])
+                except Exception as err:
+                    available = False
+                    msg_text = f'Error reading catalog: {err}'
+                    msg = SnackbarMessage(msg_text, sender=self,
+                                          color='warning')
+                    self.viz.app.hub.broadcast(msg)
+                else:
+                    self.catalog_markers['primary'] = primary
+                    self.catalog_markers['filler'] = filler
+                finally:
+                    catalog.seek(0)
+
+        # enable buttons only if catalog is available
         for button in self.catalog_buttons:
-            button.reset()
+            if available:
+                button.reset()
+            else:
+                button.disabled = True
 
     def update_catalog(self, *args):
         """
@@ -117,34 +153,9 @@ class ShowOverlays(object):
         """Toggle catalog visibility."""
         name = button.value
         if button.is_active():
-            if self.viewer.state.reference_data is None:
-                return
-            wcs = self.viewer.state.reference_data.coords
-            if wcs is None or not wcs.has_celestial:
-                return
             if name in self.catalog_markers:
                 self.catalog_markers[name].visible = True
                 button.toggle()
-            else:
-                catalog_file = self.uploaded_data.catalog_file
-                if catalog_file is not None:
-                    catalog = catalog_file['file_obj']
-                    try:
-                        primary, filler = nd.bqplot_catalog(
-                            self.viewer.figure, catalog, wcs,
-                            visible=False,
-                            colors=[self.uploaded_data.color_primary,
-                                    self.uploaded_data.color_alternate])
-                    except Exception as err:
-                        # todo: need error/status handling
-                        print('Error from catalog read:', err)
-                    else:
-                        self.catalog_markers['primary'] = primary
-                        self.catalog_markers['filler'] = filler
-                        self.catalog_markers[name].visible = True
-                        button.toggle()
-                    finally:
-                        catalog.seek(0)
         else:
             button.toggle()
             if name in self.catalog_markers:
@@ -153,16 +164,15 @@ class ShowOverlays(object):
     def toggle_footprint(self, button, event, data):
         """Toggle footprint visibility."""
         if button.is_active():
-            if self.viewer.state.reference_data is not None:
-                wcs = self.viewer.state.reference_data.coords
-                if wcs is not None and wcs.has_celestial:
-                    button.toggle()
+            if not self.uploaded_data.has_wcs:
+                return
+            button.toggle()
 
-                    if 'NIRS' in button.value:
-                        controls = self.nirspec_controls
-                    else:
-                        controls = self.nircam_controls
-                    self._show_footprint([button.value], controls)
+            if 'NIRS' in button.value:
+                controls = self.nirspec_controls
+            else:
+                controls = self.nircam_controls
+            self._show_footprint([button.value], controls)
         else:
             button.toggle()
             nd.remove_bqplot_patches(self.viewer.figure,
@@ -193,11 +203,9 @@ class ShowOverlays(object):
         controls : novt.interact.ControlInstruments
             Controls widgets associated with the instrument.
         """
-        if self.viewer.state.reference_data is None:
+        if not self.uploaded_data.has_wcs:
             return
         wcs = self.viewer.state.reference_data.coords
-        if wcs is None or not wcs.has_celestial:
-            return
         with nd.hold_all_sync(self.all_patches()):
             for instrument in instruments:
                 # any old patches need to be removed first
@@ -232,11 +240,9 @@ class ShowOverlays(object):
         controls : novt.interact.ControlInstruments
             Controls widgets associated with the instrument.
         """
-        if self.viewer.state.reference_data is None:
+        if not self.uploaded_data.has_wcs:
             return
         wcs = self.viewer.state.reference_data.coords
-        if wcs is None or not wcs.has_celestial:
-            return
         with nd.hold_all_sync(self.all_patches()):
             for instrument in instruments:
                 if instrument in self.footprint_patches:

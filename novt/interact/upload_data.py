@@ -4,7 +4,8 @@ from astropy.io import fits
 
 import ipywidgets as ipw
 import ipyvuetify.extra as ve
-from traitlets import HasTraits, Any, Unicode
+from jdaviz.core.events import SnackbarMessage
+from traitlets import HasTraits, Any, Unicode, Bool
 
 from novt.constants import DEFAULT_COLOR
 
@@ -18,6 +19,8 @@ class UploadData(HasTraits):
     catalog_file = Any(None, allow_none=True).tag(sync=True)
     color_primary = Unicode('orange').tag(sync=True)
     color_alternate = Unicode('purple').tag(sync=True)
+    has_wcs = Bool(False).tag(sync=True)
+    has_catalog = Bool(False).tag(sync=True)
 
     def __init__(self, viz):
         super().__init__(self)
@@ -85,6 +88,8 @@ class UploadData(HasTraits):
         from the viewer. The loaded data remains accessible to the viewer
         and can be manually reloaded by the user if desired.
         """
+        self.has_wcs = False
+
         # watch for uploaded files
         change.owner.disabled = True
         if len(change['old']) > 0:
@@ -108,8 +113,23 @@ class UploadData(HasTraits):
                         try:
                             self.viz.load_data(
                                 hdul, data_label=uploaded_file['name'])
+                            wcs = self.viewer.state.reference_data.coords
+                            if wcs is None or not wcs.has_celestial:
+                                raise ValueError('No WCS')
+                            else:
+                                self.has_wcs = True
+                        except (ValueError, AttributeError):
+                            msg_text = ('No WCS associated with image. '
+                                        'Overlay functions will not be '
+                                        'available.')
+                            msg = SnackbarMessage(msg_text, sender=self,
+                                                  color='warning')
+                            self.viz.app.hub.broadcast(msg)
                         except Exception as err:
-                            print(f'Error loading image: {err}')
+                            msg_text = f'Error loading image: {err}'
+                            msg = SnackbarMessage(msg_text, sender=self,
+                                                  color='warning')
+                            self.viz.app.hub.broadcast(msg)
                     hdul.close()
         change.owner.disabled = False
 
@@ -120,11 +140,14 @@ class UploadData(HasTraits):
         Newly uploaded files are set in the `catalog_file`
         traitlet. If files are removed, the traitlet is set to None.
         """
+        self.has_catalog = False
+
         # watch for uploaded files
         change.owner.disabled = True
         if len(change['new']) > 0:
             uploaded_files = change.owner.get_files()
             if len(uploaded_files) > 0:
+                self.has_catalog = True
                 self.catalog_file = uploaded_files[0]
         elif len(change['old']) > 0:
             self.catalog_file = None

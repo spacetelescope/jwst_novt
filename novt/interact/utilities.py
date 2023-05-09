@@ -3,7 +3,6 @@ import os
 
 import ipywidgets as ipw
 import ipyvuetify as v
-from traitlets import Bool
 
 
 from novt.constants import NOVT_DIR
@@ -29,6 +28,7 @@ class ToggleButton(v.Btn):
         super().__init__(*args, class_='mx-2 my-2 primary active',
                          **kwargs)
         self.alternate_class = 'accent'
+        self.disabled = True
 
     def is_active(self):
         return 'active' in self.class_
@@ -36,6 +36,7 @@ class ToggleButton(v.Btn):
     def reset(self):
         self.class_list.add('active')
         self.class_list.replace(self.alternate_class, 'primary')
+        self.disabled = False
 
     def toggle(self):
         if self.is_active():
