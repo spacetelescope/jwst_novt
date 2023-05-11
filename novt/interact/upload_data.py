@@ -16,6 +16,7 @@ class UploadData(HasTraits):
     """
     Widgets to upload user data files.
     """
+    image_file_name = Any(None, allow_none=True).tag(sync=True)
     catalog_file = Any(None, allow_none=True).tag(sync=True)
     color_primary = Unicode('orange').tag(sync=True)
     color_alternate = Unicode('purple').tag(sync=True)
@@ -89,6 +90,7 @@ class UploadData(HasTraits):
         and can be manually reloaded by the user if desired.
         """
         self.has_wcs = False
+        self.image_file_name = None
 
         # watch for uploaded files
         change.owner.disabled = True
@@ -118,6 +120,7 @@ class UploadData(HasTraits):
                                 raise ValueError('No WCS')
                             else:
                                 self.has_wcs = True
+                                self.image_file_name = uploaded_file['name']
                         except (ValueError, AttributeError):
                             msg_text = ('No WCS associated with image. '
                                         'Overlay functions will not be '

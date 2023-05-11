@@ -2,7 +2,7 @@ import ipywidgets as ipw
 from traitlets import HasTraits, Float, Unicode
 
 from novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC, DEFAULT_COLOR
-from novt.interact.utilities import read_image
+from novt.interact.utils import read_image
 
 __all__ = ['ControlInstruments']
 

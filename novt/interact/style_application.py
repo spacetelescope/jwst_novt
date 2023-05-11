@@ -1,6 +1,6 @@
 import ipywidgets as ipw
 
-from novt.interact.utilities import read_image
+from novt.interact.utils import read_image
 
 __all__ = ['StyleApplication']
 
@@ -10,12 +10,22 @@ class StyleApplication(object):
     Widgets to lay out and style the default application.
     """
     def __init__(self, image_viewer, uploaded_data, nirspec_controls,
-                 nircam_controls, overlay_controls, save_controls,
-                 context='notebook'):
+                 nircam_controls, timeline_controls, overlay_controls,
+                 save_controls, context='notebook'):
 
         # internal data
         self.context = context
-        self.title = 'NIRSpec MOS Pre-Imaging Planner'
+        self.title = 'JWST NIRSpec Observation Visualization Tool (NOVT)'
+
+        # link timeline controls to other changes in app
+        ipw.dlink((nirspec_controls, 'ra'), (timeline_controls, 'ra'))
+        ipw.dlink((nirspec_controls, 'dec'), (timeline_controls, 'dec'))
+        ipw.dlink((nirspec_controls, 'color_primary'),
+                  (timeline_controls, 'nirspec_color'))
+        ipw.dlink((nircam_controls, 'color_primary'),
+                  (timeline_controls, 'nircam_color'))
+        ipw.dlink((uploaded_data, 'image_file_name'),
+                  (timeline_controls, 'center'))
 
         # layouts
         self.row_layout = ipw.Layout(
@@ -48,7 +58,7 @@ class StyleApplication(object):
 
         children = [self.header, uploaded_data.widgets,
                     nirspec_controls.widgets, nircam_controls.widgets,
-                    save_controls.widgets]
+                    timeline_controls.widgets, save_controls.widgets]
         if 'notebook' in self.context:
             # in a notebook, display the viewer inline at
             # 100% of cell width

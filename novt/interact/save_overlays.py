@@ -3,7 +3,7 @@ import ipyvuetify as v
 import regions
 
 from novt import footprints as fp
-from novt.interact.utilities import FileDownloadLink
+from novt.interact.utils import FileDownloadLink
 
 __all__ = ['SaveOverlays']
 

@@ -1,5 +1,15 @@
-from .control_instruments import ControlInstruments  # noqa: F401
-from .save_overlays import SaveOverlays  # noqa: F401
-from .show_overlays import ShowOverlays  # noqa: F401
-from .upload_data import UploadData  # noqa: F401
-from .view_image import ViewImage  # noqa: F401
+import warnings
+
+try:
+    from .display import *  # noqa: F401 F403
+    from .utils import *  # noqa: F401 F403
+    from .control_instruments import *  # noqa: F401 F403
+    from .save_overlays import *  # noqa: F401 F403
+    from .show_overlays import *  # noqa: F401 F403
+    from .show_timeline import *  # noqa: F401 F403
+    from .upload_data import *  # noqa: F401 F403
+    from .view_image import *  # noqa: F401 F403
+except ImportError as err:
+    warnings.warn('Optional display dependencies not present: '
+                  'novt.interact functionality will not work.')
+    warnings.warn(f'Import error: {err}')

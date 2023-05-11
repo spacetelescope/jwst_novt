@@ -31,7 +31,8 @@ class ViewImage(object):
         self.widgets = ipw.Box(children=[style_html, self.app],
                                layout=box_layout)
 
-    def _config(self):
+    @staticmethod
+    def _config():
         """
         Custom configuration for remote viewer.
 

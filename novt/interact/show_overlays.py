@@ -1,8 +1,8 @@
 import ipywidgets as ipw
 from jdaviz.core.events import SnackbarMessage
 
-from novt import display as nd
-from novt.interact.utilities import ToggleButton
+from novt.interact import display as nd
+from novt.interact.utils import ToggleButton
 
 __all__ = ['ShowOverlays']
 
