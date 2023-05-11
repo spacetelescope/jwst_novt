@@ -47,6 +47,10 @@ DEFAULT_COLOR = {
     'NIRCam Long': '#1f77b4',  # tab:blue
     'NIRCam Short': '#2ca02c',  # tab:green
     'Primary Sources': '#ff7f0e',  # tab:orange
-    'Filler Sources': '#9467bd'  # tab:purple
+    'Filler Sources': '#9467bd',  # tab:purple
+    'V3PA': '#7f7f7f'  # tab:gray
 }
-"""dict : Default colors for instrument footprint overlays."""
+"""dict : Default colors for instrument footprint overlays.
+
+Values from defaults in matplotlib.colors.TABLEAU_COLORS.
+"""

@@ -2,6 +2,6 @@
 
 .. automodapi:: novt.footprints
 
-.. automodapi:: novt.display
+.. automodapi:: novt.timeline
 
 .. automodapi:: novt.interact

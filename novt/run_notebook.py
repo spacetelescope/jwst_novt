@@ -2,9 +2,20 @@ import argparse
 import os
 import sys
 import tempfile
+import warnings
 
-from voila.app import Voila
-from voila.configuration import VoilaConfiguration
+try:
+    from voila.app import Voila
+    from voila.configuration import VoilaConfiguration
+except ImportError as err:
+    warnings.warn('Optional dependency `voila` not present: '
+                  'novt.run_notebook functionality will not work.')
+    warnings.warn(f'Import error: {err}')
+    Voila = None
+    VoilaConfiguration = None
+    HAS_VOILA = False
+else:
+    HAS_VOILA = True
 
 from novt.constants import NOVT_DIR
 
@@ -22,6 +33,9 @@ def main(notebook_name):
         existing notebook or else the base name of a notebook installed
         in the novt/notebooks directory.
     """
+    if not HAS_VOILA:
+        sys.exit(1)
+
     # Patterned on Jdaviz CLI script, simplified and adapted for
     # NOVT purposes
     if not os.path.isfile(notebook_name):

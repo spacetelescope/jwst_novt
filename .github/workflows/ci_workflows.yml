@@ -34,14 +34,14 @@ jobs:
         - linux: test-oldestdeps
           python-version: 3.9
         - linux: test
+          python-version: 3.11
+        - linux: test-alldeps
           python-version: 3.9
-        - linux: test
+        - linux: test-alldeps
           python-version: 3.10
-        - linux: test
+        - linux: test-alldeps
           python-version: 3.11
-        - macos: test
+        - macos: test-alldeps
           python-version: 3.11
-        - windows: test
-          python-version: 3.11
-        - linux: test-cov
+        - linux: test-alldeps-cov
           coverage: codecov
