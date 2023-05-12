@@ -7,14 +7,14 @@ import warnings
 try:
     from voila.app import Voila
     from voila.configuration import VoilaConfiguration
-except ImportError as err:
+except ImportError as err:  # pragma: no cover
     warnings.warn(f'Optional dependency `voila` not present: '
                   f'novt.run_notebook functionality will not work. '
                   f'Import error: {err}')
     Voila = None
     VoilaConfiguration = None
     HAS_VOILA = False
-else:
+else:  # pragma: no cover
     HAS_VOILA = True
 
 from novt.constants import NOVT_DIR
@@ -67,7 +67,7 @@ def main(notebook_name):
         os.chdir(start_dir)
 
 
-def _main():
+def _main():  # pragma: no cover
     parser = argparse.ArgumentParser(
         description='Start a NOVT notebook as a Voila application')
 

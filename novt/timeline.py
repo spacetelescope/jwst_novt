@@ -7,11 +7,11 @@ import pandas as pd
 
 try:
     from jwst_gtvt.jwst_tvt import Ephemeris
-except ImportError:
+except ImportError:  # pragma: no cover
     warnings.warn('Missing refactored jwst_gtvt; using local copy.')
     from novt.ephemeris.jwst_tvt import Ephemeris
     GTVT_VERSION = 'local'
-else:
+else:  # pragma: no cover
     GTVT_VERSION = 'released'
 
 from novt.constants import JWST_MINIMUM_DATE, JWST_MAXIMUM_DATE

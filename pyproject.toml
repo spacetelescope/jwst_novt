@@ -42,7 +42,8 @@ display = [
 test = [
     "flake8",
     "pytest",
-    "pytest-coverage"
+    "pytest-coverage",
+    "pytest-mock"
 ]
 docs = [
     "graphviz",
@@ -78,10 +79,12 @@ write_to = "novt/version.py"
 minversion = "2.2"
 testpaths = [
     "novt/tests",
+    "novt/interact/tests"
 ]
 norecursedirs = [
     "build",
     "docs/_build",
+    "novt/ephemeris"
 ]
 astropy_header = "true"
 doctest_plus = "enabled"
@@ -94,6 +97,7 @@ source = ["novt",]
 omit = [
     "novt/tests/*",
     "novt/version*",
+    "novt/ephemeris/*"
 ]
 
 [tool.coverage.report]
@@ -108,4 +112,5 @@ exclude_lines = [
 omit = [
     "novt/tests/*",
     "novt/version*",
+    "novt/ephemeris/*"
 ]

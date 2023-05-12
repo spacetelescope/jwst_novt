@@ -186,7 +186,7 @@ class ControlInstruments(HasTraits):
         else:
             self.pa = angle
 
-    def _set_from_wcs(self, event):
+    def _set_from_wcs(self, *args, **kwargs):
         """Set default RA and Dec from a newly uploaded file."""
         if self.viewer.state.reference_data is not None:
             coords = self.viewer.state.reference_data.coords
