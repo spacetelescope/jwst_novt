@@ -24,8 +24,8 @@ def read_image(image_file, width='100px', height='100px', margin='10px'):
 
 class ToggleButton(v.Btn):
     """Button widget with primary class."""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, class_='mx-2 my-2 primary active',
+    def __init__(self, **kwargs):
+        super().__init__(class_='mx-2 my-2 primary active',
                          **kwargs)
         self.alternate_class = 'accent'
         self.disabled = True

@@ -22,14 +22,17 @@ class SaveOverlays(object):
         # make widgets to display
         self.set_format = ipw.Dropdown(
             description='Region file format', options=self.region_formats,
-            style={'description_width': 'initial'})
+            style={'description_width': 'initial'},
+            tooltip='Text file format for overlay description')
         self.set_coordinates = ipw.Dropdown(
             options=self.coord_options,
-            style={'description_width': 'initial'})
+            style={'description_width': 'initial'},
+            tooltip='Coordinate system for overlay description')
         self.set_filename = ipw.Text(
             description='File name', value='novt_overlays.ds9',
             style={'description_width': 'initial'},
-            layout=ipw.Layout(width='500px'))
+            layout=ipw.Layout(width='500px'),
+            tooltip='File name to assign to downloaded file')
 
         # check coordinate options when format changes
         self.set_format.observe(self._check_format, 'value')

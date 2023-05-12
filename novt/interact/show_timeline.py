@@ -30,20 +30,25 @@ class ShowTimeline(HasTraits):
         # start, end dates
         min_date = datetime.date.fromisoformat(JWST_MINIMUM_DATE)
         max_date = datetime.date.fromisoformat(JWST_MAXIMUM_DATE)
+        today = datetime.date.today()
+        one_year = datetime.date.today() + datetime.timedelta(days=365)
         self.set_start = ipw.DatePicker(
-            description='Start date',
+            description='Start date', value=today,
             style={'description_width': 'initial'},
-            min=min_date, max=max_date)
+            min=min_date, max=max_date,
+            tooltip='Start date for target visibility')
         self.set_end = ipw.DatePicker(
-            description='End date',
+            description='End date', value=one_year,
             style={'description_width': 'initial'},
-            min=min_date, max=max_date)
+            min=min_date, max=max_date,
+            tooltip='End date for target visibility')
 
         # select instrument
         self.set_instrument = ipw.Dropdown(
             description='Instrument',
             options=['NIRSpec, NIRCam', 'NIRSpec', 'NIRCam'],
-            style={'description_width': 'initial'})
+            style={'description_width': 'initial'},
+            tooltip='Instruments to include in plot')
 
         # re-make plot if instrument or dates change
         self.set_start.observe(self._make_timeline, 'value')

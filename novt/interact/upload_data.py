@@ -35,23 +35,32 @@ class UploadData(HasTraits):
         # make widgets to display
         self.image_label = ipw.Label(
             'Image file (.fits):', style={'font_weight': 'bold'},
-            layout=ipw.Layout(width='150px'))
+            layout=ipw.Layout(width='150px'),
+            tooltip='FITS image for display, with associated WCS, in the '
+                    'primary or SCI extension')
         self.image_file_upload = ve.FileInput(
             accept='.fits', multiple=False, layout=ipw.Layout(width='500px'))
 
         self.catalog_label = ipw.Label(
             'Catalog file (.radec):', style={'font_weight': 'bold'},
-            layout=ipw.Layout(width='150px'))
+            layout=ipw.Layout(width='150px'),
+            tooltip="Text file with 2 columns (RA, Dec), "
+                    "or 3 (RA, Dec, Flag), "
+                    "where Flag is 'P' for primary or 'F' for filler sources")
         self.catalog_file_upload = ve.FileInput(
             accept='.radec', multiple=False, layout=ipw.Layout(width='500px'))
 
         self.color_pickers = [
             ipw.ColorPicker(description='Primary source color',
                             value=DEFAULT_COLOR['Primary Sources'],
-                            style={'description_width': 'initial'}),
+                            style={'description_width': 'initial'},
+                            tooltip='Color for primary source catalog '
+                                    'overlays'),
             ipw.ColorPicker(description='Filler source color',
                             value=DEFAULT_COLOR['Filler Sources'],
-                            style={'description_width': 'initial'})
+                            style={'description_width': 'initial'},
+                            tooltip='Color for filler source catalog '
+                                    'overlays')
         ]
         ipw.link((self.color_pickers[0], 'value'),
                  (self, 'color_primary'))

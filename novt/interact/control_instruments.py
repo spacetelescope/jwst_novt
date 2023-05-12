@@ -39,18 +39,22 @@ class ControlInstruments(HasTraits):
             self.logo = read_image('nirspeclogo.png')
 
         # controls for center and position angle
+        five_arcsec = 0.0014
         self.set_ra = ipw.BoundedFloatText(
             description='RA (deg)', min=0, max=360,
-            step=5 / 3600, continuous_update=False,
-            style={'description_width': 'initial'})
+            step=five_arcsec, continuous_update=False,
+            style={'description_width': 'initial'},
+            tooltip='Right ascension coordinate for instrument center')
         self.set_dec = ipw.BoundedFloatText(
             description='Dec (deg)', min=-90, max=90,
-            step=5 / 3600, continuous_update=False,
-            style={'description_width': 'initial'})
+            step=five_arcsec, continuous_update=False,
+            style={'description_width': 'initial'},
+            tooltip='Declination coordinate for instrument center')
         self.set_pa = ipw.FloatText(
             description='PA (deg)',
             step=5, continuous_update=False,
-            style={'description_width': 'initial'})
+            style={'description_width': 'initial'},
+            tooltip='Position angle of vertical axis, from North to East')
 
         ipw.link((self.set_ra, 'value'), (self, 'ra'))
         ipw.link((self.set_dec, 'value'), (self, 'dec'))
@@ -67,24 +71,28 @@ class ControlInstruments(HasTraits):
             self.set_dither = ipw.Dropdown(
                 description='Dither pattern',
                 options=self.dither_values,
-                style={'description_width': 'initial'})
+                style={'description_width': 'initial'},
+                tooltip='Apply a NIRCam dither pattern')
             ipw.link((self.set_dither, 'value'), (self, 'dither'))
             self.set_dither.observe(self._check_mosaic_from_dither, 'value')
 
             self.set_mosaic = ipw.Dropdown(
                 description='Mosaic', options=['No', 'Yes'],
-                style={'description_width': 'initial'})
+                style={'description_width': 'initial'},
+                tooltip='Apply a two-tile NIRCam mosaic')
             ipw.link((self.set_mosaic, 'value'), (self, 'mosaic'))
             self.set_mosaic.observe(self._check_mosaic, 'value')
 
             self.set_mosaic_v2 = ipw.BoundedFloatText(
                 description='Horizontal offset (arcsec)',
                 min=0, max=3600, step=5, continuous_update=False,
-                style={'description_width': 'initial'})
+                style={'description_width': 'initial'},
+                tooltip='V2 distance between mosaic tile centers')
             self.set_mosaic_v3 = ipw.BoundedFloatText(
                 description='Vertical offset (arcsec)',
                 min=0, max=3600, step=5, continuous_update=False,
-                style={'description_width': 'initial'})
+                style={'description_width': 'initial'},
+                tooltip='V3 distance between mosaic tile centers')
             self.set_mosaic_v2.disabled = True
             self.set_mosaic_v3.disabled = True
             ipw.link((self.set_mosaic_v2, 'value'), (self, 'mosaic_v2'))
@@ -94,10 +102,12 @@ class ControlInstruments(HasTraits):
             self.color_pickers = [
                 ipw.ColorPicker(description='Short color',
                                 value=DEFAULT_COLOR['NIRCam Short'],
-                                style={'description_width': 'initial'}),
+                                style={'description_width': 'initial'},
+                                tooltip='Color for NIRCam Short overlays'),
                 ipw.ColorPicker(description='Long color',
                                 value=DEFAULT_COLOR['NIRCam Long'],
-                                style={'description_width': 'initial'})
+                                style={'description_width': 'initial'},
+                                tooltip='Color for NIRCam Long overlays')
             ]
             ipw.link((self.color_pickers[0], 'value'),
                      (self, 'color_primary'))
@@ -114,7 +124,8 @@ class ControlInstruments(HasTraits):
             self.color_pickers = [
                 ipw.ColorPicker(description='Color',
                                 value=DEFAULT_COLOR['NIRSpec'],
-                                style={'description_width': 'initial'})
+                                style={'description_width': 'initial'},
+                                tooltip='Color for NIRSpec overlays')
             ]
             ipw.link((self.color_pickers[0], 'value'), (self, 'color_primary'))
 
@@ -122,7 +133,8 @@ class ControlInstruments(HasTraits):
         self.set_alpha = ipw.BoundedFloatText(
             value=0.1, description='Fill opacity', min=0, max=1,
             step=0.1, continuous_update=False,
-            style={'description_width': 'initial'})
+            style={'description_width': 'initial'},
+            tooltip='Set to 0 for no fill; 1 for opaque overlays')
         ipw.link((self.set_alpha, 'value'), (self, 'alpha'))
 
         # set a callback in the viewer to initialize RA/Dec
