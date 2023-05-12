@@ -54,3 +54,14 @@ DEFAULT_COLOR = {
 
 Values from defaults in matplotlib.colors.TABLEAU_COLORS.
 """
+
+
+JWST_MINIMUM_DATE = '2021-12-26'
+"""str : Minimum available date for JWST ephemeris."""
+
+
+JWST_MAXIMUM_DATE = '2025-05-08'
+"""str : Maximum available date for JWST ephemeris.
+
+See: https://ssd.jpl.nasa.gov/horizons/time_spans.html
+"""

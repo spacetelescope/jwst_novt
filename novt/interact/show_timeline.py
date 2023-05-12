@@ -4,6 +4,7 @@ import ipyvuetify as v
 import ipywidgets as ipw
 from traitlets import HasTraits, Float, Unicode
 
+from novt.constants import JWST_MINIMUM_DATE, JWST_MAXIMUM_DATE
 from novt.interact import display as nd
 
 __all__ = ['ShowTimeline']
@@ -27,12 +28,16 @@ class ShowTimeline(HasTraits):
         self.figure_container = ipw.VBox()
 
         # start, end dates
+        min_date = datetime.date.fromisoformat(JWST_MINIMUM_DATE)
+        max_date = datetime.date.fromisoformat(JWST_MAXIMUM_DATE)
         self.set_start = ipw.DatePicker(
             description='Start date',
-            style={'description_width': 'initial'})
+            style={'description_width': 'initial'},
+            min=min_date, max=max_date)
         self.set_end = ipw.DatePicker(
             description='End date',
-            style={'description_width': 'initial'})
+            style={'description_width': 'initial'},
+            min=min_date, max=max_date)
 
         # select instrument
         self.set_instrument = ipw.Dropdown(
