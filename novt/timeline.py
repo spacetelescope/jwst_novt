@@ -8,10 +8,12 @@ import pandas as pd
 try:
     from jwst_gtvt.jwst_tvt import Ephemeris
 except ImportError:
-    warnings.warn('Missing jwst_gtvt; latest version is required.')
-    HAS_GTVT = False
+    warnings.warn('Missing refactored jwst_gtvt; using local copy.')
+    from novt.ephemeris.jwst_tvt import Ephemeris
+    GTVT_VERSION = 'local'
 else:
-    HAS_GTVT = True
+    GTVT_VERSION = 'released'
+
 
 __all__ = ['timeline']
 
@@ -46,9 +48,10 @@ def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
         and {instrument}_max_PA (maximum PA for instrument),
         where instrument may be NIRCAM, NIRSPEC, or both.
     """
-    if not HAS_GTVT:
-        raise ImportError('Timeline cannot be computed without '
-                          'latest `jwst_gtvt`.')
+    if GTVT_VERSION == 'local':
+        warnings.warn('Timeline should be computed with the '
+                      'refactored `jwst_gtvt` package, when available.',
+                      DeprecationWarning)
 
     # default start date to now
     if start_date is None:
