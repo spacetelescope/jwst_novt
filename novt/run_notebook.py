@@ -8,9 +8,9 @@ try:
     from voila.app import Voila
     from voila.configuration import VoilaConfiguration
 except ImportError as err:
-    warnings.warn('Optional dependency `voila` not present: '
-                  'novt.run_notebook functionality will not work.')
-    warnings.warn(f'Import error: {err}')
+    warnings.warn(f'Optional dependency `voila` not present: '
+                  f'novt.run_notebook functionality will not work. '
+                  f'Import error: {err}')
     Voila = None
     VoilaConfiguration = None
     HAS_VOILA = False

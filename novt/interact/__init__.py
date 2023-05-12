@@ -10,6 +10,6 @@ try:
     from .upload_data import *  # noqa: F401 F403
     from .view_image import *  # noqa: F401 F403
 except ImportError as err:
-    warnings.warn('Optional display dependencies not present: '
-                  'novt.interact functionality will not work.')
-    warnings.warn(f'Import error: {err}')
+    warnings.warn(f'Optional display dependencies not present: '
+                  f'novt.interact functionality will not work.'
+                  f'Import error: {err}')

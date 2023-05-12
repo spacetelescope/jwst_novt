@@ -344,7 +344,8 @@ def bqplot_timeline(fig, ra, dec, start_date=None,
         # add V3PA line if desired
         if show_v3pa and len(marks) == 0:
             color = DEFAULT_COLOR['V3PA']
-            line = bqplot.Lines(x=timeline_data['Time'], y=timeline_data['V3PA'],
+            line = bqplot.Lines(x=timeline_data['Time'],
+                                y=timeline_data['V3PA'],
                                 scales=scales, colors=[color],
                                 labels=['JWST V3 PA'], display_legend=True)
             marks.append(line)
