@@ -5,6 +5,7 @@ from astropy import units as u
 from astropy.stats import circmean
 from astropy.time import Time
 import bqplot
+import ipywidgets as ipw
 import numpy as np
 import pandas as pd
 import regions
@@ -14,7 +15,8 @@ from novt import timeline as tl
 from novt.constants import INSTRUMENT_NAMES, DEFAULT_COLOR
 
 __all__ = ['hold_all_sync', 'bqplot_figure', 'bqplot_footprint',
-           'bqplot_catalog', 'bqplot_timeline', 'remove_bqplot_patches']
+           'bqplot_catalog', 'bqplot_timeline', 'remove_bqplot_patches',
+           'BqplotToolbar']
 
 
 @contextmanager
@@ -37,8 +39,13 @@ def hold_all_sync(marks):
         yield
 
 
-def bqplot_figure():
-    return bqplot.Figure()
+def bqplot_figure(toolbar=False):
+    fig = bqplot.Figure()
+    if toolbar:
+        tools = BqplotToolbar(fig).widgets
+        return fig, tools
+    else:
+        return fig
 
 
 def bqplot_footprint(fig, instrument, ra, dec, pa, wcs,
@@ -370,7 +377,7 @@ def bqplot_timeline(fig, ra, dec, start_date=None,
             marks.append(line)
 
     fig.title = title.rstrip(',')
-    fig.legend_location = 'bottom-left'
+    fig.legend_location = 'top-right'
     fig.marks = marks
     fig.axes = [bqplot.Axis(scale=scales['x'], label='Date'),
                 bqplot.Axis(scale=scales['y'], label='Position Angle (deg)',
@@ -401,3 +408,76 @@ def clear_bqplot_figure(fig):
     fig.marks = []
     fig.axes = []
     setattr(fig, 'axis_registry', {})
+
+
+class BqplotToolbar(object):
+    def __init__(self, fig):
+        self.fig = fig
+
+        self.pan_zoom = None
+        self.direction = None
+        self.fig.observe(self.set_scales, 'axes')
+
+        self.reset_button = ipw.Button(tooltip='Reset plot limits',
+                                       icon='home')
+        self.reset_button.layout.width = '50px'
+        self.reset_button.on_click(self.reset_zoom)
+
+        # note: toggle display doesn't seem to work if buttons
+        # have identical labels, even if their values and icons
+        # are different
+        self.mode_buttons = ipw.ToggleButtons(
+            options=[('', ' '), (' ', 'xy'), ('  ', 'x'), ('   ', 'y')],
+            icons=['stop', 'arrows', 'arrows-h', 'arrows-v', 'stop'],
+            tooltips=['No zoom mode', 'Scroll to zoom, drag to pan',
+                      'Pan/zoom in X only', 'Pan/zoom in Y only'],
+            layout=ipw.Layout(align_items='center'))
+        self.mode_buttons.style.button_width = '50px'
+        self.mode_buttons.observe(self.set_zoom_mode, 'value')
+
+        self.widgets = ipw.VBox(
+            children=[ipw.HBox([self.reset_button, self.mode_buttons])],
+            layout=ipw.Layout(align_items='center'))
+
+    def reset_zoom(self, change):
+        if len(self.fig.axes) != 2:
+            return
+        self.fig.axes[0].scale.min = None
+        self.fig.axes[0].scale.max = None
+        self.fig.axes[1].scale.min = None
+        self.fig.axes[1].scale.max = None
+
+    def set_scales(self, *args, **kwargs):
+        if len(self.fig.axes) != 2:
+            self.mode_buttons.value = ' '
+            return
+
+        x_scale = self.fig.axes[0].scale
+        y_scale = self.fig.axes[1].scale
+        if self.pan_zoom is None:
+            # note: fig.interaction needs to be set only once -
+            # setting to None to turn off interaction disrupts mouse
+            # event handling the next time an interaction is set.
+            # Turn off interaction directly in the PanZoom
+            # instance instead.
+            self.pan_zoom = bqplot.interacts.PanZoom()
+            self.fig.interaction = self.pan_zoom
+        if self.direction == 'x':
+            self.pan_zoom.scales = {'x': [x_scale]}
+            self.pan_zoom.allow_zoom = True
+            self.pan_zoom.allow_pan = True
+        elif self.direction == 'y':
+            self.pan_zoom.scales = {'y': [y_scale]}
+            self.pan_zoom.allow_zoom = True
+            self.pan_zoom.allow_pan = True
+        elif self.direction == 'xy':
+            self.pan_zoom.scales = {'x': [x_scale], 'y': [y_scale]}
+            self.pan_zoom.allow_zoom = True
+            self.pan_zoom.allow_pan = True
+        else:
+            self.pan_zoom.allow_zoom = False
+            self.pan_zoom.allow_pan = False
+
+    def set_zoom_mode(self, *args, **kwargs):
+        self.direction = self.mode_buttons.value
+        self.set_scales()

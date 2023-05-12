@@ -1,3 +1,5 @@
+import datetime
+
 import ipyvuetify as v
 import ipywidgets as ipw
 from traitlets import HasTraits, Float, Unicode
@@ -21,6 +23,7 @@ class ShowTimeline(HasTraits):
 
         # bqplot figure to display
         self.figure = None
+        self.toolbar = None
         self.figure_container = ipw.VBox()
 
         # start, end dates
@@ -42,18 +45,18 @@ class ShowTimeline(HasTraits):
         self.set_end.observe(self._make_timeline, 'value')
         self.set_instrument.observe(self._make_timeline, 'value')
 
-        # make/close plot
+        # make/save/close plot
         self.make_plot = v.Btn(color='primary', class_='mx-2 my-2',
                                children=['Make timeline plot'])
         self.make_plot.on_event('click', self._show_plot)
+
+        self.save_plot = v.Btn(color='primary', class_='mx-2 my-2',
+                               children=['Save plot'])
+        self.save_plot.on_event('click', self._save_plot)
+
         self.close_plot = v.Btn(color='primary', class_='mx-2 my-2',
-                               children=['Close plot'])
+                                children=['Close plot'])
         self.close_plot.on_event('click', self._clear_plot)
-
-        # activate pan/zoom
-        # fig.interaction = bqplot.interacts.panzoom(fig.marks)
-
-        # reset limits
 
         # link color changes to plot update
         self.observe(self._update_colors,
@@ -71,17 +74,12 @@ class ShowTimeline(HasTraits):
         b1 = ipw.Box(children=[self.set_start, self.set_end,
                                self.set_instrument],
                      layout=button_layout)
-        b2 = ipw.Box(children=[self.make_plot, self.close_plot],
+        b2 = ipw.Box(children=[self.make_plot, self.save_plot,
+                               self.close_plot],
                      layout=button_layout)
         box = ipw.Box(children=[b1, b2, self.figure_container],
                       layout=box_layout)
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
-
-    def _show_plot(self, *args, **kwargs):
-        if self.figure is None:
-            self.figure = nd.bqplot_figure()
-        self.figure_container.children = [self.figure]
-        self._make_timeline()
 
     def _clear_plot(self, *args, **kwargs):
         if self.figure is not None:
@@ -92,8 +90,9 @@ class ShowTimeline(HasTraits):
         if self.figure is None or len(self.figure_container.children) == 0:
             return
 
-        self.make_plot.disabled = True
-        self.close_plot.disabled = True
+        controls = [self.make_plot, self.save_plot, self.close_plot]
+        for control in controls:
+            control.disabled = True
         try:
             # check for instrument
             instrument = self.set_instrument.value
@@ -119,8 +118,32 @@ class ShowTimeline(HasTraits):
                                start_date=start_date, end_date=end_date,
                                colors=colors)
         finally:
-            self.make_plot.disabled = False
-            self.close_plot.disabled = False
+            for control in controls:
+                control.disabled = False
+
+    def _save_plot(self, *args, **kwargs):
+        if self.figure is None or len(self.figure_container.children) == 0:
+            return
+
+        start_date = self.set_start.value
+        if start_date is None:
+            start_date = datetime.date.today()
+        filename = f"novt_timeline_{start_date.strftime('%Y%m%d')}"
+
+        end_date = self.set_end.value
+        if end_date is not None:
+            filename += f"-{end_date.strftime('%Y%m%d')}"
+        filename += '.png'
+
+        self.figure.save_png(filename=filename)
+
+    def _show_plot(self, *args, **kwargs):
+        if self.figure is None:
+            self.figure, self.toolbar = nd.bqplot_figure(toolbar=True)
+
+        # center toolbar
+        self.figure_container.children = [self.figure, self.toolbar]
+        self._make_timeline()
 
     def _update_colors(self, *args, **kwargs):
         if self.figure is None:
