@@ -1,5 +1,7 @@
 # Project defaults and fixtures for pytest
-
+import pandas as pd
+from astropy.time import Time
+import numpy as np
 import pytest
 
 
@@ -15,3 +17,42 @@ def catalog_file(tmp_path):
                  '202.47760  47.20205  F  17.32900\n'
                  '202.48415  47.24812  P  17.52500\n')
     return filename
+
+
+@pytest.fixture()
+def catalog_file_2col(tmp_path):
+    filename = tmp_path / 'sources.radec'
+    with open(filename, 'w') as fh:
+        fh.write('202.42053  47.17906\n'
+                 '202.42514  47.29251\n'
+                 '202.45114  47.14672\n'
+                 '202.48190  47.19670\n'
+                 '202.43707  47.16641\n'
+                 '202.47760  47.20205\n'
+                 '202.48415  47.24812\n')
+    return filename
+
+@pytest.fixture
+def timeline_data():
+    times = [Time('2022-01-04'), Time('2022-01-05'),
+             Time('2022-01-06'), Time('2022-01-07'),
+             Time('2022-01-08'), Time('2022-01-09')]
+    v3pa = [np.nan, np.nan,
+            290.5200764854323, 289.6925780758301,
+            288.8617815873458, 288.0274449868331]
+    nrs_min = [np.nan, np.nan,
+               63.88394137790897, 63.04444850978905,
+               62.20105233407935, 61.353514250989974]
+    nrs_max = [np.nan, np.nan,
+               74.3053509929556, 73.48984704187114,
+               72.67165024061228, 71.85051512267626]
+    nrc_min = [np.nan, np.nan,
+               285.238018577909, 284.39852570978906,
+               283.5551295340793, 282.7075914509899]
+    nrc_max = [np.nan, np.nan,
+               295.6594281929556, 294.84392424187115,
+               294.02572744061223, 293.2045923226762]
+    return pd.DataFrame({
+        'Time': times, 'V3PA': v3pa,
+        'NIRSPEC_min_PA': nrs_min, 'NIRSPEC_max_PA': nrs_max,
+        'NIRCAM_min_PA': nrc_min, 'NIRCAM_max_PA': nrc_max,})

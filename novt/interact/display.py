@@ -331,9 +331,12 @@ def _average_pa(time_data, min_pa, max_pa, min_time=None, max_time=None,
 
     if method == 'mode':
         nnan = ~np.isnan(all_pa[0]) | ~np.isnan(all_pa[1])
-        all_pa = circmean(all_pa[:, nnan], axis=0).value
-        val, ct = np.unique(np.round(all_pa).astype(int), return_counts=True)
-        avg_pa = (val[ct.argmax()] + 360) % 360
+        if np.sum(nnan) > 0:
+            all_pa = circmean(all_pa[:, nnan], axis=0).value
+            val, ct = np.unique(np.round(all_pa).astype(int), return_counts=True)
+            avg_pa = (val[ct.argmax()] + 360) % 360
+        else:
+            avg_pa = np.nan
     else:
         nnan = ~np.isnan(all_pa)
         avg_pa = (circmean(all_pa[nnan]).value + 360) % 360
@@ -345,9 +348,8 @@ def _average_pa(time_data, min_pa, max_pa, min_time=None, max_time=None,
     return pa_label
 
 
-def bqplot_timeline(fig, ra, dec, start_date=None,
-                    end_date=None, instrument=None,
-                    show_v3pa=True, colors=None):
+def bqplot_timeline(fig, ra, dec, start_date=None, end_date=None,
+                    instrument=None, show_v3pa=False, colors=None):
     """
     Plot a visibility timeline in a bqplot figure.
 
@@ -514,7 +516,7 @@ class BqplotToolbar(object):
         self.fig = fig
 
         self.pan_zoom = None
-        self.direction = None
+        self.direction = ' '
         self.fig.observe(self.set_scales, 'axes')
 
         self.reset_button = ipw.Button(tooltip='Reset plot limits',

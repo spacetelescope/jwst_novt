@@ -83,3 +83,27 @@ def test_source_catalog(catalog_file):
     assert isinstance(filler, regions.Regions)
     assert len(primary) == 2
     assert len(filler) == 5
+
+
+def test_source_catalog_2col(catalog_file_2col):
+    primary, filler = fp.source_catalog(catalog_file_2col)
+    assert isinstance(primary, regions.Regions)
+    assert isinstance(filler, regions.Regions)
+    assert len(primary) == 7
+    assert len(filler) == 0
+
+
+def test_source_catalog_errors(tmp_path):
+    # empty catalog: raises value error
+    bad_cat = tmp_path / 'empty.txt'
+    bad_cat.write_text('')
+    with pytest.raises(ValueError) as err:
+        fp.source_catalog(str(bad_cat))
+    assert 'file is empty' in str(err)
+
+    # bad catalog: raises value error for unexpected columns
+    bad_cat = tmp_path / 'bad_file.txt'
+    bad_cat.write_text('bad')
+    with pytest.raises(ValueError) as err:
+        fp.source_catalog(str(bad_cat))
+    assert 'expected 2' in str(err)

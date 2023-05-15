@@ -34,7 +34,7 @@ def test_timeline_instrument_dates(inst, pa):
 
     # okay start and end dates
     df = tl.timeline(ra, dec, start_date=Time('2022-01-05'),
-                     end_date=Time('2022-01-07'), instrument=inst)
+                     end_date=Time('2022-01-09'), instrument=inst)
     assert len(df) > 0
 
     # expected position angle for this date

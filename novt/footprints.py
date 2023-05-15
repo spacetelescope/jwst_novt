@@ -340,8 +340,28 @@ def source_catalog(catalog_file):
         sky coordinates.
     """
     # load the source catalog
-    catalog = pd.read_table(catalog_file, names=['ra', 'dec', 'flag'],
-                            delim_whitespace=True, usecols=[0, 1, 2])
+    try:
+        catalog = pd.read_table(catalog_file, names=['ra', 'dec', 'flag'],
+                                delim_whitespace=True, usecols=[0, 1, 2])
+    except ValueError:
+        # if the catalog file is a file object, it may need to be rewound
+        # before reading again
+        try:
+            catalog_file.seek(0)
+        except AttributeError:
+            pass
+
+        catalog = pd.read_table(catalog_file, names=['ra', 'dec'],
+                                delim_whitespace=True, usecols=[0, 1])
+        catalog['flag'] = 'P'
+    finally:
+        try:
+            catalog_file.seek(0)
+        except AttributeError:
+            pass
+
+    if len(catalog.index) == 0:
+        raise ValueError('Catalog file is empty.')
 
     filler = (catalog['flag'] == 'F')
     primary = ~filler
