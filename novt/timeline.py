@@ -56,7 +56,7 @@ def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
 
     # default start date to now
     if start_date is None:
-        start_date = Time(datetime.datetime.now())
+        start_date = Time.now()
 
     # default end date to start date + one year
     if end_date is None:
@@ -65,7 +65,7 @@ def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
     # check for reasonable values
     if end_date <= start_date:
         raise ValueError('End date must be later than start date.')
-    if start_date < Time(JWST_MINIMUM_DATE):
+    if start_date < Time(JWST_MINIMUM_DATE) - datetime.timedelta(days=1):
         raise ValueError(f'No JWST ephemeris available prior '
                          f'to {JWST_MINIMUM_DATE}')
     if end_date > Time(JWST_MAXIMUM_DATE):

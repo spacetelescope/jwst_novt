@@ -56,7 +56,7 @@ Values from defaults in matplotlib.colors.TABLEAU_COLORS.
 """
 
 
-JWST_MINIMUM_DATE = '2021-12-26'
+JWST_MINIMUM_DATE = '2021-12-27'
 """str : Minimum available date for JWST ephemeris."""
 
 

@@ -1,4 +1,6 @@
 from contextlib import contextmanager, ExitStack
+from functools import partial
+import datetime
 import re
 
 from astropy import units as u
@@ -40,6 +42,24 @@ def hold_all_sync(marks):
 
 
 def bqplot_figure(toolbar=False):
+    """
+    Make a bqplot figure.
+
+    Parameters
+    ----------
+    toolbar : bool, optional
+        If set, a custom toolbar widget is generated, associated
+        with the new figure, and returned along with the figure
+        instance.
+
+    Returns
+    -------
+    fig : bqplot.Figure
+        An empty top-level bqplot figure.
+    tools : BqplotToolbar, optional
+        A widget containing controls to reset plot limits and enable pan/zoom
+        in x/y, x, or y directions. Returned if `toolbar` is set.
+    """
     fig = bqplot.Figure()
     if toolbar:
         tools = BqplotToolbar(fig).widgets
@@ -300,9 +320,72 @@ def bqplot_catalog(fig, catalog_file, wcs,
     return primary_markers, filler_markers
 
 
+def _average_pa(time_data, min_pa, max_pa, min_time=None, max_time=None,
+                method='mean'):
+    """Describe the average PA value within a specified time range."""
+    if min_time is not None and max_time is not None:
+        in_range = (time_data >= min_time) & (time_data <= max_time)
+        all_pa = np.array([min_pa[in_range], max_pa[in_range]]) * u.deg
+    else:
+        all_pa = np.array([min_pa, max_pa]) * u.deg
+
+    if method == 'mode':
+        nnan = ~np.isnan(all_pa[0]) | ~np.isnan(all_pa[1])
+        all_pa = circmean(all_pa[:, nnan], axis=0).value
+        val, ct = np.unique(np.round(all_pa).astype(int), return_counts=True)
+        avg_pa = (val[ct.argmax()] + 360) % 360
+    else:
+        nnan = ~np.isnan(all_pa)
+        avg_pa = (circmean(all_pa[nnan]).value + 360) % 360
+
+    if np.isnan(avg_pa):
+        pa_label = '(not visible)'
+    else:
+        pa_label = f'Avg. PA: {avg_pa:.0f} deg'
+    return pa_label
+
+
 def bqplot_timeline(fig, ra, dec, start_date=None,
                     end_date=None, instrument=None,
-                    colors=None, show_v3pa=False):
+                    show_v3pa=True, colors=None):
+    """
+    Plot a visibility timeline in a bqplot figure.
+
+    Visibility and position angle data at the specified target,
+    between the start and end dates, is calculated in `novt.timeline`.
+    This calculation retrieves ephemeris data from JPL Horizons, so it
+    requires an internet connection to run and may take some time to
+    return. The plot will display a temporary message while the
+    calculation is running. If no data is returned, it will show an
+    error message. If timeline data is returned, the plot will show
+    available position angle ranges for the specified instrument(s)
+    over the specified dates.
+
+    Parameters
+    ----------
+    fig : bqplot.Figure
+        The bqplot figure to contain the plot.
+    ra : float
+        RA of instrument center, in degrees.
+    dec : float
+        Dec of instrument center, in degrees.
+    start_date : str, optional
+        Start date, specified as YYYY-MM-DD. If not specified, today's
+        date is used as default.
+    end_date : str, optional
+        End date, specified as YYYY-MM-DD. If not specified, the default
+        is start_date + 1 year.
+    instrument : {'NIRSpec', 'NIRCam'}, optional
+        The instrument to display. If not specified, both instruments
+        are shown.
+    show_v3pa : bool, optional
+        If set, the V3 position angle for JWST is shown on the plot,
+        as a gray line.
+    colors : list or tuple of str, optional
+        Colors to apply to the plot. If not specified, default
+        colors are applied. If both instruments are requested, colors
+        should be specified as (NIRSpec color, NIRCam color).
+    """
 
     # clear figure and set loading message
     clear_bqplot_figure(fig)
@@ -311,7 +394,7 @@ def bqplot_timeline(fig, ra, dec, start_date=None,
     fig.marks = [message]
 
     if start_date is not None:
-        start_date = Time(start_date)
+        start_date = Time(start_date) - datetime.timedelta(days=1)
     if end_date is not None:
         end_date = Time(end_date)
 
@@ -361,21 +444,25 @@ def bqplot_timeline(fig, ra, dec, start_date=None,
 
             min_pa = timeline_data[f'{inst.upper()}_min_PA']
             max_pa = timeline_data[f'{inst.upper()}_max_PA']
-
-            all_pa = np.array((min_pa + max_pa) / 2) * u.deg
-            nnan = ~np.isnan(all_pa)
-            avg_pa = (circmean(all_pa[nnan]).value + 360) % 360
-            if np.isnan(avg_pa):
-                pa_label = '(not visible)'
-            else:
-                pa_label = f'Avg. PA: {avg_pa:.0f} deg'
-
+            avg_pa = _average_pa(timeline_data['Time'], min_pa, max_pa)
             line = bqplot.Lines(x=timeline_data['Time'], y=[min_pa, max_pa],
                                 scales=scales, colors=[color], fill='between',
                                 fill_opacities=[0.5],
-                                labels=[inst, pa_label],
+                                labels=[inst, avg_pa],
                                 display_legend=True)
             marks.append(line)
+
+            # add a little callback to update the legend with the
+            # average PA value in range, when the plot is zoomed
+            def _set_pa_label(inst_, line_, *args):
+                pa_label = _average_pa(
+                    timeline_data['Time'],
+                    timeline_data[f'{inst_.upper()}_min_PA'],
+                    timeline_data[f'{inst_.upper()}_max_PA'],
+                    scales['x'].min, scales['x'].max)
+                line_.labels = [inst_, pa_label]
+            scales['x'].observe(partial(_set_pa_label, inst, line),
+                                names=['max'])
 
     fig.title = title.rstrip(',')
     fig.legend_location = 'top-right'
@@ -406,12 +493,23 @@ def remove_bqplot_patches(fig, patches):
 
 
 def clear_bqplot_figure(fig):
+    """Clear a bqplot figure."""
     fig.marks = []
     fig.axes = []
     setattr(fig, 'axis_registry', {})
 
 
 class BqplotToolbar(object):
+    """
+    Custom toolbar with reset and zoom controls.
+
+    Pan/zoom controls can be toggled between x-axis only, y-axis only,
+    both axes, and no zoom. A reset button (home icon) resets plot limits
+    to default.
+
+    After creation, widgets are contained in a VBox layout in the `widgets`
+    attribute.
+    """
     def __init__(self, fig):
         self.fig = fig
 
@@ -440,7 +538,8 @@ class BqplotToolbar(object):
             children=[ipw.HBox([self.reset_button, self.mode_buttons])],
             layout=ipw.Layout(align_items='center'))
 
-    def reset_zoom(self, change):
+    def reset_zoom(self, *args, **kwargs):
+        """Reset the plot limits."""
         if len(self.fig.axes) != 2:
             return
         self.fig.axes[0].scale.min = None
@@ -449,6 +548,7 @@ class BqplotToolbar(object):
         self.fig.axes[1].scale.max = None
 
     def set_scales(self, *args, **kwargs):
+        """Set the axis scales (x, y, or both) in the pan/zoom tool."""
         if len(self.fig.axes) != 2:
             self.mode_buttons.value = ' '
             return
@@ -480,5 +580,6 @@ class BqplotToolbar(object):
             self.pan_zoom.allow_pan = False
 
     def set_zoom_mode(self, *args, **kwargs):
+        """Set the zoom mode (x, y, both, or None)."""
         self.direction = self.mode_buttons.value
         self.set_scales()
