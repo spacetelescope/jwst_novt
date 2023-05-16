@@ -440,7 +440,7 @@ def bqplot_timeline(fig, ra, dec, start_date=None, end_date=None,
                 if inst == 'NIRSpec':
                     color = DEFAULT_COLOR[inst]
                 else:
-                    color = DEFAULT_COLOR['NIRCam Long']
+                    color = DEFAULT_COLOR['NIRCam Short']
             else:
                 color = colors[i]
 

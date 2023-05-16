@@ -34,9 +34,6 @@ class SaveOverlays(object):
             layout=ipw.Layout(width='500px'),
             tooltip='File name to assign to downloaded file')
 
-        # check coordinate options when format changes
-        self.set_format.observe(self._check_format, 'value')
-
         # save buttons: one to make region file and update link to download,
         # another to trigger download
         # (both at once is not currently possible)
@@ -65,13 +62,7 @@ class SaveOverlays(object):
                       layout=box_layout)
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
-    def _check_format(self, change):
-        if change['new'] == 'fits':
-            self.set_coordinates.options = ['pixel coordinates']
-        else:
-            self.set_coordinates.options = self.coord_options
-
-    def _make_regions(self, widget, event, data):
+    def _make_regions(self, *args, **kwargs):
         """
         Save regions to a local file.
         """
@@ -114,7 +105,7 @@ class SaveOverlays(object):
                 dec = controls.dec
                 pa = controls.pa
                 dither_pattern = controls.dither
-                add_mosaic = controls.mosaic,
+                add_mosaic = (controls.mosaic == 'Yes')
                 mosaic_offset = (controls.mosaic_v2, controls.mosaic_v3)
                 regs = fp.nircam_dither_footprint(
                     ra, dec, pa, channel=channel,
@@ -136,8 +127,11 @@ class SaveOverlays(object):
         if any(test_catalogs) and cat_file is not None:
             try:
                 primary, filler = fp.source_catalog(cat_file['file_obj'])
-            finally:
-                cat_file['file_obj'].seek(0)
+            finally:  # pragma: no cover
+                try:
+                    cat_file['file_obj'].seek(0)
+                except Exception:
+                    pass
             if 'primary' in cat_markers and cat_markers['primary'].visible:
                 colors['primary'] = cat_colors[0]
                 markers['primary'] = 'circle'

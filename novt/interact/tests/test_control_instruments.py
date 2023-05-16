@@ -3,11 +3,9 @@ import pytest
 
 try:
     import ipywidgets as ipw
-    import jdaviz
     from novt.interact import control_instruments as u
 except ImportError:
     ipw = None
-    jdaviz = None
     u = None
     HAS_DISPLAY = False
 else:

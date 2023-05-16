@@ -1,14 +1,15 @@
 from contextlib import contextmanager
 
 from astropy.time import Time
-import bqplot
 from astropy.wcs import WCS
 import pytest
 
 try:
+    import bqplot
     import ipywidgets as ipw
     from novt.interact import display as u
 except ImportError:
+    bqplot = None
     ipw = None
     u = None
     HAS_DISPLAY = False
@@ -201,13 +202,13 @@ class TestDisplay(object):
         if inst is None:
             assert len(fig.marks) == 2
             assert fig.marks[0].colors == [DEFAULT_COLOR['NIRSpec']]
-            assert fig.marks[1].colors == [DEFAULT_COLOR['NIRCam Long']]
+            assert fig.marks[1].colors == [DEFAULT_COLOR['NIRCam Short']]
         elif inst == 'NIRSpec':
             assert len(fig.marks) == 1
             assert fig.marks[0].colors == [DEFAULT_COLOR['NIRSpec']]
         else:
             assert len(fig.marks) == 1
-            assert fig.marks[0].colors == [DEFAULT_COLOR['NIRCam Long']]
+            assert fig.marks[0].colors == [DEFAULT_COLOR['NIRCam Short']]
 
     @pytest.mark.parametrize('inst,v3pa,n_plot',
                              [(None, False, 2), (None, True, 3),

@@ -47,7 +47,7 @@ class ShowOverlays(object):
                                           names=['ra', 'dec', 'pa',
                                                  'color_primary', 'alpha'])
         if self.nircam_controls is not None:
-            self.instruments.extend(['NIRCam Long', 'NIRCam Short'])
+            self.instruments.extend(['NIRCam Short', 'NIRCam Long'])
             self.nircam_controls.observe(self.update_nircam_footprint,
                                          names=['ra', 'dec', 'pa',
                                                 'color_primary',
@@ -80,6 +80,8 @@ class ShowOverlays(object):
         for instrument in self.footprint_patches:
             nd.remove_bqplot_patches(self.viewer.figure,
                                      self.footprint_patches[instrument])
+        self.footprint_patches = {}
+
         for button in self.footprint_buttons:
             if self.uploaded_data.has_wcs:
                 button.reset()
@@ -88,6 +90,47 @@ class ShowOverlays(object):
 
         # also clear catalog
         self.clear_catalog()
+
+    def _load_catalog(self):
+        """
+        Load catalog from file.
+
+        Returns
+        -------
+        status : bool
+            True if load succeeded, False otherwise
+        """
+        available = (self.uploaded_data.has_wcs
+                     and self.uploaded_data.has_catalog)
+        if not available:
+            return False
+
+        status = True
+        wcs = self.viewer.state.reference_data.coords
+        catalog_file = self.uploaded_data.catalog_file
+        if catalog_file is not None:
+            catalog = catalog_file['file_obj']
+            try:
+                primary, filler = nd.bqplot_catalog(
+                    self.viewer.figure, catalog, wcs,
+                    visible=False,
+                    colors=[self.uploaded_data.color_primary,
+                            self.uploaded_data.color_alternate])
+            except Exception as err:
+                status = False
+                msg_text = f'Error reading catalog: {err}'
+                msg = SnackbarMessage(msg_text, sender=self,
+                                      color='warning')
+                self.viz.app.hub.broadcast(msg)
+            else:
+                self.catalog_markers['primary'] = primary
+                self.catalog_markers['filler'] = filler
+            finally:  # pragma: no cover
+                try:
+                    catalog.seek(0)
+                except Exception:
+                    pass
+        return status
 
     def clear_catalog(self, *args):
         """
@@ -103,32 +146,8 @@ class ShowOverlays(object):
                 self.viewer.figure, [self.catalog_markers['filler']])
             del self.catalog_markers['filler']
 
-        available = (self.uploaded_data.has_wcs
-                     and self.uploaded_data.has_catalog)
-
         # load catalog if it is available
-        if available:
-            wcs = self.viewer.state.reference_data.coords
-            catalog_file = self.uploaded_data.catalog_file
-            if catalog_file is not None:
-                catalog = catalog_file['file_obj']
-                try:
-                    primary, filler = nd.bqplot_catalog(
-                        self.viewer.figure, catalog, wcs,
-                        visible=False,
-                        colors=[self.uploaded_data.color_primary,
-                                self.uploaded_data.color_alternate])
-                except Exception as err:
-                    available = False
-                    msg_text = f'Error reading catalog: {err}'
-                    msg = SnackbarMessage(msg_text, sender=self,
-                                          color='warning')
-                    self.viz.app.hub.broadcast(msg)
-                else:
-                    self.catalog_markers['primary'] = primary
-                    self.catalog_markers['filler'] = filler
-                finally:
-                    catalog.seek(0)
+        available = self._load_catalog()
 
         # enable buttons only if catalog is available
         for button in self.catalog_buttons:

@@ -1,11 +1,12 @@
 # Project defaults and fixtures for pytest
-import pandas as pd
 from astropy.time import Time
+from astropy.wcs import WCS
 import numpy as np
+import pandas as pd
 import pytest
 
 
-@pytest.fixture()
+@pytest.fixture
 def catalog_file(tmp_path):
     filename = tmp_path / 'sources.radec'
     with open(filename, 'w') as fh:
@@ -19,9 +20,9 @@ def catalog_file(tmp_path):
     return filename
 
 
-@pytest.fixture()
+@pytest.fixture
 def catalog_file_2col(tmp_path):
-    filename = tmp_path / 'sources.radec'
+    filename = tmp_path / 'sources_2col.radec'
     with open(filename, 'w') as fh:
         fh.write('202.42053  47.17906\n'
                  '202.42514  47.29251\n'
@@ -31,6 +32,14 @@ def catalog_file_2col(tmp_path):
                  '202.47760  47.20205\n'
                  '202.48415  47.24812\n')
     return filename
+
+
+@pytest.fixture
+def bad_catalog_file(tmp_path):
+    filename = tmp_path / 'bad.radec'
+    filename.write_text('bad\n')
+    return filename
+
 
 @pytest.fixture
 def timeline_data():
@@ -56,3 +65,19 @@ def timeline_data():
         'Time': times, 'V3PA': v3pa,
         'NIRSPEC_min_PA': nrs_min, 'NIRSPEC_max_PA': nrs_max,
         'NIRCAM_min_PA': nrc_min, 'NIRCAM_max_PA': nrc_max,})
+
+
+@pytest.fixture
+def image_2d_wcs():
+    return WCS({'CTYPE1': 'RA---TAN', 'CUNIT1': 'deg',
+                'CDELT1': -0.0002777777778,
+                'CRPIX1': 1, 'CRVAL1': 202.4695898,
+                'CTYPE2': 'DEC--TAN', 'CUNIT2': 'deg',
+                'CDELT2': 0.0002777777778,
+                'CRPIX2': 1, 'CRVAL2': 47.1951868})
+
+
+@pytest.fixture
+def bad_wcs():
+    return WCS({'CDELT1': 1, 'CRPIX1': 1, 'CRVAL1': 1,
+                'CDELT2': 1, 'CRPIX2': 1, 'CRVAL2': 1})
