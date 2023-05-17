@@ -7,6 +7,7 @@ try:
     from .save_overlays import *  # noqa: F401 F403
     from .show_overlays import *  # noqa: F401 F403
     from .show_timeline import *  # noqa: F401 F403
+    from .style_application import *  # noqa: F401 F403
     from .upload_data import *  # noqa: F401 F403
     from .view_image import *  # noqa: F401 F403
 except ImportError as err:

@@ -4,7 +4,7 @@ import ipyvuetify as v
 import ipywidgets as ipw
 from traitlets import HasTraits, Float, Unicode
 
-from novt.constants import JWST_MINIMUM_DATE, JWST_MAXIMUM_DATE
+from novt.constants import JWST_MINIMUM_DATE, JWST_MAXIMUM_DATE, DEFAULT_COLOR
 from novt.interact import display as nd
 
 __all__ = ['ShowTimeline']
@@ -14,8 +14,8 @@ class ShowTimeline(HasTraits):
     center = Unicode(None, allow_none=True).tag(sync=True)
     ra = Float(0.0).tag(sync=True)
     dec = Float(0.0).tag(sync=True)
-    nirspec_color = Unicode('red').tag(sync=True)
-    nircam_color = Unicode('blue').tag(sync=True)
+    nirspec_color = Unicode(DEFAULT_COLOR['NIRSpec']).tag(sync=True)
+    nircam_color = Unicode(DEFAULT_COLOR['NIRCam Short']).tag(sync=True)
 
     def __init__(self):
         super().__init__()

@@ -1,4 +1,5 @@
 # Project defaults and fixtures for pytest
+from astropy.io import fits
 from astropy.time import Time
 from astropy.wcs import WCS
 import numpy as np
@@ -81,3 +82,22 @@ def image_2d_wcs():
 def bad_wcs():
     return WCS({'CDELT1': 1, 'CRPIX1': 1, 'CRVAL1': 1,
                 'CDELT2': 1, 'CRPIX2': 1, 'CRVAL2': 1})
+
+
+@pytest.fixture
+def image_file(tmp_path, image_2d_wcs):
+    hdul = fits.HDUList(fits.PrimaryHDU(np.zeros((10, 10)),
+                                        header=image_2d_wcs.to_header()))
+    filename = tmp_path / 'image.fits'
+    hdul.writeto(str(filename), overwrite=True)
+    hdul.close()
+    return filename
+
+
+@pytest.fixture
+def image_file_no_wcs(tmp_path):
+    hdul = fits.HDUList(fits.PrimaryHDU(np.zeros((10, 10))))
+    filename = tmp_path / 'image_no_wcs.fits'
+    hdul.writeto(str(filename), overwrite=True)
+    hdul.close()
+    return filename

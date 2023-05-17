@@ -68,3 +68,7 @@ class TestSaveOverlays(object):
         overlay_controls.viewer.state.reference_data = None
         so._make_regions()
         assert so.file_link.url == even_more_reg
+
+        # link is cleared after clicking on it
+        so.file_link.clear_link()
+        assert so.file_link.url == ''

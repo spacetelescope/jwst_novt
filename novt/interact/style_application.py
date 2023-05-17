@@ -17,15 +17,25 @@ class StyleApplication(object):
         self.context = context
         self.title = 'JWST NIRSpec Observation Visualization Tool (NOVT)'
 
+        # store all the control widgets
+        self.image_viewer = image_viewer
+        self.uploaded_data = uploaded_data
+        self.nirspec_controls = nirspec_controls
+        self.nircam_controls = nircam_controls
+        self.timeline_controls = timeline_controls
+        self.save_controls = save_controls
+
         # link timeline controls to other changes in app
-        ipw.dlink((nirspec_controls, 'ra'), (timeline_controls, 'ra'))
-        ipw.dlink((nirspec_controls, 'dec'), (timeline_controls, 'dec'))
-        ipw.dlink((nirspec_controls, 'color_primary'),
-                  (timeline_controls, 'nirspec_color'))
-        ipw.dlink((nircam_controls, 'color_primary'),
-                  (timeline_controls, 'nircam_color'))
-        ipw.dlink((uploaded_data, 'image_file_name'),
-                  (timeline_controls, 'center'))
+        ipw.dlink((self.nirspec_controls, 'ra'),
+                  (self.timeline_controls, 'ra'))
+        ipw.dlink((self.nirspec_controls, 'dec'),
+                  (self.timeline_controls, 'dec'))
+        ipw.dlink((self.nirspec_controls, 'color_primary'),
+                  (self.timeline_controls, 'nirspec_color'))
+        ipw.dlink((self.nircam_controls, 'color_primary'),
+                  (self.timeline_controls, 'nircam_color'))
+        ipw.dlink((self.uploaded_data, 'image_file_name'),
+                  (self.timeline_controls, 'center'))
 
         # layouts
         self.row_layout = ipw.Layout(

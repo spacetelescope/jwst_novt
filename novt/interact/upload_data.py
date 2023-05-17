@@ -16,7 +16,7 @@ class UploadData(HasTraits):
     """
     Widgets to upload user data files.
     """
-    image_file_name = Any(None, allow_none=True).tag(sync=True)
+    image_file_name = Unicode(None, allow_none=True).tag(sync=True)
     catalog_file = Any(None, allow_none=True).tag(sync=True)
     color_primary = Unicode('orange').tag(sync=True)
     color_alternate = Unicode('purple').tag(sync=True)
@@ -102,7 +102,7 @@ class UploadData(HasTraits):
         self.image_file_name = None
 
         # watch for uploaded files
-        change.owner.disabled = True
+        change['owner'].disabled = True
         if len(change['old']) > 0:
             # clear any removed data from viewer
             for old_file in change['old']:
@@ -113,15 +113,16 @@ class UploadData(HasTraits):
                         self.viz.app.data_collection.remove(data_set)
                 del self.image_files[old_file['name']]
         if len(change['new']) > 0:
-            uploaded_files = change.owner.get_files()
+            uploaded_files = change['owner'].get_files()
             if len(uploaded_files) > 0:
                 for uploaded_file in uploaded_files:
                     self.image_files[uploaded_file['name']] = uploaded_file
 
-                    hdul = fits.open(uploaded_file['file_obj'])
+                    hdul = None
                     with warnings.catch_warnings():
                         warnings.simplefilter('ignore')
                         try:
+                            hdul = fits.open(uploaded_file['file_obj'])
                             self.viz.load_data(
                                 hdul, data_label=uploaded_file['name'])
                             wcs = self.viewer.state.reference_data.coords
@@ -142,8 +143,10 @@ class UploadData(HasTraits):
                             msg = SnackbarMessage(msg_text, sender=self,
                                                   color='warning')
                             self.viz.app.hub.broadcast(msg)
-                    hdul.close()
-        change.owner.disabled = False
+                        finally:
+                            if hdul is not None:
+                                hdul.close()
+        change['owner'].disabled = False
 
     def load_catalog(self, change):
         """
@@ -155,12 +158,12 @@ class UploadData(HasTraits):
         self.has_catalog = False
 
         # watch for uploaded files
-        change.owner.disabled = True
+        change['owner'].disabled = True
         if len(change['new']) > 0:
-            uploaded_files = change.owner.get_files()
+            uploaded_files = change['owner'].get_files()
             if len(uploaded_files) > 0:
                 self.has_catalog = True
                 self.catalog_file = uploaded_files[0]
         elif len(change['old']) > 0:
             self.catalog_file = None
-        change.owner.disabled = False
+        change['owner'].disabled = False
