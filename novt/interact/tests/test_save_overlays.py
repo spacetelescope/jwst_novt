@@ -17,7 +17,8 @@ class TestSaveOverlays(object):
         so = u.SaveOverlays(overlay_controls)
         assert isinstance(so.widgets, ipw.Widget)
 
-    @pytest.mark.parametrize('coords', ['pixel coordinates', 'sky coordinates'])
+    @pytest.mark.parametrize('coords', ['pixel coordinates',
+                                        'sky coordinates'])
     def test_make_regions(self, overlay_controls, catalog_file,
                           bad_wcs, coords):
         so = u.SaveOverlays(overlay_controls)

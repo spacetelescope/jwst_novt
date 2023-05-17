@@ -11,6 +11,9 @@ __all__ = ['ShowTimeline']
 
 
 class ShowTimeline(HasTraits):
+    """
+    Widgets to control showing and updating a visibility timeline plot.
+    """
     center = Unicode(None, allow_none=True).tag(sync=True)
     ra = Float(0.0).tag(sync=True)
     dec = Float(0.0).tag(sync=True)
@@ -92,11 +95,13 @@ class ShowTimeline(HasTraits):
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
     def _clear_plot(self, *args, **kwargs):
+        """Clear and hide the current figure."""
         if self.figure is not None:
             nd.clear_bqplot_figure(self.figure)
         self.figure_container.children = []
 
     def _make_timeline(self, *args, **kwargs):
+        """Make a timeline plot."""
         if self.figure is None or len(self.figure_container.children) == 0:
             return
 
@@ -132,6 +137,7 @@ class ShowTimeline(HasTraits):
                 control.disabled = False
 
     def _save_plot(self, *args, **kwargs):
+        """Download a PNG image of the current plot."""
         if self.figure is None or len(self.figure_container.children) == 0:
             return
 
@@ -148,6 +154,7 @@ class ShowTimeline(HasTraits):
         self.figure.save_png(filename=filename)
 
     def _show_plot(self, *args, **kwargs):
+        """Show the figure window and make a timeline plot."""
         if self.figure is None:
             self.figure, self.toolbar = nd.bqplot_figure(toolbar=True)
 
@@ -156,6 +163,7 @@ class ShowTimeline(HasTraits):
         self._make_timeline()
 
     def _update_colors(self, *args, **kwargs):
+        """Update colors in the current plot."""
         if self.figure is None:
             return
         instrument = self.set_instrument.value

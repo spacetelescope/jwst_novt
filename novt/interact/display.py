@@ -333,7 +333,8 @@ def _average_pa(time_data, min_pa, max_pa, min_time=None, max_time=None,
         nnan = ~np.isnan(all_pa[0]) | ~np.isnan(all_pa[1])
         if np.sum(nnan) > 0:
             all_pa = circmean(all_pa[:, nnan], axis=0).value
-            val, ct = np.unique(np.round(all_pa).astype(int), return_counts=True)
+            val, ct = np.unique(np.round(all_pa).astype(int),
+                                return_counts=True)
             avg_pa = (val[ct.argmax()] + 360) % 360
         else:
             avg_pa = np.nan

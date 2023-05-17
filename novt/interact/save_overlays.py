@@ -63,9 +63,7 @@ class SaveOverlays(object):
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
     def _make_regions(self, *args, **kwargs):
-        """
-        Save regions to a local file.
-        """
+        """Save regions to a local file."""
         try:
             wcs = self.show_overlays.viewer.state.reference_data.coords
         except AttributeError:

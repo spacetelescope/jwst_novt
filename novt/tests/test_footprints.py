@@ -38,7 +38,8 @@ def test_instrument_footprints(instrument, n_reg):
                           ('long', 'FULL3', False, (0, 0), 3 * 2 + 1),
                           ('long', 'FULL3', True, (20, 20), 2 * 3 * 2 + 1),
                           ('long', 'FULL3TIGHT', False, (0, 0), 3 * 2 + 1),
-                          ('long', 'FULL3TIGHT', True, (20, 20), 2 * 3 * 2 + 1),
+                          ('long', 'FULL3TIGHT', True, (20, 20),
+                           2 * 3 * 2 + 1),
                           ('long', 'FULL6', False, (0, 0), 6 * 2 + 1),
                           ('long', 'FULL6', True, (20, 20), 2 * 6 * 2 + 1),
                           # mosaics not allowed for 8nirspec
