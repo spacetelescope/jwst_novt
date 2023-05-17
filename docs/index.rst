@@ -1,11 +1,13 @@
-******************
-NOVT Documentation
-******************
+.. include:: README.rst
 
-TBD
+.. toctree::
+   :hidden:
+   :maxdepth: 2
 
-Submodules
-==========
+   README
+
+Reference/API
+-------------
 
 .. toctree::
    :maxdepth: 2

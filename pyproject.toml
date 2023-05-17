@@ -30,7 +30,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-display = [
+interact = [
     "bqplot>=0.12.37",
     "ipykernel>=6.19.4",
     "ipyvuetify>=1.7.0",
