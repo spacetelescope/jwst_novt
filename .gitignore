@@ -58,3 +58,6 @@ pip-wheel-metadata/
 
 # Mac OSX
 .DS_Store
+
+# Files saved by local notebook runs
+novt/notebooks/*.reg

@@ -12,12 +12,13 @@ __all__ = ['nirspec_footprint', 'nircam_short_footprint',
            'source_catalog']
 
 
-def nirspec_footprint(ra, dec, pa, include_center=True):
+def nirspec_footprint(ra, dec, pa, include_center=True, apertures=None):
     """
     Create NIRSpec footprint regions in sky coordinates.
 
     The MSA center and PA offset angle are determined from the
-    NRS_FULL_MSA aperture.  Apertures appearing in the footprint are:
+    NRS_FULL_MSA aperture.  Apertures appearing in the footprint are,
+    by default:
 
         - NRS_FULL_MSA1
         - NRS_FULL_MSA2
@@ -42,6 +43,8 @@ def nirspec_footprint(ra, dec, pa, include_center=True):
     include_center : bool, optional
         If set, the center is marked with a Point region. If not,
         only the apertures are included in the output.
+    apertures : list of str, optional
+        If set, only the specified apertures are returned.
 
     Returns
     -------
@@ -50,6 +53,13 @@ def nirspec_footprint(ra, dec, pa, include_center=True):
         region; all other apertures are marked with Polygon regions.
         Output regions are in sky coordinates.
     """
+    if apertures is None:
+        apertures = ['NRS_FULL_MSA1', 'NRS_FULL_MSA2',
+                     'NRS_FULL_MSA3', 'NRS_FULL_MSA4',
+                     'NRS_FULL_IFU', 'NRS_FULL_IFU',
+                     'NRS_S400A1_SLIT', 'NRS_S400A1_SLIT',
+                     'NRS_S200A2_SLIT', 'NRS_S200B1_SLIT']
+
     # Siaf interface for NIRSpec
     nirspec = pysiaf.Siaf('NIRSpec')
 
@@ -69,11 +79,7 @@ def nirspec_footprint(ra, dec, pa, include_center=True):
     if include_center:
         nrs_regions.append(regions.PointSkyRegion(
             coordinates.SkyCoord(ra, dec, unit='deg')))
-    for aperture_name in ['NRS_FULL_MSA1', 'NRS_FULL_MSA2',
-                          'NRS_FULL_MSA3', 'NRS_FULL_MSA4',
-                          'NRS_FULL_IFU', 'NRS_FULL_IFU',
-                          'NRS_S400A1_SLIT', 'NRS_S400A1_SLIT',
-                          'NRS_S200A2_SLIT', 'NRS_S200B1_SLIT']:
+    for aperture_name in apertures:
         aperture = nirspec.apertures[aperture_name]
         aperture.set_attitude_matrix(attmat)
         poly_points = aperture.closed_polygon_points('sky')
@@ -87,12 +93,13 @@ def nirspec_footprint(ra, dec, pa, include_center=True):
 
 
 def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
-                           include_center=True):
+                           include_center=True, apertures=None):
     """
     Create NIRCam short channel footprint regions in sky coordinates.
 
     The NIRCam center and PA offset angle are determined from the
-    NRCALL_FULL aperture.  Apertures appearing in the footprint are:
+    NRCALL_FULL aperture.  Apertures appearing in the footprint are,
+    by default:
 
         - NRCA1_FULL
         - NRCA2_FULL
@@ -121,6 +128,8 @@ def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
     include_center : bool, optional
         If set, the center is marked with a Point region. If not,
         only the apertures are included in the output.
+    apertures : list of str, optional
+        If set, only the specified apertures are returned.
 
     Returns
     -------
@@ -129,6 +138,10 @@ def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
         region; all other apertures are marked with Polygon regions.
         Output regions are in sky coordinates.
     """
+    if apertures is None:
+        apertures = ['NRCA1_FULL', 'NRCA2_FULL', 'NRCA3_FULL', 'NRCA4_FULL',
+                     'NRCB1_FULL', 'NRCB2_FULL', 'NRCB3_FULL', 'NRCB4_FULL']
+
     # Siaf interface for NIRCam
     nircam = pysiaf.Siaf('NIRCam')
 
@@ -148,10 +161,8 @@ def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
     if include_center:
         nrc_regions.append(regions.PointSkyRegion(
             coordinates.SkyCoord(ra, dec, unit='deg')))
-    for aperture_name in ['NRCA1_FULL', 'NRCA2_FULL',
-                          'NRCA3_FULL', 'NRCA4_FULL',
-                          'NRCB1_FULL', 'NRCB2_FULL',
-                          'NRCB3_FULL', 'NRCB4_FULL']:
+
+    for aperture_name in apertures:
         aperture = nircam.apertures[aperture_name]
         aperture.set_attitude_matrix(attmat)
         poly_points = aperture.closed_polygon_points('sky')
@@ -165,7 +176,7 @@ def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
 
 
 def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
-                          include_center=True):
+                          include_center=True, apertures=None):
     """
     Create NIRCam long channel footprint regions in sky coordinates.
 
@@ -193,6 +204,8 @@ def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
     include_center : bool, optional
         If set, the center is marked with a Point region. If not,
         only the apertures are included in the output.
+    apertures : list of str, optional
+        If set, only the specified apertures are returned.
 
     Returns
     -------
@@ -201,6 +214,9 @@ def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
         region; all other apertures are marked with Polygon regions.
         Output regions are in sky coordinates.
     """
+    if apertures is None:
+        apertures = ['NRCA5_FULL', 'NRCB5_FULL']
+
     # Siaf interface for NIRCam
     nircam = pysiaf.Siaf('NIRCam')
 
@@ -220,7 +236,7 @@ def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
     if include_center:
         nrc_regions.append(regions.PointSkyRegion(
             coordinates.SkyCoord(ra, dec, unit='deg')))
-    for aperture_name in ['NRCA5_FULL', 'NRCB5_FULL']:
+    for aperture_name in apertures:
         aperture = nircam.apertures[aperture_name]
         aperture.set_attitude_matrix(attmat)
         poly_points = aperture.closed_polygon_points('sky')
@@ -235,7 +251,8 @@ def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
 
 def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
                             channel='long', add_mosaic=False,
-                            mosaic_offset=None):
+                            mosaic_offset=None, include_center=True,
+                            apertures=None):
     """
     Dither and/or mosaic the NIRCam aperture footprint.
 
@@ -262,6 +279,11 @@ def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
         the pointing center: the mosaic position will be at the center +/-
         offset / 2. Ignored if `dither_pattern` is 8NIRSPEC or `instrument`
         is NIRSpec or `add_mosaic` is not set.
+    include_center : bool, optional
+        If set, the center is marked with a Point region. If not,
+        only the apertures are included in the output.
+    apertures : list of str, optional
+        If set, only the specified apertures are returned.
 
     Returns
     -------
@@ -295,14 +317,14 @@ def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
         center_offset = [(0, 0)]
 
     dithers = []
-    include_center = True
     for mosaic_position in center_offset:
         for offset in dither_offsets:
             v2 = offset[0] + mosaic_position[0]
             v3 = offset[1] + mosaic_position[1]
             reg_list = footprint_func(ra, dec, pa,
                                       v2_offset=v2, v3_offset=v3,
-                                      include_center=include_center)
+                                      include_center=include_center,
+                                      apertures=apertures)
             # include center only once
             include_center = False
 
@@ -329,8 +351,9 @@ def source_catalog(catalog_file):
 
     Parameters
     ----------
-    catalog_file : str
-        Path to a .radec catalog file.
+    catalog_file : str or pandas.DataFrame
+        Path to a .radec catalog file or a DataFrame containing columns
+        'ra', 'dec', and optionally, 'flag'.
 
     Returns
     -------
@@ -340,14 +363,19 @@ def source_catalog(catalog_file):
         sky coordinates.
     """
     # load the source catalog
-    try:
-        catalog = pd.read_table(catalog_file, names=['ra', 'dec', 'flag'],
-                                delim_whitespace=True, usecols=[0, 1, 2])
-    except ValueError:
-        # try again with two columns
-        catalog = pd.read_table(catalog_file, names=['ra', 'dec'],
-                                delim_whitespace=True, usecols=[0, 1])
-        catalog['flag'] = 'P'
+    if isinstance(catalog_file, pd.DataFrame):
+        catalog = catalog_file
+        if 'flag' not in catalog:
+            catalog['flag'] = 'P'
+    else:
+        try:
+            catalog = pd.read_table(catalog_file, names=['ra', 'dec', 'flag'],
+                                    delim_whitespace=True, usecols=[0, 1, 2])
+        except ValueError:
+            # try again with two columns
+            catalog = pd.read_table(catalog_file, names=['ra', 'dec'],
+                                    delim_whitespace=True, usecols=[0, 1])
+            catalog['flag'] = 'P'
 
     if len(catalog.index) == 0:
         raise ValueError('Catalog file is empty.')

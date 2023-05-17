@@ -36,6 +36,23 @@ def catalog_file_2col(tmp_path):
 
 
 @pytest.fixture
+def catalog_dataframe():
+    return pd.DataFrame({'ra': [202.42053, 202.42514, 202.45114, 202.48190,
+                                202.43707, 202.47760, 202.48415],
+                         'dec': [47.17906, 47.29251, 47.14672, 47.19670,
+                                 47.16641, 47.20205, 47.24812],
+                         'flag': ['F', 'P', 'F', 'F', 'F', 'F', 'P']})
+
+
+@pytest.fixture
+def catalog_dataframe_2col():
+    return pd.DataFrame({'ra': [202.42053, 202.42514, 202.45114, 202.48190,
+                                202.43707, 202.47760, 202.48415],
+                         'dec': [47.17906, 47.29251, 47.14672, 47.19670,
+                                 47.16641, 47.20205, 47.24812]})
+
+
+@pytest.fixture
 def bad_catalog_file(tmp_path):
     filename = tmp_path / 'bad.radec'
     filename.write_text('bad\n')

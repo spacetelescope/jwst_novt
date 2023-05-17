@@ -78,16 +78,26 @@ def test_nircam_dithers(channel, dither, mosaic, offsets, n_reg):
             assert isinstance(r, regions.PolygonSkyRegion)
 
 
-def test_source_catalog(catalog_file):
-    primary, filler = fp.source_catalog(catalog_file)
+@pytest.mark.parametrize('in_file', [True, False])
+def test_source_catalog(catalog_file, catalog_dataframe, in_file):
+    if in_file:
+        catalog = catalog_file
+    else:
+        catalog = catalog_dataframe
+    primary, filler = fp.source_catalog(catalog)
     assert isinstance(primary, regions.Regions)
     assert isinstance(filler, regions.Regions)
     assert len(primary) == 2
     assert len(filler) == 5
 
 
-def test_source_catalog_2col(catalog_file_2col):
-    primary, filler = fp.source_catalog(catalog_file_2col)
+@pytest.mark.parametrize('in_file', [True, False])
+def test_source_catalog(catalog_file_2col, catalog_dataframe_2col, in_file):
+    if in_file:
+        catalog = catalog_file_2col
+    else:
+        catalog = catalog_dataframe_2col
+    primary, filler = fp.source_catalog(catalog)
     assert isinstance(primary, regions.Regions)
     assert isinstance(filler, regions.Regions)
     assert len(primary) == 7
