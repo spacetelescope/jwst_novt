@@ -63,6 +63,11 @@ class ShowOverlays(object):
         for name in self.instruments:
             button = ToggleButton(children=[name], value=name)
             button.on_event('click', self.toggle_footprint)
+
+            # if uploaded data already has a wcs, reset the button state
+            if uploaded_data.has_wcs:
+                button.reset()
+
             self.footprint_buttons.append(button)
 
         # layout widgets
@@ -109,7 +114,11 @@ class ShowOverlays(object):
         wcs = self.viewer.state.reference_data.coords
         catalog_file = self.uploaded_data.catalog_file
         if catalog_file is not None:
-            catalog = catalog_file['file_obj']
+            if isinstance(catalog_file, str):
+                # assume it's a path to a file on disk
+                catalog = catalog_file
+            else:
+                catalog = catalog_file['file_obj']
             try:
                 primary, filler = nd.bqplot_catalog(
                     self.viewer.figure, catalog, wcs,

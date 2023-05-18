@@ -69,14 +69,17 @@ class TestControlInstrument(object):
         assert ci.ra == 0
         assert ci.dec == 0
 
+        # no effect with no wcs
         ci._set_from_wcs()
         assert np.allclose(ci.ra, 0)
         assert np.allclose(ci.dec, 0)
 
+        # if imviz already has data, ra and dec are pre-populated
         ci = u.ControlInstruments('test', loaded_imviz)
-        assert ci.ra == 0
-        assert ci.dec == 0
+        assert ci.ra == 202.4695898
+        assert ci.dec == 47.1951868
 
+        # calling again has no further effect
         ci._set_from_wcs()
         assert np.allclose(ci.ra, 202.4695898)
         assert np.allclose(ci.dec, 47.1951868)

@@ -43,7 +43,7 @@ class SaveOverlays(object):
         self.save_file = v.Btn(
             class_='mx-2 my-2', children=[self.file_link])
 
-        self.make_file.on_event('click', self._make_regions)
+        self.make_file.on_event('click', self.make_regions)
         self.save_file.on_event('click', self.file_link.clear_link)
 
         # layout widgets
@@ -62,8 +62,16 @@ class SaveOverlays(object):
                       layout=box_layout)
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
-    def _make_regions(self, *args, **kwargs):
-        """Save regions to a local file."""
+    def make_regions(self, *args, **kwargs):
+        """
+        Save regions to a local file.
+
+        Returns
+        -------
+        all_regions : regions.Regions
+            All created astropy regions. Instrument sets are tagged.
+            Colors are set in the style metadata.
+        """
         try:
             wcs = self.show_overlays.viewer.state.reference_data.coords
         except AttributeError:
@@ -113,6 +121,7 @@ class SaveOverlays(object):
 
             for region in regs:
                 region.meta['tag'] = [instrument]
+                region.style = {'color': colors[instrument]}
                 if coord == 'pixel':
                     region = region.to_pixel(wcs)
                 all_regions.append(region)
@@ -123,18 +132,25 @@ class SaveOverlays(object):
                       self.show_overlays.uploaded_data.color_alternate,]
         test_catalogs = [p.visible for p in cat_markers.values()]
         if any(test_catalogs) and cat_file is not None:
-            try:
-                primary, filler = fp.source_catalog(cat_file['file_obj'])
-            finally:  # pragma: no cover
+            primary, filler = [], []
+            if isinstance(cat_file, str):
+                # assume it is a file name
+                primary, filler = fp.source_catalog(cat_file)
+            else:
                 try:
-                    cat_file['file_obj'].seek(0)
-                except Exception:
-                    pass
+                    primary, filler = fp.source_catalog(cat_file['file_obj'])
+                finally:  # pragma: no cover
+                    try:
+                        cat_file['file_obj'].seek(0)
+                    except Exception:
+                        pass
+
             if 'primary' in cat_markers and cat_markers['primary'].visible:
                 colors['primary'] = cat_colors[0]
                 markers['primary'] = 'circle'
                 for region in primary:
                     region.meta['tag'] = ['primary']
+                    region.style = {'color': colors['primary']}
                     if coord == 'pixel':
                         region = region.to_pixel(wcs)
                     all_regions.append(region)
@@ -143,12 +159,13 @@ class SaveOverlays(object):
                 markers['filler'] = 'circle'
                 for region in filler:
                     region.meta['tag'] = ['filler']
+                    region.style = {'color': colors['filler']}
                     if coord == 'pixel':
                         region = region.to_pixel(wcs)
                     all_regions.append(region)
 
+        all_regions = regions.Regions(all_regions)
         if len(all_regions) > 0:
-            all_regions = regions.Regions(all_regions)
             region_text = all_regions.serialize(format=file_format)
 
             # patch color and marker into text, based on tag
@@ -160,3 +177,5 @@ class SaveOverlays(object):
 
             filename = self.set_filename.value
             self.file_link.edit_link(filename, region_text)
+
+        return all_regions

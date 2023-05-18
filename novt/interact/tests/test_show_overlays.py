@@ -37,6 +37,17 @@ class TestShowOverlays(object):
         assert isinstance(so.widgets, ipw.Widget)
         assert so.instruments == []
 
+    def test_init_preloaded(self, loaded_imviz, uploaded_data,
+                            nirspec_controls, nircam_controls):
+        uploaded_data.has_wcs = True
+        so = u.ShowOverlays(loaded_imviz, uploaded_data,
+                            nirspec=nirspec_controls,
+                            nircam=nircam_controls)
+
+        # buttons should be pre-enabled
+        for btn in so.footprint_buttons:
+            assert not btn.disabled
+
     def test_clear_overlays(self, overlay_controls):
         # show nirspec overlay
         overlay_controls._show_footprint(

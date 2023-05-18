@@ -92,7 +92,8 @@ def test_source_catalog(catalog_file, catalog_dataframe, in_file):
 
 
 @pytest.mark.parametrize('in_file', [True, False])
-def test_source_catalog(catalog_file_2col, catalog_dataframe_2col, in_file):
+def test_source_catalog_2col(catalog_file_2col, catalog_dataframe_2col,
+                             in_file):
     if in_file:
         catalog = catalog_file_2col
     else:

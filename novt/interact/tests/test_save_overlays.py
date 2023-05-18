@@ -28,7 +28,7 @@ class TestSaveOverlays(object):
         assert so.file_link.url == ''
 
         # no overlays shown, nothing happens
-        so._make_regions()
+        so.make_regions()
         assert so.file_link.url == ''
 
         # turn on a nirspec overlay
@@ -36,7 +36,7 @@ class TestSaveOverlays(object):
         overlay_controls.toggle_footprint(button, None, None)
 
         # file link is updated with downloadable data
-        so._make_regions()
+        so.make_regions()
         assert so.file_link.url.startswith('data:text/plain')
         one_reg = so.file_link.url
 
@@ -47,7 +47,7 @@ class TestSaveOverlays(object):
         button = overlay_controls.footprint_buttons[2]
         overlay_controls.toggle_footprint(button, None, None)
 
-        so._make_regions()
+        so.make_regions()
         assert so.file_link.url.startswith('data:text/plain')
         more_reg = so.file_link.url
         assert len(more_reg) > len(one_reg)
@@ -57,18 +57,28 @@ class TestSaveOverlays(object):
         for button in overlay_controls.catalog_buttons:
             overlay_controls.toggle_catalog(button, None, None)
 
-        so._make_regions()
+        so.make_regions()
         assert so.file_link.url.startswith('data:text/plain')
         even_more_reg = so.file_link.url
         assert len(even_more_reg) > len(more_reg)
 
+        # catalog file can also be a path to a file
+        overlay_controls.uploaded_data.catalog_file = str(catalog_file)
+        for button in overlay_controls.catalog_buttons:
+            overlay_controls.toggle_catalog(button, None, None)
+
+        so.make_regions()
+        assert so.file_link.url.startswith('data:text/plain')
+        same_reg = so.file_link.url
+        assert same_reg == even_more_reg
+
         # if wcs is bad, nothing happens
         overlay_controls.viewer.state.reference_data.coords = bad_wcs
-        so._make_regions()
-        assert so.file_link.url == even_more_reg
+        so.make_regions()
+        assert so.file_link.url == same_reg
         overlay_controls.viewer.state.reference_data = None
-        so._make_regions()
-        assert so.file_link.url == even_more_reg
+        so.make_regions()
+        assert so.file_link.url == same_reg
 
         # link is cleared after clicking on it
         so.file_link.clear_link()

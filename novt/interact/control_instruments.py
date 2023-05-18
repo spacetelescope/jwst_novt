@@ -141,6 +141,9 @@ class ControlInstruments(HasTraits):
         # from WCS on data load
         self.viewer.state.add_callback('reference_data', self._set_from_wcs)
 
+        # also call it now in case viewer already has data loaded
+        self._set_from_wcs()
+
         # layout widgets
         row_layout = ipw.Layout(display='flex', flex_flow='row',
                                 justify_content='flex-start',
