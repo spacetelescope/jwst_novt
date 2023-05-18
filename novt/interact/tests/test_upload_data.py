@@ -129,3 +129,33 @@ class TestUploadData(object):
         ud.load_catalog(change)
         assert not ud.has_catalog
         assert ud.catalog_file is None
+
+    def test_upload_config(self, mocker, imviz, config_file):
+        ud = u.UploadData(imviz, allow_configuration=True)
+        assert ud.config_file_upload is not None
+        assert len(ud.configuration) == 0
+
+        # bad config file - nothing happens
+        file_info = {'name': 'bad',
+                     'file_obj': 'bad'}
+        mocker.patch.object(ud.catalog_file_upload, 'get_files',
+                            return_value=[file_info])
+        change = {'new': [file_info], 'old': [],
+                  'owner': ud.catalog_file_upload}
+        ud.load_config(change)
+        assert len(ud.configuration) == 0
+
+        # upload a good config file
+        cfg_name = os.path.basename(config_file)
+        with open(config_file) as fh:
+            file_info = {'name': cfg_name,
+                         'file_obj': fh}
+            mocker.patch.object(ud.catalog_file_upload, 'get_files',
+                                return_value=[file_info])
+            change = {'new': [file_info], 'old': [],
+                      'owner': ud.catalog_file_upload}
+            ud.load_config(change)
+
+        # config dict is now in the configuration attribute
+        assert len(ud.configuration) > 0
+        assert ud.configuration['catalog']['color_primary'] == 'orange'

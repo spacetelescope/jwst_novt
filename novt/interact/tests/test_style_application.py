@@ -49,3 +49,27 @@ class TestStyleApplication(object):
         # from uploaded data
         application_style.uploaded_data.image_file_name = 'test'
         assert application_style.timeline_controls.center == 'test'
+
+    def test_update_from_config(self, application_style):
+        orig_dec = application_style.nirspec_controls.dec
+
+        # update config in uploaded data
+        application_style.uploaded_data.configuration = {
+            'nirspec': {'ra': 100.0, 'color_primary': 'red',
+                        'bad': 'ignored', 'dec': 'also ignored'}}
+
+        # nirspec control should be updated
+        assert application_style.nirspec_controls.ra == 100.0
+        assert application_style.nirspec_controls.color_primary == 'red'
+        assert not hasattr(application_style.nirspec_controls, 'bad')
+        assert application_style.nirspec_controls.dec == orig_dec
+
+    def test_update_to_config(self, application_style):
+        # update control value
+        application_style.nirspec_controls.ra = 100.0
+        application_style.nirspec_controls.color_primary = 'red'
+
+        # config should be updated
+        assert application_style.uploaded_data.configuration == {
+            'nirspec': {'ra': 100.0, 'color_primary': 'red'},
+            'timeline': {'ra': 100.0}}

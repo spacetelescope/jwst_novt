@@ -150,9 +150,11 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs,
 
     if not isinstance(add_mosaic, bool):
         if str(add_mosaic).lower() in {'no', 'false', '0', 'none'}:
-            add_mosaic = False
+            mosaic = False
         else:
-            add_mosaic = True
+            mosaic = True
+    else:
+        mosaic = add_mosaic
 
     # get footprint configuration by instrument
     if color is None:
@@ -167,7 +169,7 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs,
         regs = fp.nircam_dither_footprint(
             ra, dec, pa, channel=channel,
             dither_pattern=dither_pattern,
-            add_mosaic=add_mosaic,
+            add_mosaic=mosaic,
             mosaic_offset=mosaic_offset)
 
     # get scales from figure

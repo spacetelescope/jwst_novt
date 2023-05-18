@@ -195,8 +195,8 @@ class ControlInstruments(HasTraits):
             coords = self.viewer.state.reference_data.coords
             if coords is not None:
                 ra, dec = coords.wcs.crval
-                self.ra = ra
-                self.dec = dec
+                self.ra = float(ra)
+                self.dec = float(dec)
 
     def _check_mosaic_from_dither(self, change):
         """Enable or disable mosaic buttons based on dither value."""

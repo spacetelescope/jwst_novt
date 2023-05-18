@@ -1,3 +1,4 @@
+import yaml
 from astropy.nddata import NDData
 import numpy as np
 import pytest
@@ -84,3 +85,16 @@ def application_style(image_viewer, uploaded_data, nirspec_controls,
     return StyleApplication(
         image_viewer, uploaded_data, nirspec_controls, nircam_controls,
         timeline_controls, overlay_controls, save_controls)
+
+
+@pytest.fixture
+def config_file(tmp_path):
+    config = {'nirspec': {'color_primary': 'red'},
+              'nircam': {'dither': 'FULL3', 'pa': 25.0},
+              'timeline': {'start_date': '2022-01-01'},
+              'save': {'region_filename': 'test.reg'},
+              'catalog': {'color_primary': 'orange'}}
+    outfile = tmp_path / 'config.yaml'
+    with open(outfile, 'w') as fh:
+        yaml.dump(config, fh)
+    return outfile

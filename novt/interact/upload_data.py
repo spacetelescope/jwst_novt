@@ -1,11 +1,11 @@
 import warnings
 
 from astropy.io import fits
-
 import ipywidgets as ipw
 import ipyvuetify.extra as ve
 from jdaviz.core.events import SnackbarMessage
-from traitlets import HasTraits, Any, Unicode, Bool
+from traitlets import HasTraits, Any, Unicode, Bool, Dict
+import yaml
 
 from novt.constants import DEFAULT_COLOR
 
@@ -22,8 +22,9 @@ class UploadData(HasTraits):
     color_alternate = Unicode('purple').tag(sync=True)
     has_wcs = Bool(False).tag(sync=True)
     has_catalog = Bool(False).tag(sync=True)
+    configuration = Dict(dict()).tag(sync=True)
 
-    def __init__(self, viz):
+    def __init__(self, viz, allow_configuration=False):
         super().__init__(self)
 
         # internal data
@@ -49,6 +50,19 @@ class UploadData(HasTraits):
                     "where Flag is 'P' for primary or 'F' for filler sources")
         self.catalog_file_upload = ve.FileInput(
             accept='.radec', multiple=False, layout=ipw.Layout(width='500px'))
+
+        if allow_configuration:
+            self.config_label = ipw.Label(
+                'Config file (.yaml):', style={'font_weight': 'bold'},
+                layout=ipw.Layout(width='150px'),
+                tooltip="YAML file specifying field values for "
+                        "NOVT configuration.")
+            self.config_file_upload = ve.FileInput(
+                accept='.yaml', multiple=False,
+                layout=ipw.Layout(width='500px'))
+        else:
+            self.config_label = None
+            self.config_file_upload = None
 
         self.color_pickers = [
             ipw.ColorPicker(description='Primary source color',
@@ -78,17 +92,27 @@ class UploadData(HasTraits):
                      layout=button_layout)
         b2 = ipw.Box(children=[self.catalog_label, self.catalog_file_upload],
                      layout=button_layout)
+        children = [b1, b2]
+        if allow_configuration:
+            b3 = ipw.Box(children=[self.config_label, self.config_file_upload],
+                         layout=button_layout)
+            children.append(b3)
+
         appearance_tab = ipw.Accordion(
             children=[ipw.Box(children=self.color_pickers,
                               layout=button_layout)],
             titles=['Appearance'])
+        children.append(appearance_tab)
 
-        box = ipw.Box(children=[b1, b2, appearance_tab], layout=box_layout)
+        box = ipw.Box(children=children, layout=box_layout)
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
         # connect callbacks
         self.image_file_upload.observe(self.load_image, names='file_info')
         self.catalog_file_upload.observe(self.load_catalog, names='file_info')
+        if allow_configuration:
+            self.config_file_upload.observe(
+                self.load_config, names='file_info')
 
     def load_image(self, change):
         """
@@ -166,4 +190,27 @@ class UploadData(HasTraits):
                 self.catalog_file = uploaded_files[0]
         elif len(change['old']) > 0:
             self.catalog_file = None
+        change['owner'].disabled = False
+
+    def load_config(self, change):
+        """
+        Watch for newly uploaded or removed configuration files.
+
+        Newly uploaded files are immediately read in to the configuration
+        traitlet. If files are removed, the traitlet is set to None.
+        """
+        # watch for new files
+        change['owner'].disabled = True
+        if len(change['new']) > 0:
+            uploaded_files = change['owner'].get_files()
+            if len(uploaded_files) > 0:
+                try:
+                    new_config = yaml.safe_load(uploaded_files[0]['file_obj'])
+                    self.configuration = new_config
+                except Exception as err:
+                    msg_text = f'Error loading configuration: {err}'
+                    msg = SnackbarMessage(msg_text, sender=self,
+                                          color='warning')
+                    self.viz.app.hub.broadcast(msg)
+
         change['owner'].disabled = False

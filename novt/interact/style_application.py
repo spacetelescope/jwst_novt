@@ -1,6 +1,10 @@
+import copy
+
 import ipywidgets as ipw
+from traitlets import TraitError
 
 from novt.interact.utils import read_image
+from novt.constants import CONFIGURABLE
 
 __all__ = ['StyleApplication']
 
@@ -36,6 +40,16 @@ class StyleApplication(object):
                   (self.timeline_controls, 'nircam_color'))
         ipw.dlink((self.uploaded_data, 'image_file_name'),
                   (self.timeline_controls, 'center'))
+
+        # link configuration upload to controls
+        self.uploaded_data.observe(self.update_from_config, 'configuration')
+
+        # link controls to config dict
+        self.uploaded_data.observe(self.update_to_config)
+        self.nirspec_controls.observe(self.update_to_config)
+        self.nircam_controls.observe(self.update_to_config)
+        self.timeline_controls.observe(self.update_to_config)
+        self.save_controls.observe(self.update_to_config)
 
         # layouts
         self.row_layout = ipw.Layout(
@@ -95,3 +109,37 @@ class StyleApplication(object):
             width=width, padding='0px', margin='0px')
 
         self.widgets = ipw.Box(children=children, layout=self.top_layout)
+
+    def update_from_config(self, *args, **kwargs):
+        """Update control values from input configuration."""
+        config = copy.deepcopy(self.uploaded_data.configuration)
+
+        controls = {'nirspec': self.nirspec_controls,
+                    'nircam': self.nircam_controls,
+                    'catalog': self.uploaded_data,
+                    'timeline': self.timeline_controls,
+                    'save': self.save_controls}
+        for section in config:
+            for key, value in config[section].items():
+                control = controls[section]
+                if control.has_trait(key):
+                    try:
+                        setattr(control, key, value)
+                    except (AttributeError, ValueError, TypeError, TraitError):
+                        continue
+
+    def update_to_config(self, change):
+        """Update configuration dictionary from changed control values."""
+        config = self.uploaded_data.configuration
+        sections = {'nirspec': self.nirspec_controls,
+                    'nircam': self.nircam_controls,
+                    'catalog': self.uploaded_data,
+                    'timeline': self.timeline_controls,
+                    'save': self.save_controls}
+        for section, control in sections.items():
+            if change['owner'] is control:
+                # check for whitelisted names
+                if change['name'] in CONFIGURABLE[section]:
+                    if section not in config:
+                        config[section] = {}
+                    config[section][change['name']] = change['new']

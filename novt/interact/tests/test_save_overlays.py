@@ -83,3 +83,35 @@ class TestSaveOverlays(object):
         # link is cleared after clicking on it
         so.file_link.clear_link()
         assert so.file_link.url == ''
+
+    def test_save_config(self, overlay_controls):
+        so = u.SaveOverlays(overlay_controls, allow_configuration=True)
+        assert so.save_config_file is not None
+
+        # download link starts blank
+        assert so.config_file_link.url == ''
+
+        # no config set, so nothing happens
+        so.make_config()
+        assert so.config_file_link.url == ''
+
+        # add a config value
+        so.show_overlays.uploaded_data.configuration = {
+            'nirspec': {'ra': 100.0}}
+
+        # file link is updated with downloadable data
+        so.make_config()
+        assert so.config_file_link.url.startswith('data:text/plain')
+        one_value = so.config_file_link.url
+
+        # add another: url is longer because it
+        # contains more encoded data
+        so.show_overlays.uploaded_data.configuration['nirspec']['pa'] = 90.0
+        so.make_config()
+        assert so.config_file_link.url.startswith('data:text/plain')
+        more_values = so.config_file_link.url
+        assert len(more_values) > len(one_value)
+
+        # link is cleared after clicking on it
+        so.config_file_link.clear_link()
+        assert so.config_file_link.url == ''

@@ -247,11 +247,12 @@ class ShowOverlays(object):
                     color = controls.color_alternate
                 else:
                     color = controls.color_primary
+                add_mosaic = (controls.mosaic == 'Yes')
                 self.footprint_patches[instrument] = nd.bqplot_footprint(
                     self.viewer.figure, instrument,
                     controls.ra, controls.dec, controls.pa, wcs,
                     color=color, fill_alpha=controls.alpha,
-                    dither_pattern=controls.dither, add_mosaic=controls.mosaic,
+                    dither_pattern=controls.dither, add_mosaic=add_mosaic,
                     mosaic_offset=(controls.mosaic_v2, controls.mosaic_v3))
 
     def _update_footprint(self, instruments, controls):

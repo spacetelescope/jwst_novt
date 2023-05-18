@@ -4,7 +4,8 @@ Constants for use in standardizing names and generating instrument footprints.
 import pathlib
 
 __all__ = ['NOVT_DIR', 'INSTRUMENT_NAMES', 'NIRCAM_DITHER_OFFSETS',
-           'NO_MOSAIC', 'DEFAULT_COLOR']
+           'NO_MOSAIC', 'DEFAULT_COLOR', 'JWST_MINIMUM_DATE',
+           'JWST_MAXIMUM_DATE', 'CONFIGURABLE']
 
 
 NOVT_DIR = pathlib.Path(__file__).parent.resolve()
@@ -64,4 +65,16 @@ JWST_MAXIMUM_DATE = '2025-05-08'
 """str : Maximum available date for JWST ephemeris.
 
 See: https://ssd.jpl.nasa.gov/horizons/time_spans.html
+"""
+
+CONFIGURABLE = {'nirspec': {'ra', 'dec', 'pa', 'color_primary', 'alpha'},
+                'nircam': {'ra', 'dec', 'pa', 'dither', 'mosaic',
+                           'mosaic_v2', 'mosaic_v3', 'color_primary',
+                           'color_alternate', 'alpha'},
+                'catalog': {'color_primary', 'color_alternate'},
+                'timeline': {'start_date', 'end_date', 'instrument',
+                             'ra', 'dec'},
+                'save': {'coordinates', 'region_filename', 'config_filename'}}
+"""
+dict : Configurable items for interact controls.
 """

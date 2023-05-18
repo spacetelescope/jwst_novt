@@ -36,6 +36,7 @@ interact = [
     "ipyvuetify>=1.7.0",
     "ipywidgets>=8.0.4",
     "jdaviz>=3.4.0",
+    "pyyaml>=5.4.1",
     "traitlets>=5.0.5",
     "voila>=0.4"
 ]

@@ -2,7 +2,7 @@ import datetime
 
 import ipyvuetify as v
 import ipywidgets as ipw
-from traitlets import HasTraits, Float, Unicode
+from traitlets import HasTraits, Float, Unicode, Any
 
 from novt.constants import JWST_MINIMUM_DATE, JWST_MAXIMUM_DATE, DEFAULT_COLOR
 from novt.interact import display as nd
@@ -17,8 +17,12 @@ class ShowTimeline(HasTraits):
     center = Unicode(None, allow_none=True).tag(sync=True)
     ra = Float(0.0).tag(sync=True)
     dec = Float(0.0).tag(sync=True)
+    instrument = Unicode('NIRSpec, NIRCam').tag(sync=True)
     nirspec_color = Unicode(DEFAULT_COLOR['NIRSpec']).tag(sync=True)
     nircam_color = Unicode(DEFAULT_COLOR['NIRCam Short']).tag(sync=True)
+    start_date = Any(datetime.date.today(), allow_none=True).tag(sync=True)
+    end_date = Any(datetime.date.today() + datetime.timedelta(days=365),
+                   allow_none=True).tag(sync=True)
 
     def __init__(self):
         super().__init__()
@@ -33,18 +37,19 @@ class ShowTimeline(HasTraits):
         # start, end dates
         min_date = datetime.date.fromisoformat(JWST_MINIMUM_DATE)
         max_date = datetime.date.fromisoformat(JWST_MAXIMUM_DATE)
-        today = datetime.date.today()
-        one_year = datetime.date.today() + datetime.timedelta(days=365)
         self.set_start = ipw.DatePicker(
-            description='Start date', value=today,
+            description='Start date',
             style={'description_width': 'initial'},
             min=min_date, max=max_date,
             tooltip='Start date for target visibility')
         self.set_end = ipw.DatePicker(
-            description='End date', value=one_year,
+            description='End date',
             style={'description_width': 'initial'},
             min=min_date, max=max_date,
             tooltip='End date for target visibility')
+
+        ipw.link((self, 'start_date'), (self.set_start, 'value'))
+        ipw.link((self, 'end_date'), (self.set_end, 'value'))
 
         # select instrument
         self.set_instrument = ipw.Dropdown(
@@ -52,6 +57,7 @@ class ShowTimeline(HasTraits):
             options=['NIRSpec, NIRCam', 'NIRSpec', 'NIRCam'],
             style={'description_width': 'initial'},
             tooltip='Instruments to include in plot')
+        ipw.link((self, 'instrument'), (self.set_instrument, 'value'))
 
         # re-make plot if instrument or dates change
         self.set_start.observe(self._make_timeline, 'value')
