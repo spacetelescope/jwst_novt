@@ -1,0 +1,29 @@
+catalog:
+  color_alternate: yellow
+  color_primary: red
+nircam:
+  alpha: 0.0
+  color_alternate: blue
+  color_primary: green
+  dec: 47.2109
+  dither: FULL3
+  mosaic: 'Yes'
+  mosaic_v2: 48.0
+  mosaic_v3: 60.0
+  pa: 60.0
+  ra: 202.4642
+nirspec:
+  alpha: 0.0
+  color_primary: red
+  dec: 47.2109
+  pa: 45.0
+  ra: 202.4642
+save:
+  config_filename: novt_config_m51.yaml
+  coordinates: sky coordinates
+  region_filename: novt_overlays_m51_dither_mosaic.ds9
+timeline:
+  dec: 47.2109
+  end_date: 2025-01-01
+  ra: 202.4642
+  start_date: 2023-01-01

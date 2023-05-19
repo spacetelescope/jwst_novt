@@ -67,7 +67,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx_automodapi.automodapi',
     'sphinx.ext.mathjax',
-    'sphinxcontrib.jquery',]
+    'sphinxcontrib.jquery']
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
@@ -214,21 +214,26 @@ htmlhelp_basename = f'{project}doc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
+numfig = True
+
 latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    'papersize': 'letterpaper',
-    # The font size ('10pt', '11pt' or '12pt').
-    'pointsize': '14pt',
-    # Additional stuff for the LaTeX preamble.
-    'preamble': r'''\usepackage{enumitem} \setlistdepth{99}'''
+    'classoptions': ',openany,oneside',
+    'babel': r'\usepackage[english]{babel}',
+    'inputenc': r'\usepackage[utf8x]{inputenc}',
+    'maxlistdepth': 20,
+    'printindex': r'\footnotesize\raggedright\printindex',
+    'preamble': r'''
+\pagestyle{plain}
+\setcounter{tocdepth}{2}
+'''
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', f'{project}.tex', f'{project} Documentation',
-   f'{project}', 'manual'),
+  ('index', f'{project}.tex', f'{project.upper()} Documentation',
+   f'{project}', 'howto'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -242,7 +247,7 @@ latex_documents = [
 # latex_show_pagerefs = False
 
 # If true, show URL addresses after external links.
-latex_show_urls = 'True'
+#latex_show_urls = 'True'
 
 # Documents to append as an appendix to all manuals.
 # latex_appendices = []
