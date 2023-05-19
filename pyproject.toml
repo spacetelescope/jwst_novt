@@ -5,7 +5,7 @@ requires = ["setuptools>=61.2",
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = "novt"
+name = "jwst_novt"
 description = "Package description"
 authors = [{name = "STScI", email = "help@stsci.edu"}]
 license = {file = "LICENSE.rst"}
@@ -63,29 +63,29 @@ Project readme.
 content-type = "text/markdown"
 
 [project.scripts]
-novt = "novt.run_notebook:_main"
+novt = "jwst_novt.run_notebook:_main"
 
 [project.urls]
-Homepage = "https://github.com/spacetelescope/novt"
+Homepage = "https://github.com/spacetelescope/jwst_novt"
 
 [tool.setuptools.package-data]
 "*" = ["*.fits, *.csv"]
-"novt" = ["data/*"]
-"novt.tests" = ["data/*"]
+"jwst_novt" = ["data/*"]
+"jwst_novt.tests" = ["data/*"]
 
 [tool.setuptools_scm]
-write_to = "novt/version.py"
+write_to = "jwst_novt/version.py"
 
 [tool.pytest.ini_options]
 minversion = "2.2"
 testpaths = [
-    "novt/tests",
-    "novt/interact/tests"
+    "jwst_novt/tests",
+    "jwst_novt/interact/tests"
 ]
 norecursedirs = [
     "build",
     "docs/_build",
-    "novt/ephemeris"
+    "jwst_novt/ephemeris"
 ]
 astropy_header = "true"
 doctest_plus = "enabled"
@@ -94,11 +94,11 @@ addopts = "-p no:warnings"
 
 
 [tool.coverage.run]
-source = ["novt",]
+source = ["jwst_novt",]
 omit = [
-    "novt/tests/*",
-    "novt/version*",
-    "novt/ephemeris/*"
+    "jwst_novt/tests/*",
+    "jwst_novt/version*",
+    "jwst_novt/ephemeris/*"
 ]
 
 [tool.coverage.report]
@@ -111,8 +111,8 @@ exclude_lines = [
     "pragma: py{ignore_python_version}",
 ]
 omit = [
-    "novt/tests/*",
-    "novt/interact/tests/*",
-    "novt/version*",
-    "novt/ephemeris/*"
+    "jwst_novt/tests/*",
+    "jwst_novt/interact/tests/*",
+    "jwst_novt/version*",
+    "jwst_novt/ephemeris/*"
 ]

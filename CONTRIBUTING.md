@@ -13,7 +13,7 @@ If there is a fix, feature, or improvement you would like to work on, please do 
 2. Make a local clone of your personal fork
 3. Ensure your local copy is pointing upstream properly with:
     ```bash
-    $ git remote add upstream https://github.com/spacetelescope/novt.git
+    $ git remote add upstream https://github.com/spacetelescope/jwst_novt.git
     $ git remote -v
     ```
 4. Create a branch on that local copy
