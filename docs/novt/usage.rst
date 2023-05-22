@@ -137,10 +137,10 @@ Start by opening the `Upload Data` tab.
 
 Try to use an image that covers a region of ~200" × 200" or more of your field of interest. Use
 the `Image File` button to browse your computer and choose the image. The only supported
-cases are FITS files with science data stored in extension 0 or extension 'SCI' and
-with a valid World Coordinate System (WCS) associated with it. The image should be corrected for
-distortion.  If you attempt to load an image without a valid WCS, it will appear in the viewer,
-but no overlay features will be available.
+cases are FITS files with science data stored in extension 0 and with a valid World Coordinate
+System (WCS) associated with it. The image should be corrected for distortion.  If you attempt to
+load an image without a valid WCS, it may appear in the viewer, but no overlay features will be
+available.
 
 FITS data validation
 ^^^^^^^^^^^^^^^^^^^^
@@ -153,7 +153,7 @@ following Astropy command line tool::
 where in place of 'image.fits' you should use the name of your file.
 
 The information provided by this command will help you identify the extension number
-of your science data. If the science data is in extension 0 or extension 'SCI', then the FITS
+of your science data. If the science data is in extension 0, then the FITS
 file is valid. If the science data is in another extension, consider creating a new FITS file
 using the information provided in
 `astropy.io.fits documentation <http://docs.astropy.org/en/stable/io/fits/>`__.
