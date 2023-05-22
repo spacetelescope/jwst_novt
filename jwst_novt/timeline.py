@@ -49,7 +49,7 @@ def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
         and {instrument}_max_PA (maximum PA for instrument),
         where instrument may be NIRCAM, NIRSPEC, or both.
     """
-    if GTVT_VERSION == 'local':
+    if GTVT_VERSION == 'local':  # pragma: no cover
         warnings.warn('Timeline should be computed with the '
                       'refactored `jwst_gtvt` package, when available.',
                       DeprecationWarning)

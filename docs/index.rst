@@ -1,21 +1,19 @@
 JWST NIRSpec Observation Visualization Tool (NOVT)
 ==================================================
 
-.. include:: README.rst
+Getting Started
+---------------
 
-.. only:: html
+.. toctree::
+   :maxdepth: 2
 
-    .. toctree::
-       :hidden:
-       :maxdepth: 2
-
-       README
+   jwst_novt/install
 
 Usage
 -----
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    jwst_novt/usage
 
