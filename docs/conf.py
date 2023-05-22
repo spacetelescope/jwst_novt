@@ -231,9 +231,10 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
+title_project = 'JWST NIRSpec Observation Visualization Tool (NOVT)'
 latex_documents = [
-  ('index', f'{project}.tex', f'{project.upper()} Documentation',
-   f'{project}', 'howto'),
+  ('index', f'{project}.tex', f'{title_project} Documentation',
+   f'{author}', 'howto'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

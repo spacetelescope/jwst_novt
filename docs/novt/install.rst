@@ -1,22 +1,3 @@
-JWST NIRSpec Observation Visualization Tool (NOVT)
-==================================================
-
-..
-    .. image:: https://github.com/spacetelescope/jwst_novt/workflows/CI/badge.svg
-        :target: https://github.com/spacetelescope/jwst_novt/actions
-        :alt: GitHub Actions CI Status
-    .. image:: https://codecov.io/gh/spacetelescope/novt/branch/main/graph/badge.svg
-        :target: https://codecov.io/gh/spacetelescope/novt
-        :alt: Coverage Status
-    .. image:: https://readthedocs.org/projects/novt/badge/?version=latest
-        :target: https://novt.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
-
-.. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
-   :target: http://www.astropy.org
-   :alt: Powered by Astropy Badge
-
-
 The NIRSpec Observation Visualization Tool (NOVT) visualizes projected footprints
 for the NIRSpec and NIRCam instruments on the James Webb Space Telescope (JWST).
 It is intended to aid in planning NIRCam pre-imaging for NIRSpec MOS observations,
@@ -97,12 +78,3 @@ Or via pip::
 
 Either method will download and install the additional required software dependencies
 for the interact module.
-
-License
--------
-See `LICENSE.md` in the `source distribution <https://github.com/spacetelescope/jwst_novt>`__ for more information.
-
-
-Contributing
-------------
-See `CONTRIBUTING.md` in the `source distribution <https://github.com/spacetelescope/jwst_novt>`__ for more information.

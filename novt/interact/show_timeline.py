@@ -4,7 +4,8 @@ import ipyvuetify as v
 import ipywidgets as ipw
 from traitlets import HasTraits, Float, Unicode, Any
 
-from novt.constants import JWST_MINIMUM_DATE, JWST_MAXIMUM_DATE, DEFAULT_COLOR
+from novt.constants import (
+    JWST_MINIMUM_DATE, JWST_MAXIMUM_DATE, DEFAULT_COLOR)
 from novt.interact import display as nd
 
 __all__ = ['ShowTimeline']
