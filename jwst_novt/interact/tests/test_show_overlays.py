@@ -3,6 +3,7 @@ import pytest
 try:
     import bqplot
     import ipywidgets as ipw
+
     from jwst_novt.interact import show_overlays as u
 except ImportError:
     bqplot = None
@@ -16,7 +17,7 @@ from jwst_novt.constants import DEFAULT_COLOR
 
 
 @pytest.mark.skipif(not HAS_DISPLAY, reason='Missing optional dependencies')
-class TestShowOverlays(object):
+class TestShowOverlays:
     def test_init(self, imviz, uploaded_data, nirspec_controls,
                   nircam_controls):
         # instruments are both optional
@@ -141,7 +142,7 @@ class TestShowOverlays(object):
         overlay_controls.toggle_footprint(button, None, None)
         assert button.is_active()
 
-        # footprint is removed
+        # footprint should be removed
         assert inst not in overlay_controls.footprint_patches
         assert patches[0] not in overlay_controls.viewer.figure.marks
 
@@ -161,8 +162,9 @@ class TestShowOverlays(object):
         button = overlay_controls.footprint_buttons[0]
         overlay_controls.toggle_footprint(button, None, None)
 
+        expected_patches = 11
         patches = overlay_controls.all_patches()
-        assert len(patches) == 11
+        assert len(patches) == expected_patches
 
         # add catalog
         overlay_controls._load_catalog()
@@ -172,7 +174,7 @@ class TestShowOverlays(object):
         # both primary and filler patches returned,
         # even though only one is visible
         patches = overlay_controls.all_patches()
-        assert len(patches) == 13
+        assert len(patches) == expected_patches + 2
 
     def test_show_footprint(self, overlay_controls):
         overlay_controls._show_footprint(
@@ -249,18 +251,18 @@ class TestShowOverlays(object):
 
         # nothing current
         overlay_controls.update_nircam_dither()
-        assert m1.called_with([], overlay_controls.nircam_controls)
+        m1.assert_called_with([], overlay_controls.nircam_controls)
 
         # nircam short shown
         overlay_controls.footprint_patches['NIRCam Short'] = ['test']
         overlay_controls.update_nircam_dither()
-        assert m1.called_with(['NIRCam Short'],
+        m1.assert_called_with(['NIRCam Short'],
                               overlay_controls.nircam_controls)
 
         # long too
         overlay_controls.footprint_patches['NIRCam Long'] = ['test']
         overlay_controls.update_nircam_dither()
-        assert m1.called_with(['NIRCam Short', 'NIRCam Long'],
+        m1.assert_called_with(['NIRCam Short', 'NIRCam Long'],
                               overlay_controls.nircam_controls)
 
     def test_update_nircam_footprint(self, mocker, overlay_controls):
@@ -270,19 +272,19 @@ class TestShowOverlays(object):
 
         # nothing current
         overlay_controls.update_nircam_footprint()
-        assert m1.called_with(['NIRCam Short', 'NIRCam Long'],
+        m1.assert_called_with(['NIRCam Short', 'NIRCam Long'],
                               overlay_controls.nircam_controls)
 
         # nircam short shown
         overlay_controls.footprint_patches['NIRCam Short'] = ['test']
         overlay_controls.update_nircam_footprint()
-        assert m1.called_with(['NIRCam Short', 'NIRCam Long'],
+        m1.assert_called_with(['NIRCam Short', 'NIRCam Long'],
                               overlay_controls.nircam_controls)
 
         # long too
         overlay_controls.footprint_patches['NIRCam Long'] = ['test']
         overlay_controls.update_nircam_footprint()
-        assert m1.called_with(['NIRCam Short', 'NIRCam Long'],
+        m1.assert_called_with(['NIRCam Short', 'NIRCam Long'],
                               overlay_controls.nircam_controls)
 
     def test_update_nircam_mosaic(self, mocker, overlay_controls):
@@ -307,9 +309,9 @@ class TestShowOverlays(object):
 
         # nothing current
         overlay_controls.update_nirspec_footprint()
-        assert m1.called_with(['NIRSpec'], overlay_controls.nirspec_controls)
+        m1.assert_called_with(['NIRSpec'], overlay_controls.nirspec_controls)
 
         # nirspec shown
         overlay_controls.footprint_patches['NIRSpec'] = ['test']
         overlay_controls.update_nirspec_footprint()
-        assert m1.called_with(['NIRSpec'], overlay_controls.nirspec_controls)
+        m1.assert_called_with(['NIRSpec'], overlay_controls.nirspec_controls)

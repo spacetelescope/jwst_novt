@@ -1,3 +1,5 @@
+import contextlib
+
 import ipywidgets as ipw
 from jdaviz.core.events import SnackbarMessage
 
@@ -7,10 +9,9 @@ from jwst_novt.interact.utils import ToggleButton
 __all__ = ['ShowOverlays']
 
 
-class ShowOverlays(object):
-    """
-    Widgets to control showing, hiding, and updating image overlays.
-    """
+class ShowOverlays:
+    """Widgets to control showing, hiding, and updating image overlays."""
+
     def __init__(self, viz, uploaded_data, nirspec=None, nircam=None):
         # internal data
         self.title = 'Show Overlays'
@@ -78,9 +79,7 @@ class ShowOverlays(object):
             layout=button_layout)
 
     def clear_overlays(self, *args):
-        """
-        Remove any existing catalog markers when a new catalog file is loaded.
-        """
+        """Remove existing catalog markers when a catalog file is loaded."""
         # clear any old overlays on change in the image file
         for instrument in self.footprint_patches:
             nd.remove_bqplot_patches(self.viewer.figure,
@@ -135,16 +134,12 @@ class ShowOverlays(object):
                 self.catalog_markers['primary'] = primary
                 self.catalog_markers['filler'] = filler
             finally:  # pragma: no cover
-                try:
+                with contextlib.suppress(Exception):
                     catalog.seek(0)
-                except Exception:
-                    pass
         return status
 
     def clear_catalog(self, *args):
-        """
-        Remove any existing catalog markers when a new catalog file is loaded.
-        """
+        """Remove existing catalog markers when a catalog file is loaded."""
         # clear any old markers on change in the catalog file
         if 'primary' in self.catalog_markers:
             nd.remove_bqplot_patches(
@@ -166,9 +161,7 @@ class ShowOverlays(object):
                 button.disabled = True
 
     def update_catalog(self, *args):
-        """
-        Update existing catalog markers when a new color is chosen.
-        """
+        """Update existing catalog markers when a new color is chosen."""
         # clear any old markers on change in the catalog file
         if 'primary' in self.catalog_markers:
             self.catalog_markers['primary'].colors = [
@@ -177,7 +170,7 @@ class ShowOverlays(object):
             self.catalog_markers['filler'].colors = [
                 self.uploaded_data.color_alternate]
 
-    def toggle_catalog(self, button, event, data):
+    def toggle_catalog(self, button, *args):
         """Toggle catalog visibility."""
         name = button.value
         if button.is_active():
@@ -189,7 +182,7 @@ class ShowOverlays(object):
             if name in self.catalog_markers:
                 self.catalog_markers[name].visible = False
 
-    def toggle_footprint(self, button, event, data):
+    def toggle_footprint(self, button, *args):
         """Toggle footprint visibility."""
         if button.is_active():
             if not self.uploaded_data.has_wcs:
@@ -284,7 +277,7 @@ class ShowOverlays(object):
                         controls.ra, controls.dec, controls.pa, wcs,
                         color=color, fill_alpha=controls.alpha,
                         dither_pattern=controls.dither,
-                        add_mosaic=controls.mosaic,
+                        add_mosaic=(controls.mosaic == 'Yes'),
                         mosaic_offset=(controls.mosaic_v2, controls.mosaic_v3),
                         update_patches=self.footprint_patches.get(instrument))
 
@@ -311,7 +304,6 @@ class ShowOverlays(object):
         changes, and the apertures need to be recreated. Otherwise, the
         apertures are updated in place.
         """
-
         instruments = []
         for inst in ['NIRCam Short', 'NIRCam Long']:
             if inst in self.footprint_patches:

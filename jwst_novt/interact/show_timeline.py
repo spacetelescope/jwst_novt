@@ -2,27 +2,31 @@ import datetime
 
 import ipyvuetify as v
 import ipywidgets as ipw
-from traitlets import HasTraits, Float, Unicode, Any
+from traitlets import Any, Float, HasTraits, Unicode
 
 from jwst_novt.constants import (
-    JWST_MINIMUM_DATE, JWST_MAXIMUM_DATE, DEFAULT_COLOR)
+    DEFAULT_COLOR,
+    JWST_MAXIMUM_DATE,
+    JWST_MINIMUM_DATE,
+)
 from jwst_novt.interact import display as nd
 
 __all__ = ['ShowTimeline']
 
 
 class ShowTimeline(HasTraits):
-    """
-    Widgets to control showing and updating a visibility timeline plot.
-    """
+    """Widgets to control showing and updating a visibility timeline plot."""
+
     center = Unicode(None, allow_none=True).tag(sync=True)
     ra = Float(0.0).tag(sync=True)
     dec = Float(0.0).tag(sync=True)
     instrument = Unicode('NIRSpec, NIRCam').tag(sync=True)
     nirspec_color = Unicode(DEFAULT_COLOR['NIRSpec']).tag(sync=True)
     nircam_color = Unicode(DEFAULT_COLOR['NIRCam Short']).tag(sync=True)
-    start_date = Any(datetime.date.today(), allow_none=True).tag(sync=True)
-    end_date = Any(datetime.date.today() + datetime.timedelta(days=365),
+    start_date = Any(datetime.datetime.now(tz=datetime.UTC).date(),
+                     allow_none=True).tag(sync=True)
+    end_date = Any(datetime.datetime.now(tz=datetime.UTC).date()
+                   + datetime.timedelta(days=365),
                    allow_none=True).tag(sync=True)
 
     def __init__(self):
@@ -150,7 +154,7 @@ class ShowTimeline(HasTraits):
 
         start_date = self.set_start.value
         if start_date is None:
-            start_date = datetime.date.today()
+            start_date = datetime.datetime.now(tz=datetime.UTC).date()
         filename = f"novt_timeline_{start_date.strftime('%Y%m%d')}"
 
         end_date = self.set_end.value

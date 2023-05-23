@@ -1,15 +1,14 @@
 import ipywidgets as ipw
 from jdaviz.app import Application
-from jdaviz.core.config import get_configuration
 from jdaviz.configs.imviz.helper import Imviz
+from jdaviz.core.config import get_configuration
 
 __all__ = ['ViewImage']
 
 
-class ViewImage(object):
-    """
-    Widgets to view images and overlays.
-    """
+class ViewImage:
+    """Widgets to view images and overlays."""
+
     def __init__(self):
         self.title = 'View Image'
 
@@ -18,11 +17,11 @@ class ViewImage(object):
         self.viz = Imviz(self.app)
 
         # set up viewer sizing for voila app
-        self.style = ".jdaviz__content--not-in-notebook " \
-                     "{min-height: 80vh; max-height: 80vh; " \
-                     "width:100%;" \
-                     "padding-left: 1px !important; " \
-                     "padding-right: 0.5px !important}"
+        self.style = (".jdaviz__content--not-in-notebook "
+                      "{min-height: 80vh; max-height: 80vh; "
+                      "width:100%;"
+                      "padding-left: 1px !important; "
+                      "padding-right: 0.5px !important}")
 
         # widgets to display
         style_html = ipw.HTML(f"<style>{self.style}</style>")
@@ -34,7 +33,7 @@ class ViewImage(object):
     @staticmethod
     def _config():
         """
-        Custom configuration for remote viewer.
+        Generate custom configuration for remote viewer.
 
         Local file imports and new viewer creation are removed from the
         configuration.

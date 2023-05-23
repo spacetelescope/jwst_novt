@@ -1,16 +1,16 @@
 import warnings
 
 try:
-    from .display import *  # noqa: F401 F403
-    from .utils import *  # noqa: F401 F403
-    from .control_instruments import *  # noqa: F401 F403
-    from .save_overlays import *  # noqa: F401 F403
-    from .show_overlays import *  # noqa: F401 F403
-    from .show_timeline import *  # noqa: F401 F403
-    from .style_application import *  # noqa: F401 F403
-    from .upload_data import *  # noqa: F401 F403
-    from .view_image import *  # noqa: F401 F403
+    from .control_instruments import *
+    from .display import *
+    from .save_overlays import *
+    from .show_overlays import *
+    from .show_timeline import *
+    from .style_application import *
+    from .upload_data import *
+    from .utils import *
+    from .view_image import *
 except ImportError as err:
     warnings.warn(f'Optional display dependencies not present: '
                   f'jwst_novt.interact functionality will not work.'
-                  f'Import error: {err}')
+                  f'Import error: {err}', stacklevel=2)

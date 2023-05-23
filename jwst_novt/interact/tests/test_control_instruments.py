@@ -3,6 +3,7 @@ import pytest
 
 try:
     import ipywidgets as ipw
+
     from jwst_novt.interact import control_instruments as u
 except ImportError:
     ipw = None
@@ -13,8 +14,9 @@ else:
 
 
 @pytest.mark.skipif(not HAS_DISPLAY, reason='Missing optional dependencies')
-class TestControlInstrument(object):
+class TestControlInstrument:
     def test_control_nirspec(self, imviz):
+        """Test NIRSpec controls."""
         ci = u.ControlInstruments('NIRSpec', imviz)
         assert ci.instrument == 'NIRSpec'
 
@@ -43,7 +45,8 @@ class TestControlInstrument(object):
         for widget in controls:
             assert isinstance(getattr(ci, widget), ipw.Widget)
 
-        assert len(ci.color_pickers) == 2
+        n_inst = 2
+        assert len(ci.color_pickers) == n_inst
         assert isinstance(ci.color_pickers[0], ipw.Widget)
         assert isinstance(ci.color_pickers[1], ipw.Widget)
 
@@ -52,17 +55,20 @@ class TestControlInstrument(object):
         assert ci.pa == 0
         assert ci.set_pa.value == 0
 
+        expected = 355
         ci._wrap_angle({'new': -5})
-        assert ci.pa == 355
-        assert ci.set_pa.value == 355
+        assert ci.pa == expected
+        assert ci.set_pa.value == expected
 
+        expected = 5
         ci._wrap_angle({'new': 365})
-        assert ci.pa == 5
-        assert ci.set_pa.value == 5
+        assert ci.pa == expected
+        assert ci.set_pa.value == expected
 
+        expected = 45
         ci._wrap_angle({'new': 45})
-        assert ci.pa == 45
-        assert ci.set_pa.value == 45
+        assert ci.pa == expected
+        assert ci.set_pa.value == expected
 
     def test_set_from_wcs(self, imviz, loaded_imviz):
         ci = u.ControlInstruments('test', imviz)
@@ -76,8 +82,9 @@ class TestControlInstrument(object):
 
         # if imviz already has data, ra and dec are pre-populated
         ci = u.ControlInstruments('test', loaded_imviz)
-        assert ci.ra == 202.4695898
-        assert ci.dec == 47.1951868
+        expected_ra, expected_dec = 202.4695898, 47.1951868
+        assert ci.ra == expected_ra
+        assert ci.dec == expected_dec
 
         # calling again has no further effect
         ci._set_from_wcs()

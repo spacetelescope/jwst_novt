@@ -1,8 +1,10 @@
-import ipywidgets as ipw
+import contextlib
+
 import ipyvuetify as v
+import ipywidgets as ipw
 import regions
-from traitlets import HasTraits, Unicode
 import yaml
+from traitlets import HasTraits, Unicode
 
 from jwst_novt import footprints as fp
 from jwst_novt.interact.utils import FileDownloadLink
@@ -11,14 +13,13 @@ __all__ = ['SaveOverlays']
 
 
 class SaveOverlays(HasTraits):
-    """
-    Widgets to save currently displayed overlay regions.
-    """
+    """Widgets to save currently displayed overlay regions."""
+
     coordinates = Unicode('pixel coordinates').tag(sync=True)
     region_filename = Unicode('novt_overlays.ds9').tag(sync=True)
     config_filename = Unicode('novt_config.yaml').tag(sync=True)
 
-    def __init__(self, show_overlays, allow_configuration=False):
+    def __init__(self, show_overlays, *, allow_configuration=False):
         super().__init__()
 
         # internal data
@@ -106,9 +107,133 @@ class SaveOverlays(HasTraits):
                       layout=box_layout)
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
+    def _make_nirspec_regions(self):
+        """
+        Make NIRSpec regions from current settings.
+
+        Returns
+        -------
+        regions : regions.Regions
+            New astropy region set.
+        """
+        controls = self.show_overlays.nirspec_controls
+        ra = controls.ra
+        dec = controls.dec
+        pa = controls.pa
+        return fp.nirspec_footprint(ra, dec, pa)
+
+    def _make_nircam_regions(self, channel):
+        """
+        Make NIRCam regions from current settings.
+
+        Parameters
+        ----------
+        channel : {'long', 'short'}
+            NIRCam channel to generate regions for.
+
+        Returns
+        -------
+        regions : regions.Regions
+            New astropy region set.
+        """
+        controls = self.show_overlays.nircam_controls
+        ra = controls.ra
+        dec = controls.dec
+        pa = controls.pa
+        dither_pattern = controls.dither
+        add_mosaic = (controls.mosaic == 'Yes')
+        mosaic_offset = (controls.mosaic_v2, controls.mosaic_v3)
+        return fp.nircam_dither_footprint(
+            ra, dec, pa, channel=channel,
+            dither_pattern=dither_pattern,
+            add_mosaic=add_mosaic,
+            mosaic_offset=mosaic_offset)
+
+    def _make_catalog_regions(self, cat_file):
+        """
+        Make catalog regions from current settings.
+
+        Parameters
+        ----------
+        cat_file : str or dict-like
+            Catalog file name or file object from uploaded data.
+
+        Returns
+        -------
+        regions : regions.Regions
+            New astropy region set.
+        """
+        primary, filler = [], []
+        if isinstance(cat_file, str):
+            # assume it is a file name
+            primary, filler = fp.source_catalog(cat_file)
+        else:
+            try:
+                primary, filler = fp.source_catalog(cat_file['file_obj'])
+            finally:  # pragma: no cover
+                with contextlib.suppress(Exception):
+                    cat_file['file_obj'].seek(0)
+
+        cat_markers = self.show_overlays.catalog_markers
+        cat_regions = {}
+        if 'primary' in cat_markers and cat_markers['primary'].visible:
+            cat_regions['primary'] = primary
+        if 'filler' in cat_markers and cat_markers['filler'].visible:
+            cat_regions['filler'] = primary
+
+        return cat_regions
+
+    def _get_style(self):
+        """
+        Get current style settings.
+
+        Returns
+        -------
+        colors : dict
+            Keys are instrument or catalog names, values are color strings.
+        markers : dict
+            Keys are instrument or catalog names, values are DS9 marker names.
+        """
+        colors = {}
+        markers = {}
+
+        # NIRSpec
+        controls = self.show_overlays.nirspec_controls
+        colors['NIRSpec'] = controls.color_primary
+        markers['NIRSpec'] = 'cross'
+
+        # NIRCam
+        controls = self.show_overlays.nircam_controls
+        colors['NIRCam Short'] = controls.color_primary
+        colors['NIRCam Long'] = controls.color_alternate
+        markers['NIRCam Short'] = 'cross'
+        markers['NIRCam Long'] = 'cross'
+
+        # catalogs
+        controls = self.show_overlays.uploaded_data
+        colors['primary'] = controls.color_primary
+        colors['filler'] = controls.color_alternate
+        markers['primary'] = 'circle'
+        markers['filler'] = 'circle'
+
+        return colors, markers
+
+    @staticmethod
+    def _patch_style(all_regions, file_format, colors, markers):
+        """Patch color and marker style into region text."""
+        region_text = all_regions.serialize(format=file_format)
+
+        # patch color and marker into text, based on tag
+        # (regions package does not yet serialize style)
+        for inst, value in colors.items():
+            region_text = region_text.replace(
+                f'tag={{{inst}}}',
+                f'tag={{{inst}}} color={value} point={markers[inst]}')
+        return region_text
+
     def make_regions(self, *args, **kwargs):
         """
-        Save regions to a local file.
+        Make regions from current displays.
 
         Returns
         -------
@@ -116,109 +241,46 @@ class SaveOverlays(HasTraits):
             All created astropy regions. Instrument sets are tagged.
             Colors are set in the style metadata.
         """
-        try:
-            wcs = self.show_overlays.viewer.state.reference_data.coords
-        except AttributeError:
-            return
-        if not wcs.has_celestial:
-            return
+        ref_data = self.show_overlays.viewer.state.reference_data
+        if ref_data is None or not ref_data.coords.has_celestial:
+            return None
 
-        if self.set_coordinates.value.startswith('pixel'):
-            coord = 'pixel'
-        else:
-            coord = 'sky'
+        wcs = ref_data.coords
+        coord = self.set_coordinates.value
         file_format = self.set_format.value
 
-        all_regions = []
-        colors = {}
-        markers = {}
-        for instrument in self.show_overlays.footprint_patches:
-            markers[instrument] = 'cross'
-            if instrument == 'NIRSpec':
-                controls = self.show_overlays.nirspec_controls
-                colors[instrument] = controls.color_primary
+        colors, markers = self._get_style()
 
-                ra = controls.ra
-                dec = controls.dec
-                pa = controls.pa
-                regs = fp.nirspec_footprint(ra, dec, pa)
+        all_regions = []
+        for instrument in self.show_overlays.footprint_patches:
+            if instrument == 'NIRSpec':
+                regs = self._make_nirspec_regions()
             else:
                 # 'NIRCam Short' or 'NIRCam Long'
                 channel = instrument.split()[-1].lower()
-                controls = self.show_overlays.nircam_controls
-                if channel == 'long':
-                    colors[instrument] = controls.color_alternate
-                else:
-                    colors[instrument] = controls.color_primary
-
-                ra = controls.ra
-                dec = controls.dec
-                pa = controls.pa
-                dither_pattern = controls.dither
-                add_mosaic = (controls.mosaic == 'Yes')
-                mosaic_offset = (controls.mosaic_v2, controls.mosaic_v3)
-                regs = fp.nircam_dither_footprint(
-                    ra, dec, pa, channel=channel,
-                    dither_pattern=dither_pattern,
-                    add_mosaic=add_mosaic,
-                    mosaic_offset=mosaic_offset)
+                regs = self._make_nircam_regions(channel)
 
             for region in regs:
                 region.meta['tag'] = [instrument]
                 region.style = {'color': colors[instrument]}
-                if coord == 'pixel':
-                    region = region.to_pixel(wcs)
                 all_regions.append(region)
 
         cat_file = self.show_overlays.uploaded_data.catalog_file
-        cat_markers = self.show_overlays.catalog_markers
-        cat_colors = [self.show_overlays.uploaded_data.color_primary,
-                      self.show_overlays.uploaded_data.color_alternate,]
-        test_catalogs = [p.visible for p in cat_markers.values()]
-        if any(test_catalogs) and cat_file is not None:
-            primary, filler = [], []
-            if isinstance(cat_file, str):
-                # assume it is a file name
-                primary, filler = fp.source_catalog(cat_file)
-            else:
-                try:
-                    primary, filler = fp.source_catalog(cat_file['file_obj'])
-                finally:  # pragma: no cover
-                    try:
-                        cat_file['file_obj'].seek(0)
-                    except Exception:
-                        pass
+        if cat_file is not None:
+            cat_regions = self._make_catalog_regions(cat_file)
+            for cat_name in cat_regions:
+                for region in cat_regions[cat_name]:
+                    region.meta['tag'] = [cat_name]
+                    region.style = {'color': colors[cat_name]}
+                    all_regions.append(region)
 
-            if 'primary' in cat_markers and cat_markers['primary'].visible:
-                colors['primary'] = cat_colors[0]
-                markers['primary'] = 'circle'
-                for region in primary:
-                    region.meta['tag'] = ['primary']
-                    region.style = {'color': colors['primary']}
-                    if coord == 'pixel':
-                        region = region.to_pixel(wcs)
-                    all_regions.append(region)
-            if 'filler' in cat_markers and cat_markers['filler'].visible:
-                colors['filler'] = cat_colors[1]
-                markers['filler'] = 'circle'
-                for region in filler:
-                    region.meta['tag'] = ['filler']
-                    region.style = {'color': colors['filler']}
-                    if coord == 'pixel':
-                        region = region.to_pixel(wcs)
-                    all_regions.append(region)
+        if coord == 'pixel coordinates':
+            all_regions = [r.to_pixel(wcs) for r in all_regions]
 
         all_regions = regions.Regions(all_regions)
         if len(all_regions) > 0:
-            region_text = all_regions.serialize(format=file_format)
-
-            # patch color and marker into text, based on tag
-            # (regions package does not yet serialize style)
-            for inst, value in colors.items():
-                region_text = region_text.replace(
-                    f'tag={{{inst}}}',
-                    f'tag={{{inst}}} color={value} point={markers[inst]}')
-
+            region_text = self._patch_style(
+                all_regions, file_format, colors, markers)
             filename = self.set_filename.value
             self.file_link.edit_link(filename, region_text)
 
@@ -235,7 +297,7 @@ class SaveOverlays(HasTraits):
         """
         config = self.show_overlays.uploaded_data.configuration
         if len(config) == 0:
-            return
+            return None
 
         config_str = yaml.dump(config)
         filename = self.set_config_filename.value

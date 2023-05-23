@@ -2,6 +2,7 @@ import pytest
 
 try:
     import ipywidgets as ipw
+
     from jwst_novt.interact import save_overlays as u
 except ImportError:
     ipw = None
@@ -12,7 +13,7 @@ else:
 
 
 @pytest.mark.skipif(not HAS_DISPLAY, reason='Missing optional dependencies')
-class TestSaveOverlays(object):
+class TestSaveOverlays:
     def test_init(self, overlay_controls):
         so = u.SaveOverlays(overlay_controls)
         assert isinstance(so.widgets, ipw.Widget)
@@ -25,11 +26,11 @@ class TestSaveOverlays(object):
         so.set_coordinates.value = coords
 
         # download link starts blank
-        assert so.file_link.url == ''
+        assert not so.file_link.url
 
         # no overlays shown, nothing happens
         so.make_regions()
-        assert so.file_link.url == ''
+        assert not so.file_link.url
 
         # turn on a nirspec overlay
         button = overlay_controls.footprint_buttons[0]
@@ -82,18 +83,18 @@ class TestSaveOverlays(object):
 
         # link is cleared after clicking on it
         so.file_link.clear_link()
-        assert so.file_link.url == ''
+        assert not so.file_link.url
 
     def test_save_config(self, overlay_controls):
         so = u.SaveOverlays(overlay_controls, allow_configuration=True)
         assert so.save_config_file is not None
 
         # download link starts blank
-        assert so.config_file_link.url == ''
+        assert not so.config_file_link.url
 
         # no config set, so nothing happens
         so.make_config()
-        assert so.config_file_link.url == ''
+        assert not so.config_file_link.url
 
         # add a config value
         so.show_overlays.uploaded_data.configuration = {
@@ -114,4 +115,4 @@ class TestSaveOverlays(object):
 
         # link is cleared after clicking on it
         so.config_file_link.clear_link()
-        assert so.config_file_link.url == ''
+        assert not so.config_file_link.url

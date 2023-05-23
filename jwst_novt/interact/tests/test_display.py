@@ -1,12 +1,13 @@
 from contextlib import contextmanager
 
+import pytest
 from astropy.time import Time
 from astropy.wcs import WCS
-import pytest
 
 try:
     import bqplot
     import ipywidgets as ipw
+
     from jwst_novt.interact import display as u
 except ImportError:
     bqplot = None
@@ -19,7 +20,7 @@ else:
 from jwst_novt.constants import DEFAULT_COLOR
 
 
-@pytest.fixture
+@pytest.fixture()
 def image_2d_wcs():
     return WCS({'CTYPE1': 'RA---TAN', 'CUNIT1': 'deg',
                 'CDELT1': -0.0002777777778,
@@ -30,11 +31,11 @@ def image_2d_wcs():
 
 
 @pytest.mark.skipif(not HAS_DISPLAY, reason='Missing optional dependencies')
-class TestDisplay(object):
+class TestDisplay:
 
     def test_hold_all_sync(self, capsys):
         # mock a mark class with a simple context manager for testing
-        class MockMark(object):
+        class MockMark:
             def __init__(self, i):
                 self.i = i
 
@@ -76,8 +77,9 @@ class TestDisplay(object):
         fp_marks = u.bqplot_footprint(fig, 'nirspec', ra, dec, pa, wcs)
 
         # should return 11 patches for nirspec
+        expected_patches = 11
         assert isinstance(fp_marks, list)
-        assert len(fp_marks) == 11
+        assert len(fp_marks) == expected_patches
 
         # color is default for nirspec if not specified
         assert fp_marks[0].colors == [DEFAULT_COLOR['NIRSpec']]
@@ -86,7 +88,7 @@ class TestDisplay(object):
         new_marks = u.bqplot_footprint(fig, 'nirspec', ra, dec, pa, wcs,
                                        update_patches=fp_marks,
                                        color='red', fill_alpha=0.5)
-        assert len(new_marks) == 11
+        assert len(new_marks) == expected_patches
         for i, mark in enumerate(new_marks):
             assert mark is fp_marks[i]
             assert mark.colors == ['red']
@@ -103,24 +105,25 @@ class TestDisplay(object):
         fig = loaded_imviz.default_viewer.figure
         wcs = loaded_imviz.default_viewer.state.reference_data.coords
         fp_marks = u.bqplot_footprint(fig, 'nircam long', ra, dec, pa, wcs,
-                                      add_mosaic='No')
+                                      add_mosaic=False)
 
         # should return 3 patches for nircam long, no mosaic
+        expected_patches = 3
         assert isinstance(fp_marks, list)
-        assert len(fp_marks) == 3
+        assert len(fp_marks) == expected_patches
 
         # with mosaic, should return 5 patches
         fp_marks = u.bqplot_footprint(fig, 'nircam long', ra, dec, pa, wcs,
-                                      add_mosaic='Yes', mosaic_offset=(10, 10))
+                                      add_mosaic=True, mosaic_offset=(10, 10))
         assert isinstance(fp_marks, list)
-        assert len(fp_marks) == 5
+        assert len(fp_marks) == 2 * (expected_patches - 1) + 1
 
         # with mosaic + 3 dither, should return 13 patches
         fp_marks = u.bqplot_footprint(fig, 'nircam long', ra, dec, pa, wcs,
-                                      add_mosaic='Yes', mosaic_offset=(10, 10),
+                                      add_mosaic=True, mosaic_offset=(10, 10),
                                       dither_pattern='FULL3')
         assert isinstance(fp_marks, list)
-        assert len(fp_marks) == 13
+        assert len(fp_marks) == 2 * 3 * (expected_patches - 1) + 1
 
     def test_bqplot_catalog(self, loaded_imviz, catalog_file):
         fig = loaded_imviz.default_viewer.figure
@@ -130,7 +133,8 @@ class TestDisplay(object):
         cat_marks = u.bqplot_catalog(fig, catalog_file, wcs)
 
         # primary, filler marked with one scatter plot each
-        assert len(cat_marks) == 2
+        expected_marks = 2
+        assert len(cat_marks) == expected_marks
         for mark in cat_marks:
             assert isinstance(mark, bqplot.Scatter)
         assert cat_marks[0].colors == [DEFAULT_COLOR['Primary Sources']]
@@ -150,30 +154,28 @@ class TestDisplay(object):
         # empty catalog: raises value error
         bad_cat = tmp_path / 'empty.txt'
         bad_cat.write_text('')
-        with pytest.raises(ValueError) as err:
+        with pytest.raises(ValueError, match='file is empty'):
             u.bqplot_catalog(fig, str(bad_cat), wcs)
-        assert 'file is empty' in str(err)
 
         # bad catalog: raises value error for unexpected columns
         bad_cat = tmp_path / 'bad_file.txt'
         bad_cat.write_text('bad')
-        with pytest.raises(ValueError) as err:
+        with pytest.raises(ValueError, match='expected 2'):
             u.bqplot_catalog(fig, str(bad_cat), wcs)
-        assert 'expected 2' in str(err)
 
         # two columns instead of three: reads okay,
         # all sources assigned primary flag
         marks = u.bqplot_catalog(fig, catalog_file_2col, wcs)
-        assert len(marks) == 2
-        assert marks[0].x.size == 7
-        assert marks[1].x.size == 0
+        n_marks, n_pri, n_fill = 2, 7, 0
+        assert len(marks) == n_marks
+        assert marks[0].x.size == n_pri
+        assert marks[1].x.size == n_fill
 
-    @pytest.mark.parametrize('inst,mean_value,mode_value',
+    @pytest.mark.parametrize(('inst', 'mean_value', 'mode_value'),
                              [('NIRSpec', 68, 67), ('NIRCam', 289, 290)])
     def test_average_pa(self, timeline_data, inst, mean_value, mode_value):
         inst = inst.upper()
 
-        # mean (default)
         label = u._average_pa(
             timeline_data['Time'], timeline_data[f'{inst}_min_PA'],
             timeline_data[f'{inst}_max_PA'])
@@ -200,17 +202,18 @@ class TestDisplay(object):
         u.bqplot_timeline(fig, ra, dec, instrument=inst, show_v3pa=False)
 
         if inst is None:
-            assert len(fig.marks) == 2
+            n_inst = 2
+            assert len(fig.marks) == n_inst
             assert fig.marks[0].colors == [DEFAULT_COLOR['NIRSpec']]
-            assert fig.marks[1].colors == [DEFAULT_COLOR['NIRCam Short']]
+            assert fig.marks[1].colors == [DEFAULT_COLOR['NIRCam']]
         elif inst == 'NIRSpec':
             assert len(fig.marks) == 1
             assert fig.marks[0].colors == [DEFAULT_COLOR['NIRSpec']]
         else:
             assert len(fig.marks) == 1
-            assert fig.marks[0].colors == [DEFAULT_COLOR['NIRCam Short']]
+            assert fig.marks[0].colors == [DEFAULT_COLOR['NIRCam']]
 
-    @pytest.mark.parametrize('inst,v3pa,n_plot',
+    @pytest.mark.parametrize(('inst', 'v3pa', 'n_plot'),
                              [(None, False, 2), (None, True, 3),
                               ('NIRSpec', False, 1), ('NIRSpec', True, 2),
                               ('NIRCam', False, 1), ('NIRCam', True, 2)])
@@ -270,7 +273,8 @@ class TestDisplay(object):
         scatter = bqplot.Scatter(x=[1, 2, 3], y=[3, 4, 5])
         line = bqplot.Lines(x=[1, 2, 3], y=[3, 4, 5])
         fig.marks = [scatter, line]
-        assert len(fig.marks) == 2
+        n_marks = 2
+        assert len(fig.marks) == n_marks
 
         # only the scatter plot is removed
         u.remove_bqplot_patches(fig, [scatter])
@@ -294,7 +298,8 @@ class TestDisplay(object):
         scatter = bqplot.Scatter(x=[1, 2, 3], y=[3, 4, 5])
         line = bqplot.Lines(x=[1, 2, 3], y=[3, 4, 5])
         fig.marks = [scatter, line]
-        assert len(fig.marks) == 2
+        n_marks = 2
+        assert len(fig.marks) == n_marks
 
         u.clear_bqplot_figure(fig)
         assert len(fig.marks) == 0
@@ -324,7 +329,8 @@ class TestDisplay(object):
         # after axes are set, set zoom mode to 'x'
         fig.axes = [bqplot.Axis(scale=scales['x']),
                     bqplot.Axis(scale=scales['y'], orientation='vertical')]
-        assert len(fig.axes) == 2
+        n_marks = 2
+        assert len(fig.axes) == n_marks
 
         tb.mode_buttons.value = 'x'
         assert tb.direction == 'x'

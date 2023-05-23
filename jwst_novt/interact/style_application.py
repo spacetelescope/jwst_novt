@@ -3,19 +3,18 @@ import copy
 import ipywidgets as ipw
 from traitlets import TraitError
 
-from jwst_novt.interact.utils import read_image
 from jwst_novt.constants import CONFIGURABLE
+from jwst_novt.interact.utils import read_image
 
 __all__ = ['StyleApplication']
 
 
-class StyleApplication(object):
-    """
-    Widgets to lay out and style the default application.
-    """
-    def __init__(self, image_viewer, uploaded_data, nirspec_controls,
-                 nircam_controls, timeline_controls, overlay_controls,
-                 save_controls, context='notebook'):
+class StyleApplication:
+    """Widgets to lay out and style the default application."""
+
+    def __init__(self, image_viewer, uploaded_data,
+                 nirspec_controls, nircam_controls, timeline_controls,
+                 overlay_controls, save_controls, context='notebook'):
 
         # internal data
         self.context = context
@@ -137,9 +136,9 @@ class StyleApplication(object):
                     'timeline': self.timeline_controls,
                     'save': self.save_controls}
         for section, control in sections.items():
-            if change['owner'] is control:
+            if (change['owner'] is control
+                    and change['name'] in CONFIGURABLE[section]):
                 # check for whitelisted names
-                if change['name'] in CONFIGURABLE[section]:
-                    if section not in config:
-                        config[section] = {}
-                    config[section][change['name']] = change['new']
+                if section not in config:
+                    config[section] = {}
+                config[section][change['name']] = change['new']

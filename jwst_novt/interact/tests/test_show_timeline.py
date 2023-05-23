@@ -4,6 +4,7 @@ import pytest
 
 try:
     import ipywidgets as ipw
+
     from jwst_novt.interact import show_timeline as u
 except ImportError:
     ipw = None
@@ -16,7 +17,7 @@ from jwst_novt.constants import DEFAULT_COLOR
 
 
 @pytest.mark.skipif(not HAS_DISPLAY, reason='Missing optional dependencies')
-class TestShowTimeline(object):
+class TestShowTimeline:
     def test_init(self):
         # no initial arguments
         st = u.ShowTimeline()
@@ -67,7 +68,8 @@ class TestShowTimeline(object):
             assert (timeline_controls.figure.marks[0].colors
                     == [DEFAULT_COLOR['NIRCam Short']])
         else:
-            assert len(timeline_controls.figure.marks) == 2
+            n_inst = 2
+            assert len(timeline_controls.figure.marks) == n_inst
             assert (timeline_controls.figure.marks[0].colors
                     == [DEFAULT_COLOR['NIRSpec']])
             assert (timeline_controls.figure.marks[1].colors
@@ -90,7 +92,8 @@ class TestShowTimeline(object):
         if not start_date:
             timeline_controls.set_start.value = None
             timeline_controls.set_end.value = None
-            date_str = datetime.date.today().strftime('%Y%m%d')
+            date_str = datetime.datetime.now(
+                tz=datetime.UTC).strftime('%Y%m%d')
         else:
             timeline_controls.set_start.value = datetime.date(2022, 1, 5)
             timeline_controls.set_end.value = datetime.date(2022, 1, 9)
@@ -113,7 +116,7 @@ class TestShowTimeline(object):
         # save the plot to a default filename
         timeline_controls._save_plot()
         assert m1.call_count == 1
-        assert m1.called_with(f"novt_timeline_{date_str}.png")
+        m1.assert_called_with(filename=f"novt_timeline_{date_str}.png")
 
     def test_update_colors_no_figure(self, timeline_controls):
         assert timeline_controls.figure is None

@@ -1,18 +1,17 @@
-from astropy import coordinates
 import numpy as np
 import pandas as pd
 import pysiaf
 import regions
+from astropy import coordinates
 
 from jwst_novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC
-
 
 __all__ = ['nirspec_footprint', 'nircam_short_footprint',
            'nircam_long_footprint', 'nircam_dither_footprint',
            'source_catalog']
 
 
-def nirspec_footprint(ra, dec, pa, include_center=True, apertures=None):
+def nirspec_footprint(ra, dec, pa, *, include_center=True, apertures=None):
     """
     Create NIRSpec footprint regions in sky coordinates.
 
@@ -92,7 +91,7 @@ def nirspec_footprint(ra, dec, pa, include_center=True, apertures=None):
     return nrs_regions
 
 
-def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
+def nircam_short_footprint(ra, dec, pa, *, v2_offset=0.0, v3_offset=0.0,
                            include_center=True, apertures=None):
     """
     Create NIRCam short channel footprint regions in sky coordinates.
@@ -175,7 +174,7 @@ def nircam_short_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
     return nrc_regions
 
 
-def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
+def nircam_long_footprint(ra, dec, pa, *, v2_offset=0.0, v3_offset=0.0,
                           include_center=True, apertures=None):
     """
     Create NIRCam long channel footprint regions in sky coordinates.
@@ -249,7 +248,7 @@ def nircam_long_footprint(ra, dec, pa, v2_offset=0.0, v3_offset=0.0,
     return nrc_regions
 
 
-def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
+def nircam_dither_footprint(ra, dec, pa, *, dither_pattern='NONE',
                             channel='long', add_mosaic=False,
                             mosaic_offset=None, include_center=True,
                             apertures=None):
@@ -294,8 +293,9 @@ def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
     """
     pattern = dither_pattern.strip().upper()
     if pattern not in NIRCAM_DITHER_OFFSETS:
-        raise ValueError(f'Dither pattern {dither_pattern} not recognized. '
-                         f'Options are: {list(NIRCAM_DITHER_OFFSETS.keys())}.')
+        msg = (f'Dither pattern {dither_pattern} not recognized. '
+               f'Options are: {list(NIRCAM_DITHER_OFFSETS.keys())}.')
+        raise ValueError(msg)
     dither_offsets = NIRCAM_DITHER_OFFSETS[pattern]
 
     if channel.strip().lower() == 'short':
@@ -331,8 +331,7 @@ def nircam_dither_footprint(ra, dec, pa, dither_pattern='NONE',
             for reg in reg_list:
                 dithers.append(reg)
 
-    dither_regions = regions.Regions(dithers)
-    return dither_regions
+    return regions.Regions(dithers)
 
 
 def source_catalog(catalog_file):
@@ -369,16 +368,17 @@ def source_catalog(catalog_file):
             catalog['flag'] = 'P'
     else:
         try:
-            catalog = pd.read_table(catalog_file, names=['ra', 'dec', 'flag'],
-                                    delim_whitespace=True, usecols=[0, 1, 2])
+            catalog = pd.read_csv(catalog_file, names=['ra', 'dec', 'flag'],
+                                  delim_whitespace=True, usecols=[0, 1, 2])
         except ValueError:
             # try again with two columns
-            catalog = pd.read_table(catalog_file, names=['ra', 'dec'],
-                                    delim_whitespace=True, usecols=[0, 1])
+            catalog = pd.read_csv(catalog_file, names=['ra', 'dec'],
+                                  delim_whitespace=True, usecols=[0, 1])
             catalog['flag'] = 'P'
 
     if len(catalog.index) == 0:
-        raise ValueError('Catalog file is empty.')
+        msg = 'Catalog file is empty.'
+        raise ValueError(msg)
 
     filler = (catalog['flag'] == 'F')
     primary = ~filler

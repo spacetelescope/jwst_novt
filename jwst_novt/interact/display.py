@@ -1,20 +1,20 @@
-from contextlib import contextmanager, ExitStack
-from functools import partial
 import datetime
 import re
+from contextlib import ExitStack, contextmanager, suppress
+from functools import partial
 
-from astropy import units as u
-from astropy.stats import circmean
-from astropy.time import Time
 import bqplot
 import ipywidgets as ipw
 import numpy as np
 import pandas as pd
 import regions
+from astropy import units as u
+from astropy.stats import circmean
+from astropy.time import Time
 
 from jwst_novt import footprints as fp
 from jwst_novt import timeline as tl
-from jwst_novt.constants import INSTRUMENT_NAMES, DEFAULT_COLOR
+from jwst_novt.constants import DEFAULT_COLOR, INSTRUMENT_NAMES
 
 __all__ = ['hold_all_sync', 'bqplot_figure', 'bqplot_footprint',
            'bqplot_catalog', 'bqplot_timeline', 'remove_bqplot_patches',
@@ -41,7 +41,7 @@ def hold_all_sync(marks):
         yield
 
 
-def bqplot_figure(toolbar=False):
+def bqplot_figure(*, toolbar=False):
     """
     Make a bqplot figure.
 
@@ -64,11 +64,10 @@ def bqplot_figure(toolbar=False):
     if toolbar:
         tools = BqplotToolbar(fig).widgets
         return fig, tools
-    else:
-        return fig
+    return fig
 
 
-def bqplot_footprint(fig, instrument, ra, dec, pa, wcs,
+def bqplot_footprint(fig, instrument, ra, dec, pa, wcs, *,
                      dither_pattern=None, add_mosaic=False,
                      mosaic_offset=None,
                      color=None, visible=True, fill='inside',
@@ -111,8 +110,8 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs,
     dither_pattern : str, optional
         Name of the NIRCam dither pattern to apply.  Options are: NONE, FULL3,
         FULL3TIGHT, FULL6, 8NIRSPEC. Ignored if `instrument` is NIRSpec.
-    add_mosaic : bool or str, optional
-        If False or 'No', mosaic offsets are ignored. Otherwise, a two-tile
+    add_mosaic : bool, optional
+        If False, mosaic offsets are ignored. Otherwise, a two-tile
         mosaic is computed with window width specified in `mosaic_offset`.
     mosaic_offset : tuple or list, optional
         (V2, V3) offset in telescope coordinates to apply as a two-tile
@@ -148,14 +147,6 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs,
 
     dither_pattern = str(dither_pattern).strip().upper()
 
-    if not isinstance(add_mosaic, bool):
-        if str(add_mosaic).lower() in {'no', 'false', '0', 'none'}:
-            mosaic = False
-        else:
-            mosaic = True
-    else:
-        mosaic = add_mosaic
-
     # get footprint configuration by instrument
     if color is None:
         color = DEFAULT_COLOR[inst]
@@ -169,7 +160,7 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs,
         regs = fp.nircam_dither_footprint(
             ra, dec, pa, channel=channel,
             dither_pattern=dither_pattern,
-            add_mosaic=mosaic,
+            add_mosaic=add_mosaic,
             mosaic_offset=mosaic_offset)
 
     # get scales from figure
@@ -220,7 +211,7 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs,
     return marks
 
 
-def bqplot_catalog(fig, catalog_file, wcs,
+def bqplot_catalog(fig, catalog_file, wcs, *,
                    colors=None, visible=True, fill=False, alpha=1.0):
     """
     Create a catalog source overlay on a bqplot figure.
@@ -266,27 +257,24 @@ def bqplot_catalog(fig, catalog_file, wcs,
 
     # load the source catalog
     try:
-        catalog = pd.read_table(catalog_file, names=['ra', 'dec', 'flag'],
-                                delim_whitespace=True, usecols=[0, 1, 2])
+        catalog = pd.read_csv(catalog_file, names=['ra', 'dec', 'flag'],
+                              delim_whitespace=True, usecols=[0, 1, 2])
     except ValueError:
         # if the catalog file is a file object, it may need to be rewound
         # before reading again
-        try:
+        with suppress(AttributeError):
             catalog_file.seek(0)
-        except AttributeError:
-            pass
 
-        catalog = pd.read_table(catalog_file, names=['ra', 'dec'],
-                                delim_whitespace=True, usecols=[0, 1])
+        catalog = pd.read_csv(catalog_file, names=['ra', 'dec'],
+                              delim_whitespace=True, usecols=[0, 1])
         catalog['flag'] = 'P'
     finally:
-        try:
+        with suppress(AttributeError):
             catalog_file.seek(0)
-        except AttributeError:
-            pass
 
     if len(catalog.index) == 0:
-        raise ValueError('Catalog file is empty.')
+        msg = 'Catalog file is empty.'
+        raise ValueError(msg)
 
     # sort by flag
     filler = (catalog['flag'] == 'F')
@@ -317,7 +305,7 @@ def bqplot_catalog(fig, catalog_file, wcs,
 
     # place catalog markers at the front of the list, so it always appears
     # behind any other overlays
-    fig.marks = [filler_markers, primary_markers] + fig.marks
+    fig.marks = [filler_markers, primary_markers, *fig.marks]
 
     return primary_markers, filler_markers
 
@@ -351,7 +339,7 @@ def _average_pa(time_data, min_pa, max_pa, min_time=None, max_time=None,
     return pa_label
 
 
-def bqplot_timeline(fig, ra, dec, start_date=None, end_date=None,
+def bqplot_timeline(fig, ra, dec, *, start_date=None, end_date=None,
                     instrument=None, show_v3pa=False, colors=None):
     """
     Plot a visibility timeline in a bqplot figure.
@@ -391,7 +379,6 @@ def bqplot_timeline(fig, ra, dec, start_date=None, end_date=None,
         colors are applied. If both instruments are requested, colors
         should be specified as (NIRSpec color, NIRCam color).
     """
-
     # clear figure and set loading message
     clear_bqplot_figure(fig)
     message = bqplot.Label(text=['Computing timeline...'],
@@ -406,19 +393,14 @@ def bqplot_timeline(fig, ra, dec, start_date=None, end_date=None,
     # get timeline for NIRSpec and NIRCam at the same position
     if instrument is None:
         instruments = ['NIRSpec', 'NIRCam']
-        try:
-            timeline_data = tl.timeline(
-                ra, dec, start_date=start_date, end_date=end_date)
-        except Exception:
-            timeline_data = None
     else:
         instruments = [instrument]
-        try:
-            timeline_data = tl.timeline(
-                ra, dec, start_date=start_date, end_date=end_date,
-                instrument=instrument)
-        except Exception:
-            timeline_data = None
+    try:
+        timeline_data = tl.timeline(
+            ra, dec, start_date=start_date, end_date=end_date,
+            instrument=instrument)
+    except Exception:
+        timeline_data = None
 
     clear_bqplot_figure(fig)
     title = f"Visibility for {', '.join(instruments)} at RA={ra}, Dec={dec}"
@@ -440,10 +422,7 @@ def bqplot_timeline(fig, ra, dec, start_date=None, end_date=None,
 
         for i, inst in enumerate(instruments):
             if colors is None:
-                if inst == 'NIRSpec':
-                    color = DEFAULT_COLOR[inst]
-                else:
-                    color = DEFAULT_COLOR['NIRCam Short']
+                color = DEFAULT_COLOR[inst]
             else:
                 color = colors[i]
 
@@ -501,10 +480,10 @@ def clear_bqplot_figure(fig):
     """Clear a bqplot figure."""
     fig.marks = []
     fig.axes = []
-    setattr(fig, 'axis_registry', {})
+    fig.axis_registry = {}
 
 
-class BqplotToolbar(object):
+class BqplotToolbar:
     """
     Custom toolbar with reset and zoom controls.
 
@@ -515,6 +494,7 @@ class BqplotToolbar(object):
     After creation, widgets are contained in a VBox layout in the `widgets`
     attribute.
     """
+
     def __init__(self, fig):
         self.fig = fig
 
@@ -545,7 +525,7 @@ class BqplotToolbar(object):
 
     def reset_zoom(self, *args, **kwargs):
         """Reset the plot limits."""
-        if len(self.fig.axes) != 2:
+        if len(self.fig.axes) == 0:
             return
         self.fig.axes[0].scale.min = None
         self.fig.axes[0].scale.max = None
@@ -554,7 +534,7 @@ class BqplotToolbar(object):
 
     def set_scales(self, *args, **kwargs):
         """Set the axis scales (x, y, or both) in the pan/zoom tool."""
-        if len(self.fig.axes) != 2:
+        if len(self.fig.axes) == 0:
             self.mode_buttons.value = ' '
             return
 

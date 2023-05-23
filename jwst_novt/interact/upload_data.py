@@ -1,11 +1,11 @@
 import warnings
 
-from astropy.io import fits
-import ipywidgets as ipw
 import ipyvuetify.extra as ve
-from jdaviz.core.events import SnackbarMessage
-from traitlets import HasTraits, Any, Unicode, Bool, Dict
+import ipywidgets as ipw
 import yaml
+from astropy.io import fits
+from jdaviz.core.events import SnackbarMessage
+from traitlets import Any, Bool, Dict, HasTraits, Unicode
 
 from jwst_novt.constants import DEFAULT_COLOR
 
@@ -13,18 +13,17 @@ __all__ = ['UploadData']
 
 
 class UploadData(HasTraits):
-    """
-    Widgets to upload user data files.
-    """
+    """Widgets to upload user data files."""
+
     image_file_name = Unicode(None, allow_none=True).tag(sync=True)
     catalog_file = Any(None, allow_none=True).tag(sync=True)
     color_primary = Unicode('orange').tag(sync=True)
     color_alternate = Unicode('purple').tag(sync=True)
-    has_wcs = Bool(False).tag(sync=True)
-    has_catalog = Bool(False).tag(sync=True)
-    configuration = Dict(dict()).tag(sync=True)
+    has_wcs = Bool(default_value=False).tag(sync=True)
+    has_catalog = Bool(default_value=False).tag(sync=True)
+    configuration = Dict({}).tag(sync=True)
 
-    def __init__(self, viz, allow_configuration=False):
+    def __init__(self, viz, *, allow_configuration=False):
         super().__init__(self)
 
         # internal data
@@ -74,7 +73,7 @@ class UploadData(HasTraits):
                             value=DEFAULT_COLOR['Filler Sources'],
                             style={'description_width': 'initial'},
                             tooltip='Color for filler source catalog '
-                                    'overlays')
+                                    'overlays'),
         ]
         ipw.link((self.color_pickers[0], 'value'),
                  (self, 'color_primary'))
@@ -114,6 +113,42 @@ class UploadData(HasTraits):
             self.config_file_upload.observe(
                 self.load_config, names='file_info')
 
+    def _load_hdul_in_viz(self, uploaded_file):
+        """
+        Load a FITS file into Imviz.
+
+        Parameters
+        ----------
+        uploaded_file : dict-like
+            File structure corresponding to uploaded data in
+            the FileInput widget.
+        """
+        hdul = None
+        try:
+            hdul = fits.open(uploaded_file['file_obj'])
+            self.viz.load_data(
+                hdul, data_label=uploaded_file['name'])
+
+            wcs = self.viewer.state.reference_data.coords
+            if wcs is None or not wcs.has_celestial:
+                msg_text = ('No WCS associated with image. '
+                            'Overlay functions will not be '
+                            'available.')
+                msg = SnackbarMessage(msg_text, sender=self,
+                                      color='warning')
+                self.viz.app.hub.broadcast(msg)
+            else:
+                self.has_wcs = True
+                self.image_file_name = uploaded_file['name']
+        except Exception as err:
+            msg_text = f'Error loading image: {err}'
+            msg = SnackbarMessage(msg_text, sender=self,
+                                  color='warning')
+            self.viz.app.hub.broadcast(msg)
+        finally:
+            if hdul is not None:
+                hdul.close()
+
     def load_image(self, change):
         """
         Watch for newly uploaded or removed files.
@@ -141,35 +176,9 @@ class UploadData(HasTraits):
             if len(uploaded_files) > 0:
                 for uploaded_file in uploaded_files:
                     self.image_files[uploaded_file['name']] = uploaded_file
-
-                    hdul = None
                     with warnings.catch_warnings():
                         warnings.simplefilter('ignore')
-                        try:
-                            hdul = fits.open(uploaded_file['file_obj'])
-                            self.viz.load_data(
-                                hdul, data_label=uploaded_file['name'])
-                            wcs = self.viewer.state.reference_data.coords
-                            if wcs is None or not wcs.has_celestial:
-                                raise ValueError('No WCS')
-                            else:
-                                self.has_wcs = True
-                                self.image_file_name = uploaded_file['name']
-                        except (ValueError, AttributeError):
-                            msg_text = ('No WCS associated with image. '
-                                        'Overlay functions will not be '
-                                        'available.')
-                            msg = SnackbarMessage(msg_text, sender=self,
-                                                  color='warning')
-                            self.viz.app.hub.broadcast(msg)
-                        except Exception as err:
-                            msg_text = f'Error loading image: {err}'
-                            msg = SnackbarMessage(msg_text, sender=self,
-                                                  color='warning')
-                            self.viz.app.hub.broadcast(msg)
-                        finally:
-                            if hdul is not None:
-                                hdul.close()
+                        self._load_hdul_in_viz(uploaded_file)
         change['owner'].disabled = False
 
     def load_catalog(self, change):

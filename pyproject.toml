@@ -41,7 +41,7 @@ interact = [
     "voila>=0.4"
 ]
 test = [
-    "flake8",
+    "ruff",
     "pytest",
     "pytest-coverage",
     "pytest-mock"
@@ -116,3 +116,27 @@ omit = [
     "jwst_novt/version*",
     "jwst_novt/ephemeris/*"
 ]
+
+[tool.ruff]
+line-length = 79
+select = ["ALL"]
+ignore =[
+    "Q", "ANN", "S", "BLE", "SLF",
+    "PLR0913", "SIM108", "D100", "D104",
+]
+exclude = [
+    "version.py",
+    "conf.py",
+    "ephemeris"
+]
+
+[tool.ruff.per-file-ignores]
+"*test*.py" = ["D101", "D102", "D103"]
+"test_display.py" = ["T201"]
+"__init__.py" = ["F403"]
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.flake8-unused-arguments]
+ignore-variadic-names = true

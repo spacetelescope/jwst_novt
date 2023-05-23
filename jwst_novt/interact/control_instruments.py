@@ -1,16 +1,15 @@
 import ipywidgets as ipw
-from traitlets import HasTraits, Float, Unicode
+from traitlets import Float, HasTraits, Unicode
 
-from jwst_novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC, DEFAULT_COLOR
+from jwst_novt.constants import DEFAULT_COLOR, NIRCAM_DITHER_OFFSETS, NO_MOSAIC
 from jwst_novt.interact.utils import read_image
 
 __all__ = ['ControlInstruments']
 
 
 class ControlInstruments(HasTraits):
-    """
-    Widgets to control instrument aperture overlay configuration.
-    """
+    """Widgets to control instrument aperture overlay configuration."""
+
     ra = Float(0.0).tag(sync=True)
     dec = Float(0.0).tag(sync=True)
     pa = Float(0.0).tag(sync=True)
@@ -67,36 +66,12 @@ class ControlInstruments(HasTraits):
 
         # select box and text entry for dither and
         # mosaic patterns (NIRCam only)
+        self.set_dither = None
+        self.set_mosaic = None
+        self.set_mosaic_v2 = None
+        self.set_mosaic_v3 = None
         if self.instrument == 'NIRCam':
-            self.set_dither = ipw.Dropdown(
-                description='Dither pattern',
-                options=self.dither_values,
-                style={'description_width': 'initial'},
-                tooltip='Apply a NIRCam dither pattern')
-            ipw.link((self.set_dither, 'value'), (self, 'dither'))
-            self.set_dither.observe(self._check_mosaic_from_dither, 'value')
-
-            self.set_mosaic = ipw.Dropdown(
-                description='Mosaic', options=['No', 'Yes'],
-                style={'description_width': 'initial'},
-                tooltip='Apply a two-tile NIRCam mosaic')
-            ipw.link((self.set_mosaic, 'value'), (self, 'mosaic'))
-            self.set_mosaic.observe(self._check_mosaic, 'value')
-
-            self.set_mosaic_v2 = ipw.BoundedFloatText(
-                description='Horizontal offset (arcsec)',
-                min=0, max=3600, step=5, continuous_update=False,
-                style={'description_width': 'initial'},
-                tooltip='V2 distance between mosaic tile centers')
-            self.set_mosaic_v3 = ipw.BoundedFloatText(
-                description='Vertical offset (arcsec)',
-                min=0, max=3600, step=5, continuous_update=False,
-                style={'description_width': 'initial'},
-                tooltip='V3 distance between mosaic tile centers')
-            self.set_mosaic_v2.disabled = True
-            self.set_mosaic_v3.disabled = True
-            ipw.link((self.set_mosaic_v2, 'value'), (self, 'mosaic_v2'))
-            ipw.link((self.set_mosaic_v3, 'value'), (self, 'mosaic_v3'))
+            self._init_dither_widgets()
 
             # color controls
             self.color_pickers = [
@@ -107,25 +82,19 @@ class ControlInstruments(HasTraits):
                 ipw.ColorPicker(description='Long color',
                                 value=DEFAULT_COLOR['NIRCam Long'],
                                 style={'description_width': 'initial'},
-                                tooltip='Color for NIRCam Long overlays')
+                                tooltip='Color for NIRCam Long overlays'),
             ]
             ipw.link((self.color_pickers[0], 'value'),
                      (self, 'color_primary'))
             ipw.link((self.color_pickers[1], 'value'),
                      (self, 'color_alternate'))
-
         else:
-            self.set_dither = None
-            self.set_mosaic = None
-            self.set_mosaic_v2 = None
-            self.set_mosaic_v3 = None
-
             # color controls
             self.color_pickers = [
                 ipw.ColorPicker(description='Color',
                                 value=DEFAULT_COLOR['NIRSpec'],
                                 style={'description_width': 'initial'},
-                                tooltip='Color for NIRSpec overlays')
+                                tooltip='Color for NIRSpec overlays'),
             ]
             ipw.link((self.color_pickers[0], 'value'), (self, 'color_primary'))
 
@@ -154,7 +123,7 @@ class ControlInstruments(HasTraits):
             children=[self.set_ra, self.set_dec, self.set_pa],
             layout=row_layout)
         appearance_tab = ipw.Accordion(
-            children=[ipw.Box(children=self.color_pickers + [self.set_alpha],
+            children=[ipw.Box(children=[*self.color_pickers, self.set_alpha],
                               layout=row_layout)],
             titles=['Appearance'])
 
@@ -177,14 +146,47 @@ class ControlInstruments(HasTraits):
                                         align_items='center'))
         self.widgets = ipw.Accordion(children=[row], titles=[self.title])
 
+    def _init_dither_widgets(self):
+        """Set up dither widgets for NIRCam."""
+        self.set_dither = ipw.Dropdown(
+            description='Dither pattern',
+            options=self.dither_values,
+            style={'description_width': 'initial'},
+            tooltip='Apply a NIRCam dither pattern')
+        ipw.link((self.set_dither, 'value'), (self, 'dither'))
+        self.set_dither.observe(self._check_mosaic_from_dither, 'value')
+
+        self.set_mosaic = ipw.Dropdown(
+            description='Mosaic', options=['No', 'Yes'],
+            style={'description_width': 'initial'},
+            tooltip='Apply a two-tile NIRCam mosaic')
+        ipw.link((self.set_mosaic, 'value'), (self, 'mosaic'))
+        self.set_mosaic.observe(self._check_mosaic, 'value')
+
+        self.set_mosaic_v2 = ipw.BoundedFloatText(
+            description='Horizontal offset (arcsec)',
+            min=0, max=3600, step=5, continuous_update=False,
+            style={'description_width': 'initial'},
+            tooltip='V2 distance between mosaic tile centers')
+        self.set_mosaic_v3 = ipw.BoundedFloatText(
+            description='Vertical offset (arcsec)',
+            min=0, max=3600, step=5, continuous_update=False,
+            style={'description_width': 'initial'},
+            tooltip='V3 distance between mosaic tile centers')
+        self.set_mosaic_v2.disabled = True
+        self.set_mosaic_v3.disabled = True
+        ipw.link((self.set_mosaic_v2, 'value'), (self, 'mosaic_v2'))
+        ipw.link((self.set_mosaic_v3, 'value'), (self, 'mosaic_v3'))
+
     def _wrap_angle(self, change):
         """Wrap input angles to expected range (0-360)."""
         angle = change['new']
-        if angle < 0 or angle >= 360:
+        ndeg = 360
+        if angle < 0 or angle >= ndeg:
             # change angle in widget only:
             # the change will trigger a new call to set the
             # PA trait to the wrapped value
-            angle = (angle + 360) % 360
+            angle = (angle + ndeg) % ndeg
             self.set_pa.value = angle
         else:
             self.pa = angle

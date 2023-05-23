@@ -1,16 +1,16 @@
 # Project defaults and fixtures for pytest
-from astropy.io import fits
-from astropy.time import Time
-from astropy.wcs import WCS
 import numpy as np
 import pandas as pd
 import pytest
+from astropy.io import fits
+from astropy.time import Time
+from astropy.wcs import WCS
 
 
-@pytest.fixture
+@pytest.fixture()
 def catalog_file(tmp_path):
     filename = tmp_path / 'sources.radec'
-    with open(filename, 'w') as fh:
+    with filename.open('w') as fh:
         fh.write('202.42053  47.17906  F  16.58300\n'
                  '202.42514  47.29251  P  16.69000\n'
                  '202.45114  47.14672  F  16.70300\n'
@@ -21,10 +21,10 @@ def catalog_file(tmp_path):
     return filename
 
 
-@pytest.fixture
+@pytest.fixture()
 def catalog_file_2col(tmp_path):
     filename = tmp_path / 'sources_2col.radec'
-    with open(filename, 'w') as fh:
+    with filename.open('w') as fh:
         fh.write('202.42053  47.17906\n'
                  '202.42514  47.29251\n'
                  '202.45114  47.14672\n'
@@ -35,7 +35,7 @@ def catalog_file_2col(tmp_path):
     return filename
 
 
-@pytest.fixture
+@pytest.fixture()
 def catalog_dataframe():
     return pd.DataFrame({'ra': [202.42053, 202.42514, 202.45114, 202.48190,
                                 202.43707, 202.47760, 202.48415],
@@ -44,7 +44,7 @@ def catalog_dataframe():
                          'flag': ['F', 'P', 'F', 'F', 'F', 'F', 'P']})
 
 
-@pytest.fixture
+@pytest.fixture()
 def catalog_dataframe_2col():
     return pd.DataFrame({'ra': [202.42053, 202.42514, 202.45114, 202.48190,
                                 202.43707, 202.47760, 202.48415],
@@ -52,14 +52,14 @@ def catalog_dataframe_2col():
                                  47.16641, 47.20205, 47.24812]})
 
 
-@pytest.fixture
+@pytest.fixture()
 def bad_catalog_file(tmp_path):
     filename = tmp_path / 'bad.radec'
     filename.write_text('bad\n')
     return filename
 
 
-@pytest.fixture
+@pytest.fixture()
 def timeline_data():
     times = [Time('2022-01-04'), Time('2022-01-05'),
              Time('2022-01-06'), Time('2022-01-07'),
@@ -82,10 +82,10 @@ def timeline_data():
     return pd.DataFrame({
         'Time': times, 'V3PA': v3pa,
         'NIRSPEC_min_PA': nrs_min, 'NIRSPEC_max_PA': nrs_max,
-        'NIRCAM_min_PA': nrc_min, 'NIRCAM_max_PA': nrc_max,})
+        'NIRCAM_min_PA': nrc_min, 'NIRCAM_max_PA': nrc_max})
 
 
-@pytest.fixture
+@pytest.fixture()
 def image_2d_wcs():
     return WCS({'CTYPE1': 'RA---TAN', 'CUNIT1': 'deg',
                 'CDELT1': -0.0002777777778,
@@ -95,13 +95,13 @@ def image_2d_wcs():
                 'CRPIX2': 1, 'CRVAL2': 47.1951868})
 
 
-@pytest.fixture
+@pytest.fixture()
 def bad_wcs():
     return WCS({'CDELT1': 1, 'CRPIX1': 1, 'CRVAL1': 1,
                 'CDELT2': 1, 'CRPIX2': 1, 'CRVAL2': 1})
 
 
-@pytest.fixture
+@pytest.fixture()
 def image_file(tmp_path, image_2d_wcs):
     hdul = fits.HDUList(fits.PrimaryHDU(np.zeros((10, 10)),
                                         header=image_2d_wcs.to_header()))
@@ -111,7 +111,7 @@ def image_file(tmp_path, image_2d_wcs):
     return filename
 
 
-@pytest.fixture
+@pytest.fixture()
 def image_file_no_wcs(tmp_path):
     hdul = fits.HDUList(fits.PrimaryHDU(np.zeros((10, 10))))
     filename = tmp_path / 'image_no_wcs.fits'

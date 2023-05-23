@@ -1,11 +1,11 @@
-from astropy.coordinates import SkyCoord
 import pytest
 import regions
+from astropy.coordinates import SkyCoord
 
 from jwst_novt import footprints as fp
 
 
-@pytest.mark.parametrize('instrument,n_reg',
+@pytest.mark.parametrize(('instrument', 'n_reg'),
                          [('nirspec', 11),
                           ('nircam_short', 9),
                           ('nircam_long', 3)])
@@ -29,7 +29,7 @@ def test_instrument_footprints(instrument, n_reg):
         assert isinstance(r, regions.PolygonSkyRegion)
 
 
-@pytest.mark.parametrize('channel,dither,mosaic,offsets,n_reg',
+@pytest.mark.parametrize(('channel', 'dither', 'mosaic', 'offsets', 'n_reg'),
                          # n_reg is n_tile * n_dither * n_aperture + 1 center
                          [('long', 'NONE', False, (0, 0), 2 + 1),
                           ('long', 'NONE', True, (0, 0), 2 * 2 + 1),
@@ -57,7 +57,7 @@ def test_nircam_dithers(channel, dither, mosaic, offsets, n_reg):
     pa = 25.0
 
     if n_reg == 'error':
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match='not recognized'):
             fp.nircam_dither_footprint(
                 ra, dec, pa, channel=channel, dither_pattern=dither,
                 add_mosaic=mosaic, mosaic_offset=offsets)
@@ -87,8 +87,10 @@ def test_source_catalog(catalog_file, catalog_dataframe, in_file):
     primary, filler = fp.source_catalog(catalog)
     assert isinstance(primary, regions.Regions)
     assert isinstance(filler, regions.Regions)
-    assert len(primary) == 2
-    assert len(filler) == 5
+
+    expected_primary, expected_filler = 2, 5
+    assert len(primary) == expected_primary
+    assert len(filler) == expected_filler
 
 
 @pytest.mark.parametrize('in_file', [True, False])
@@ -101,21 +103,21 @@ def test_source_catalog_2col(catalog_file_2col, catalog_dataframe_2col,
     primary, filler = fp.source_catalog(catalog)
     assert isinstance(primary, regions.Regions)
     assert isinstance(filler, regions.Regions)
-    assert len(primary) == 7
-    assert len(filler) == 0
+
+    expected_primary, expected_filler = 7, 0
+    assert len(primary) == expected_primary
+    assert len(filler) == expected_filler
 
 
 def test_source_catalog_errors(tmp_path):
     # empty catalog: raises value error
     bad_cat = tmp_path / 'empty.txt'
     bad_cat.write_text('')
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(ValueError, match='file is empty'):
         fp.source_catalog(str(bad_cat))
-    assert 'file is empty' in str(err)
 
     # bad catalog: raises value error for unexpected columns
     bad_cat = tmp_path / 'bad_file.txt'
     bad_cat.write_text('bad')
-    with pytest.raises(ValueError) as err:
+    with pytest.raises(ValueError, match='expected 2'):
         fp.source_catalog(str(bad_cat))
-    assert 'expected 2' in str(err)

@@ -1,6 +1,4 @@
-"""
-Constants for use in standardizing names and generating instrument footprints.
-"""
+"""Constants to standardize names and values."""
 import pathlib
 
 __all__ = ['NOVT_DIR', 'INSTRUMENT_NAMES', 'NIRCAM_DITHER_OFFSETS',
@@ -47,9 +45,10 @@ DEFAULT_COLOR = {
     'NIRSpec': '#d62728',  # tab:red
     'NIRCam Long': '#2ca02c',  # tab:green
     'NIRCam Short': '#1f77b4',  # tab:blue
+    'NIRCam': '#1f77b4',  # tab:blue
     'Primary Sources': '#ff7f0e',  # tab:orange
     'Filler Sources': '#9467bd',  # tab:purple
-    'V3PA': '#7f7f7f'  # tab:gray
+    'V3PA': '#7f7f7f',  # tab:gray
 }
 """dict : Default colors for instrument footprint overlays.
 

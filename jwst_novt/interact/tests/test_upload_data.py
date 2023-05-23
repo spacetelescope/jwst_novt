@@ -1,9 +1,9 @@
-import os
 
 import pytest
 
 try:
     import ipywidgets as ipw
+
     from jwst_novt.interact import upload_data as u
 except ImportError:
     ipw = None
@@ -14,7 +14,7 @@ else:
 
 
 @pytest.mark.skipif(not HAS_DISPLAY, reason='Missing optional dependencies')
-class TestUploadData(object):
+class TestUploadData:
 
     def test_init(self, imviz):
         ud = u.UploadData(imviz)
@@ -33,7 +33,7 @@ class TestUploadData(object):
         assert not ud.image_file_upload.disabled
 
         # mock a file in input widget
-        image_name = os.path.basename(image_file)
+        image_name = image_file.name
         file_info = {'name': image_name,
                      'file_obj': str(image_file)}
         mocker.patch.object(ud.image_file_upload, 'get_files',
@@ -66,7 +66,7 @@ class TestUploadData(object):
         base_count = 12  # normal messages broadcast on load
 
         # mock the file upload
-        image_name = os.path.basename(image_file_no_wcs)
+        image_name = image_file_no_wcs.name
         file_info = {'name': image_name,
                      'file_obj': str(image_file_no_wcs)}
         mocker.patch.object(ud.image_file_upload, 'get_files',
@@ -87,7 +87,7 @@ class TestUploadData(object):
 
         # try uploading something non-FITS - should throw error and
         # not appear in viewer or uploaded data
-        image_name = os.path.basename(bad_catalog_file)
+        image_name = bad_catalog_file.name
         file_info = {'name': image_name,
                      'file_obj': str(bad_catalog_file)}
         mocker.patch.object(ud.image_file_upload, 'get_files',
@@ -112,7 +112,7 @@ class TestUploadData(object):
         assert not ud.image_file_upload.disabled
 
         # mock a file in input widget
-        cat_name = os.path.basename(catalog_file)
+        cat_name = catalog_file.name
         file_info = {'name': cat_name,
                      'file_obj': str(catalog_file)}
         mocker.patch.object(ud.catalog_file_upload, 'get_files',
@@ -146,8 +146,8 @@ class TestUploadData(object):
         assert len(ud.configuration) == 0
 
         # upload a good config file
-        cfg_name = os.path.basename(config_file)
-        with open(config_file) as fh:
+        cfg_name = config_file.name
+        with config_file.open() as fh:
             file_info = {'name': cfg_name,
                          'file_obj': fh}
             mocker.patch.object(ud.catalog_file_upload, 'get_files',

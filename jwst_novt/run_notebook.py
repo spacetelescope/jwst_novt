@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 import warnings
+from pathlib import Path
 
 try:
     from voila.app import Voila
@@ -10,7 +11,7 @@ try:
 except ImportError as err:  # pragma: no cover
     warnings.warn(f'Optional dependency `voila` not present: '
                   f'jwst_novt.run_notebook functionality will not work. '
-                  f'Import error: {err}')
+                  f'Import error: {err}', stacklevel=2)
     Voila = None
     VoilaConfiguration = None
     HAS_VOILA = False
@@ -38,22 +39,23 @@ def main(notebook_name):
 
     # Patterned on Jdaviz CLI script, simplified and adapted for
     # NOVT purposes
-    if not os.path.isfile(notebook_name):
+    notebook_name = Path(notebook_name)
+    if not notebook_name.is_file():
         notebook_name = NOVT_DIR / 'notebooks' / f'{notebook_name}.ipynb'
-        if not os.path.isfile(notebook_name):
-            raise FileNotFoundError(f'Cannot find notebook '
-                                    f'{os.path.basename(notebook_name)}')
+        if not notebook_name.is_file():
+            msg = f'Cannot find notebook {notebook_name.name}'
+            raise FileNotFoundError(msg)
 
     # run a copy of the notebook from a temp directory,
     # but keep track of start directory to reset
-    start_dir = os.path.abspath('.')
+    start_dir = Path('.').absolute()
     nbdir = tempfile.mkdtemp()
-    nbname = os.path.join(nbdir, os.path.basename(notebook_name))
+    nbname = Path(nbdir) / notebook_name.name
 
-    with open(notebook_name) as f:
+    with notebook_name.open() as f:
         notebook_template = f.read()
 
-    with open(nbname, 'w') as nbf:
+    with nbname.open('w') as nbf:
         nbf.write(notebook_template.replace('novt_notebook', 'novt_voila'))
 
     os.chdir(nbdir)

@@ -1,9 +1,7 @@
 import base64
-import os
 
-import ipywidgets as ipw
 import ipyvuetify as v
-
+import ipywidgets as ipw
 
 from jwst_novt.constants import NOVT_DIR
 
@@ -30,8 +28,8 @@ def read_image(image_file, width='100px', height='100px', margin='10px'):
     widget : ipywidgets.Image
         Image widget.
     """
-    image_path = os.path.join(NOVT_DIR, 'data', image_file)
-    with open(image_path, 'rb') as fh:
+    image_path = NOVT_DIR / 'data' / image_file
+    with image_path.open('rb') as fh:
         image = fh.read()
     image_widget = ipw.Image(value=image, format='png',
                              width=width, height=height)
@@ -53,6 +51,7 @@ class ToggleButton(v.Btn):
     class is 'accent', but it may be changed after creation as
     needed.
     """
+
     def __init__(self, **kwargs):
         super().__init__(class_='mx-2 my-2 primary active',
                          **kwargs)
@@ -91,6 +90,7 @@ class FileDownloadLink(ipw.HTML):
     created, so this method is suitable only for very small files.
     Clear the link after download with the `clear_link` method.
     """
+
     def __init__(self, *args, **kwargs):
         self.value = ''
         self.prefix = kwargs.get('value', '')
@@ -116,13 +116,13 @@ class FileDownloadLink(ipw.HTML):
         payload = b64.decode()
         self.url = f"data:text/plain;base64,{payload}"
 
-        html = f'<a ' \
-               f'style="{self.style_value}"' \
-               f'download="{filename}" ' \
-               f'href="{self.url}" ' \
-               f'target="_blank">' \
-               f'{self.prefix} {filename} {self.down_arrow}' \
-               f'</a>'
+        html = (f'<a '
+                f'style="{self.style_value}"'
+                f'download="{filename}" '
+                f'href="{self.url}" '
+                f'target="_blank">'
+                f'{self.prefix} {filename} {self.down_arrow}'
+                f'</a>')
         self.value = html
         self.disabled = False
 
