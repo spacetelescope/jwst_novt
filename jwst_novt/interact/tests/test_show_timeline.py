@@ -16,7 +16,7 @@ else:
 from jwst_novt.constants import DEFAULT_COLOR
 
 
-@pytest.mark.skipif(not HAS_DISPLAY, reason='Missing optional dependencies')
+@pytest.mark.skipif(not HAS_DISPLAY, reason="Missing optional dependencies")
 class TestShowTimeline:
     def test_init(self):
         # no initial arguments
@@ -35,8 +35,7 @@ class TestShowTimeline:
         # show the plot figure
         timeline_controls._show_plot()
         assert timeline_controls.figure is not None
-        assert (timeline_controls.figure
-                in timeline_controls.figure_container.children)
+        assert timeline_controls.figure in timeline_controls.figure_container.children
         assert len(timeline_controls.figure.marks) > 0
 
         # clear it
@@ -49,7 +48,7 @@ class TestShowTimeline:
         # container no longer holds figure
         assert len(timeline_controls.figure_container.children) == 0
 
-    @pytest.mark.parametrize('inst', ['NIRSpec', 'NIRCam', 'NIRSpec, NIRCam'])
+    @pytest.mark.parametrize("inst", ["NIRSpec", "NIRCam", "NIRSpec, NIRCam"])
     def test_make_timeline(self, timeline_controls, inst):
         timeline_controls.set_instrument.value = inst
 
@@ -59,52 +58,53 @@ class TestShowTimeline:
 
         # show plot -- also calls make_timeline
         timeline_controls._show_plot()
-        if inst == 'NIRSpec':
+        if inst == "NIRSpec":
             assert len(timeline_controls.figure.marks) == 1
-            assert (timeline_controls.figure.marks[0].colors
-                    == [DEFAULT_COLOR[inst]])
-        elif inst == 'NIRCam':
+            assert timeline_controls.figure.marks[0].colors == [DEFAULT_COLOR[inst]]
+        elif inst == "NIRCam":
             assert len(timeline_controls.figure.marks) == 1
-            assert (timeline_controls.figure.marks[0].colors
-                    == [DEFAULT_COLOR['NIRCam Short']])
+            assert timeline_controls.figure.marks[0].colors == [
+                DEFAULT_COLOR["NIRCam Short"]
+            ]
         else:
             n_inst = 2
             assert len(timeline_controls.figure.marks) == n_inst
-            assert (timeline_controls.figure.marks[0].colors
-                    == [DEFAULT_COLOR['NIRSpec']])
-            assert (timeline_controls.figure.marks[1].colors
-                    == [DEFAULT_COLOR['NIRCam Short']])
+            assert timeline_controls.figure.marks[0].colors == [
+                DEFAULT_COLOR["NIRSpec"]
+            ]
+            assert timeline_controls.figure.marks[1].colors == [
+                DEFAULT_COLOR["NIRCam Short"]
+            ]
 
         # modify colors: marks are updated in place
-        timeline_controls.nircam_color = 'red'
-        timeline_controls.nirspec_color = 'blue'
-        if inst == 'NIRSpec':
-            assert timeline_controls.figure.marks[0].colors == ['blue']
-        elif inst == 'NIRCam':
-            assert timeline_controls.figure.marks[0].colors == ['red']
+        timeline_controls.nircam_color = "red"
+        timeline_controls.nirspec_color = "blue"
+        if inst == "NIRSpec":
+            assert timeline_controls.figure.marks[0].colors == ["blue"]
+        elif inst == "NIRCam":
+            assert timeline_controls.figure.marks[0].colors == ["red"]
         else:
-            assert timeline_controls.figure.marks[0].colors == ['blue']
-            assert timeline_controls.figure.marks[1].colors == ['red']
+            assert timeline_controls.figure.marks[0].colors == ["blue"]
+            assert timeline_controls.figure.marks[1].colors == ["red"]
 
-    @pytest.mark.parametrize('start_date', [False, True])
+    @pytest.mark.parametrize("start_date", [False, True])
     def test_save_plot(self, timeline_controls, mocker, start_date):
         # set start and end dates if needed
         if not start_date:
             timeline_controls.set_start.value = None
             timeline_controls.set_end.value = None
-            date_str = datetime.datetime.now(
-                tz=datetime.UTC).strftime('%Y%m%d')
+            date_str = datetime.datetime.now(tz=datetime.UTC).strftime("%Y%m%d")
         else:
             timeline_controls.set_start.value = datetime.date(2022, 1, 5)
             timeline_controls.set_end.value = datetime.date(2022, 1, 9)
-            date_str = '20220105-20220109'
+            date_str = "20220105-20220109"
 
         # show the plot to make the figure then clear it
         timeline_controls._show_plot()
         timeline_controls._clear_plot()
 
         # mock the actual save function
-        m1 = mocker.patch.object(timeline_controls.figure, 'save_png')
+        m1 = mocker.patch.object(timeline_controls.figure, "save_png")
 
         # nothing happens if plot is not ready
         timeline_controls._save_plot()

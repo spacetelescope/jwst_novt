@@ -11,6 +11,9 @@ try:
     from .utils import *
     from .view_image import *
 except ImportError as err:
-    warnings.warn(f'Optional display dependencies not present: '
-                  f'jwst_novt.interact functionality will not work.'
-                  f'Import error: {err}', stacklevel=2)
+    warnings.warn(
+        f"Optional display dependencies not present: "
+        f"jwst_novt.interact functionality will not work."
+        f"Import error: {err}",
+        stacklevel=2,
+    )

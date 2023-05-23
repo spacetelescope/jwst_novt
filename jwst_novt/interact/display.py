@@ -16,9 +16,15 @@ from jwst_novt import footprints as fp
 from jwst_novt import timeline as tl
 from jwst_novt.constants import DEFAULT_COLOR, INSTRUMENT_NAMES
 
-__all__ = ['hold_all_sync', 'bqplot_figure', 'bqplot_footprint',
-           'bqplot_catalog', 'bqplot_timeline', 'remove_bqplot_patches',
-           'BqplotToolbar']
+__all__ = [
+    "hold_all_sync",
+    "bqplot_figure",
+    "bqplot_footprint",
+    "bqplot_catalog",
+    "bqplot_timeline",
+    "remove_bqplot_patches",
+    "BqplotToolbar",
+]
 
 
 @contextmanager
@@ -67,11 +73,24 @@ def bqplot_figure(*, toolbar=False):
     return fig
 
 
-def bqplot_footprint(fig, instrument, ra, dec, pa, wcs, *,
-                     dither_pattern=None, add_mosaic=False,
-                     mosaic_offset=None,
-                     color=None, visible=True, fill='inside',
-                     alpha=1.0, fill_alpha=0.5, update_patches=None):
+def bqplot_footprint(
+    fig,
+    instrument,
+    ra,
+    dec,
+    pa,
+    wcs,
+    *,
+    dither_pattern=None,
+    add_mosaic=False,
+    mosaic_offset=None,
+    color=None,
+    visible=True,
+    fill="inside",
+    alpha=1.0,
+    fill_alpha=0.5,
+    update_patches=None,
+):
     """
     Create an instrument footprint as an overlay in a bqplot figure.
 
@@ -142,7 +161,7 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs, *,
         Marks added to the figure.
     """
     # standardize input
-    inst = re.sub(r'\s', '_', instrument.strip().lower())
+    inst = re.sub(r"\s", "_", instrument.strip().lower())
     inst = INSTRUMENT_NAMES[inst]
 
     dither_pattern = str(dither_pattern).strip().upper()
@@ -152,19 +171,23 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs, *,
         color = DEFAULT_COLOR[inst]
 
     # make regions
-    if inst == 'NIRSpec':
+    if inst == "NIRSpec":
         regs = fp.nirspec_footprint(ra, dec, pa)
     else:
         # 'NIRCam Short' or 'NIRCam Long'
         channel = inst.split()[-1].lower()
         regs = fp.nircam_dither_footprint(
-            ra, dec, pa, channel=channel,
+            ra,
+            dec,
+            pa,
+            channel=channel,
             dither_pattern=dither_pattern,
             add_mosaic=add_mosaic,
-            mosaic_offset=mosaic_offset)
+            mosaic_offset=mosaic_offset,
+        )
 
     # get scales from figure
-    scales = {'x': fig.interaction.x_scale, 'y': fig.interaction.y_scale}
+    scales = {"x": fig.interaction.x_scale, "y": fig.interaction.y_scale}
 
     marks = []
     for i, reg in enumerate(regs):
@@ -179,10 +202,13 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs, *,
                     mark.default_opacities = [alpha]
             else:
                 # instrument center point
-                mark = bqplot.Scatter(x=[pixel_region.center.x],
-                                      y=[pixel_region.center.y],
-                                      scales=scales, colors=[color],
-                                      marker='plus')
+                mark = bqplot.Scatter(
+                    x=[pixel_region.center.x],
+                    y=[pixel_region.center.y],
+                    scales=scales,
+                    colors=[color],
+                    marker="plus",
+                )
                 mark.default_opacities = [alpha]
         else:
             x_coords = pixel_region.vertices.x
@@ -198,10 +224,17 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs, *,
                     mark.fill_opacities = [fill_alpha]
             else:
                 # instrument aperture regions
-                mark = bqplot.Lines(x=x_coords, y=y_coords, scales=scales,
-                                    fill=fill, colors=[color], stroke_width=2,
-                                    close_path=True, opacities=[alpha],
-                                    fill_opacities=[fill_alpha])
+                mark = bqplot.Lines(
+                    x=x_coords,
+                    y=y_coords,
+                    scales=scales,
+                    fill=fill,
+                    colors=[color],
+                    stroke_width=2,
+                    close_path=True,
+                    opacities=[alpha],
+                    fill_opacities=[fill_alpha],
+                )
 
         mark.visible = visible
         marks.append(mark)
@@ -211,8 +244,9 @@ def bqplot_footprint(fig, instrument, ra, dec, pa, wcs, *,
     return marks
 
 
-def bqplot_catalog(fig, catalog_file, wcs, *,
-                   colors=None, visible=True, fill=False, alpha=1.0):
+def bqplot_catalog(
+    fig, catalog_file, wcs, *, colors=None, visible=True, fill=False, alpha=1.0
+):
     """
     Create a catalog source overlay on a bqplot figure.
 
@@ -252,54 +286,68 @@ def bqplot_catalog(fig, catalog_file, wcs, *,
         Marks added to the figure.
     """
     if colors is None:
-        colors = [DEFAULT_COLOR['Primary Sources'],
-                  DEFAULT_COLOR['Filler Sources']]
+        colors = [DEFAULT_COLOR["Primary Sources"], DEFAULT_COLOR["Filler Sources"]]
 
     # load the source catalog
     try:
-        catalog = pd.read_csv(catalog_file, names=['ra', 'dec', 'flag'],
-                              delim_whitespace=True, usecols=[0, 1, 2])
+        catalog = pd.read_csv(
+            catalog_file,
+            names=["ra", "dec", "flag"],
+            delim_whitespace=True,
+            usecols=[0, 1, 2],
+        )
     except ValueError:
         # if the catalog file is a file object, it may need to be rewound
         # before reading again
         with suppress(AttributeError):
             catalog_file.seek(0)
 
-        catalog = pd.read_csv(catalog_file, names=['ra', 'dec'],
-                              delim_whitespace=True, usecols=[0, 1])
-        catalog['flag'] = 'P'
+        catalog = pd.read_csv(
+            catalog_file, names=["ra", "dec"], delim_whitespace=True, usecols=[0, 1]
+        )
+        catalog["flag"] = "P"
     finally:
         with suppress(AttributeError):
             catalog_file.seek(0)
 
     if len(catalog.index) == 0:
-        msg = 'Catalog file is empty.'
+        msg = "Catalog file is empty."
         raise ValueError(msg)
 
     # sort by flag
-    filler = (catalog['flag'] == 'F')
+    filler = catalog["flag"] == "F"
     primary = ~filler
 
-    fill_x, fill_y = wcs.wcs_world2pix(
-        catalog['ra'][filler], catalog['dec'][filler], 0)
+    fill_x, fill_y = wcs.wcs_world2pix(catalog["ra"][filler], catalog["dec"][filler], 0)
 
     primary_x, primary_y = wcs.wcs_world2pix(
-        catalog['ra'][primary], catalog['dec'][primary], 0)
+        catalog["ra"][primary], catalog["dec"][primary], 0
+    )
 
     # get scales from figure
-    scales = {'x': fig.interaction.x_scale, 'y': fig.interaction.y_scale}
+    scales = {"x": fig.interaction.x_scale, "y": fig.interaction.y_scale}
 
     # scatter plot for primary markers
     primary_markers = bqplot.Scatter(
-        x=primary_x, y=primary_y, scales=scales, colors=[colors[0]],
-        marker='circle', fill=fill)
+        x=primary_x,
+        y=primary_y,
+        scales=scales,
+        colors=[colors[0]],
+        marker="circle",
+        fill=fill,
+    )
     primary_markers.visible = visible
     primary_markers.default_opacities = [alpha]
 
     # scatter plot for filler markers
     filler_markers = bqplot.Scatter(
-        x=fill_x, y=fill_y, scales=scales, colors=[colors[1]],
-        marker='circle', fill=fill)
+        x=fill_x,
+        y=fill_y,
+        scales=scales,
+        colors=[colors[1]],
+        marker="circle",
+        fill=fill,
+    )
     filler_markers.visible = visible
     filler_markers.default_opacities = [alpha]
 
@@ -310,8 +358,7 @@ def bqplot_catalog(fig, catalog_file, wcs, *,
     return primary_markers, filler_markers
 
 
-def _average_pa(time_data, min_pa, max_pa, min_time=None, max_time=None,
-                method='mean'):
+def _average_pa(time_data, min_pa, max_pa, min_time=None, max_time=None, method="mean"):
     """Describe the average PA value within a specified time range."""
     if min_time is not None and max_time is not None:
         in_range = (time_data >= min_time) & (time_data <= max_time)
@@ -319,12 +366,11 @@ def _average_pa(time_data, min_pa, max_pa, min_time=None, max_time=None,
     else:
         all_pa = np.array([min_pa, max_pa]) * u.deg
 
-    if method == 'mode':
+    if method == "mode":
         nnan = ~np.isnan(all_pa[0]) | ~np.isnan(all_pa[1])
         if np.sum(nnan) > 0:
             all_pa = circmean(all_pa[:, nnan], axis=0).value
-            val, ct = np.unique(np.round(all_pa).astype(int),
-                                return_counts=True)
+            val, ct = np.unique(np.round(all_pa).astype(int), return_counts=True)
             avg_pa = (val[ct.argmax()] + 360) % 360
         else:
             avg_pa = np.nan
@@ -333,14 +379,23 @@ def _average_pa(time_data, min_pa, max_pa, min_time=None, max_time=None,
         avg_pa = (circmean(all_pa[nnan]).value + 360) % 360
 
     if np.isnan(avg_pa):
-        pa_label = '(not visible)'
+        pa_label = "(not visible)"
     else:
-        pa_label = f'Avg. PA: {avg_pa:.0f} deg'
+        pa_label = f"Avg. PA: {avg_pa:.0f} deg"
     return pa_label
 
 
-def bqplot_timeline(fig, ra, dec, *, start_date=None, end_date=None,
-                    instrument=None, show_v3pa=False, colors=None):
+def bqplot_timeline(
+    fig,
+    ra,
+    dec,
+    *,
+    start_date=None,
+    end_date=None,
+    instrument=None,
+    show_v3pa=False,
+    colors=None,
+):
     """
     Plot a visibility timeline in a bqplot figure.
 
@@ -381,8 +436,9 @@ def bqplot_timeline(fig, ra, dec, *, start_date=None, end_date=None,
     """
     # clear figure and set loading message
     clear_bqplot_figure(fig)
-    message = bqplot.Label(text=['Computing timeline...'],
-                           x=[0.5], y=[0.5], align='middle')
+    message = bqplot.Label(
+        text=["Computing timeline..."], x=[0.5], y=[0.5], align="middle"
+    )
     fig.marks = [message]
 
     if start_date is not None:
@@ -392,32 +448,40 @@ def bqplot_timeline(fig, ra, dec, *, start_date=None, end_date=None,
 
     # get timeline for NIRSpec and NIRCam at the same position
     if instrument is None:
-        instruments = ['NIRSpec', 'NIRCam']
+        instruments = ["NIRSpec", "NIRCam"]
     else:
         instruments = [instrument]
     try:
         timeline_data = tl.timeline(
-            ra, dec, start_date=start_date, end_date=end_date,
-            instrument=instrument)
+            ra, dec, start_date=start_date, end_date=end_date, instrument=instrument
+        )
     except Exception:
         timeline_data = None
 
     clear_bqplot_figure(fig)
     title = f"Visibility for {', '.join(instruments)} at RA={ra}, Dec={dec}"
     marks = []
-    scales = {'x': bqplot.DateScale(), 'y': bqplot.LinearScale()}
+    scales = {"x": bqplot.DateScale(), "y": bqplot.LinearScale()}
     if timeline_data is None:
-        message = bqplot.Label(text=['No timeline data for input date range.'],
-                               x=[0.5], y=[0.5], align='middle')
+        message = bqplot.Label(
+            text=["No timeline data for input date range."],
+            x=[0.5],
+            y=[0.5],
+            align="middle",
+        )
         marks.append(message)
     else:
         # add V3PA line if desired
         if show_v3pa and len(marks) == 0:
-            color = DEFAULT_COLOR['V3PA']
-            line = bqplot.Lines(x=timeline_data['Time'],
-                                y=timeline_data['V3PA'],
-                                scales=scales, colors=[color],
-                                labels=['JWST V3 PA'], display_legend=True)
+            color = DEFAULT_COLOR["V3PA"]
+            line = bqplot.Lines(
+                x=timeline_data["Time"],
+                y=timeline_data["V3PA"],
+                scales=scales,
+                colors=[color],
+                labels=["JWST V3 PA"],
+                display_legend=True,
+            )
             marks.append(line)
 
         for i, inst in enumerate(instruments):
@@ -426,34 +490,44 @@ def bqplot_timeline(fig, ra, dec, *, start_date=None, end_date=None,
             else:
                 color = colors[i]
 
-            min_pa = timeline_data[f'{inst.upper()}_min_PA']
-            max_pa = timeline_data[f'{inst.upper()}_max_PA']
-            avg_pa = _average_pa(timeline_data['Time'], min_pa, max_pa)
-            line = bqplot.Lines(x=timeline_data['Time'], y=[min_pa, max_pa],
-                                scales=scales, colors=[color], fill='between',
-                                fill_opacities=[0.5],
-                                labels=[inst, avg_pa],
-                                display_legend=True)
+            min_pa = timeline_data[f"{inst.upper()}_min_PA"]
+            max_pa = timeline_data[f"{inst.upper()}_max_PA"]
+            avg_pa = _average_pa(timeline_data["Time"], min_pa, max_pa)
+            line = bqplot.Lines(
+                x=timeline_data["Time"],
+                y=[min_pa, max_pa],
+                scales=scales,
+                colors=[color],
+                fill="between",
+                fill_opacities=[0.5],
+                labels=[inst, avg_pa],
+                display_legend=True,
+            )
             marks.append(line)
 
             # add a little callback to update the legend with the
             # average PA value in range, when the plot is zoomed
             def _set_pa_label(inst_, line_, *args):
                 pa_label = _average_pa(
-                    timeline_data['Time'],
-                    timeline_data[f'{inst_.upper()}_min_PA'],
-                    timeline_data[f'{inst_.upper()}_max_PA'],
-                    scales['x'].min, scales['x'].max)
+                    timeline_data["Time"],
+                    timeline_data[f"{inst_.upper()}_min_PA"],
+                    timeline_data[f"{inst_.upper()}_max_PA"],
+                    scales["x"].min,
+                    scales["x"].max,
+                )
                 line_.labels = [inst_, pa_label]
-            scales['x'].observe(partial(_set_pa_label, inst, line),
-                                names=['max'])
 
-    fig.title = title.rstrip(',')
-    fig.legend_location = 'top-right'
+            scales["x"].observe(partial(_set_pa_label, inst, line), names=["max"])
+
+    fig.title = title.rstrip(",")
+    fig.legend_location = "top-right"
     fig.marks = marks
-    fig.axes = [bqplot.Axis(scale=scales['x'], label='Date'),
-                bqplot.Axis(scale=scales['y'], label='Position Angle (deg)',
-                            orientation='vertical')]
+    fig.axes = [
+        bqplot.Axis(scale=scales["x"], label="Date"),
+        bqplot.Axis(
+            scale=scales["y"], label="Position Angle (deg)", orientation="vertical"
+        ),
+    ]
 
 
 def remove_bqplot_patches(fig, patches):
@@ -499,29 +573,34 @@ class BqplotToolbar:
         self.fig = fig
 
         self.pan_zoom = None
-        self.direction = ' '
-        self.fig.observe(self.set_scales, 'axes')
+        self.direction = " "
+        self.fig.observe(self.set_scales, "axes")
 
-        self.reset_button = ipw.Button(tooltip='Reset plot limits',
-                                       icon='home')
-        self.reset_button.layout.width = '50px'
+        self.reset_button = ipw.Button(tooltip="Reset plot limits", icon="home")
+        self.reset_button.layout.width = "50px"
         self.reset_button.on_click(self.reset_zoom)
 
         # note: toggle display doesn't seem to work if buttons
         # have identical labels, even if their values and icons
         # are different
         self.mode_buttons = ipw.ToggleButtons(
-            options=[('', ' '), (' ', 'xy'), ('  ', 'x'), ('   ', 'y')],
-            icons=['stop', 'arrows', 'arrows-h', 'arrows-v', 'stop'],
-            tooltips=['No zoom mode', 'Scroll to zoom, drag to pan',
-                      'Pan/zoom in X only', 'Pan/zoom in Y only'],
-            layout=ipw.Layout(align_items='center'))
-        self.mode_buttons.style.button_width = '50px'
-        self.mode_buttons.observe(self.set_zoom_mode, 'value')
+            options=[("", " "), (" ", "xy"), ("  ", "x"), ("   ", "y")],
+            icons=["stop", "arrows", "arrows-h", "arrows-v", "stop"],
+            tooltips=[
+                "No zoom mode",
+                "Scroll to zoom, drag to pan",
+                "Pan/zoom in X only",
+                "Pan/zoom in Y only",
+            ],
+            layout=ipw.Layout(align_items="center"),
+        )
+        self.mode_buttons.style.button_width = "50px"
+        self.mode_buttons.observe(self.set_zoom_mode, "value")
 
         self.widgets = ipw.VBox(
             children=[ipw.HBox([self.reset_button, self.mode_buttons])],
-            layout=ipw.Layout(align_items='center'))
+            layout=ipw.Layout(align_items="center"),
+        )
 
     def reset_zoom(self, *args, **kwargs):
         """Reset the plot limits."""
@@ -535,7 +614,7 @@ class BqplotToolbar:
     def set_scales(self, *args, **kwargs):
         """Set the axis scales (x, y, or both) in the pan/zoom tool."""
         if len(self.fig.axes) == 0:
-            self.mode_buttons.value = ' '
+            self.mode_buttons.value = " "
             return
 
         x_scale = self.fig.axes[0].scale
@@ -548,16 +627,16 @@ class BqplotToolbar:
             # instance instead.
             self.pan_zoom = bqplot.interacts.PanZoom()
             self.fig.interaction = self.pan_zoom
-        if self.direction == 'x':
-            self.pan_zoom.scales = {'x': [x_scale]}
+        if self.direction == "x":
+            self.pan_zoom.scales = {"x": [x_scale]}
             self.pan_zoom.allow_zoom = True
             self.pan_zoom.allow_pan = True
-        elif self.direction == 'y':
-            self.pan_zoom.scales = {'y': [y_scale]}
+        elif self.direction == "y":
+            self.pan_zoom.scales = {"y": [y_scale]}
             self.pan_zoom.allow_zoom = True
             self.pan_zoom.allow_pan = True
-        elif self.direction == 'xy':
-            self.pan_zoom.scales = {'x': [x_scale], 'y': [y_scale]}
+        elif self.direction == "xy":
+            self.pan_zoom.scales = {"x": [x_scale], "y": [y_scale]}
             self.pan_zoom.allow_zoom = True
             self.pan_zoom.allow_pan = True
         else:

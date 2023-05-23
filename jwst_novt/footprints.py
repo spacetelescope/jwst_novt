@@ -6,9 +6,13 @@ from astropy import coordinates
 
 from jwst_novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC
 
-__all__ = ['nirspec_footprint', 'nircam_short_footprint',
-           'nircam_long_footprint', 'nircam_dither_footprint',
-           'source_catalog']
+__all__ = [
+    "nirspec_footprint",
+    "nircam_short_footprint",
+    "nircam_long_footprint",
+    "nircam_dither_footprint",
+    "source_catalog",
+]
 
 
 def nirspec_footprint(ra, dec, pa, *, include_center=True, apertures=None):
@@ -53,37 +57,44 @@ def nirspec_footprint(ra, dec, pa, *, include_center=True, apertures=None):
         Output regions are in sky coordinates.
     """
     if apertures is None:
-        apertures = ['NRS_FULL_MSA1', 'NRS_FULL_MSA2',
-                     'NRS_FULL_MSA3', 'NRS_FULL_MSA4',
-                     'NRS_FULL_IFU', 'NRS_FULL_IFU',
-                     'NRS_S400A1_SLIT', 'NRS_S400A1_SLIT',
-                     'NRS_S200A2_SLIT', 'NRS_S200B1_SLIT']
+        apertures = [
+            "NRS_FULL_MSA1",
+            "NRS_FULL_MSA2",
+            "NRS_FULL_MSA3",
+            "NRS_FULL_MSA4",
+            "NRS_FULL_IFU",
+            "NRS_FULL_IFU",
+            "NRS_S400A1_SLIT",
+            "NRS_S400A1_SLIT",
+            "NRS_S200A2_SLIT",
+            "NRS_S200B1_SLIT",
+        ]
 
     # Siaf interface for NIRSpec
-    nirspec = pysiaf.Siaf('NIRSpec')
+    nirspec = pysiaf.Siaf("NIRSpec")
 
     # Get center and PA offset from MSA full aperture
-    msa_full = nirspec.apertures['NRS_FULL_MSA']
-    msa_corners = msa_full.corners('tel')
+    msa_full = nirspec.apertures["NRS_FULL_MSA"]
+    msa_corners = msa_full.corners("tel")
     msa_v2 = np.mean(msa_corners[0])
     msa_v3 = np.mean(msa_corners[1])
     pa_offset = msa_full.V3IdlYAngle
 
     # Attitude matrix for sky coordinates
-    attmat = pysiaf.utils.rotations.attitude(
-        msa_v2, msa_v3, ra, dec, pa - pa_offset)
+    attmat = pysiaf.utils.rotations.attitude(msa_v2, msa_v3, ra, dec, pa - pa_offset)
 
     # Aperture regions
     nrs_regions = []
     if include_center:
-        nrs_regions.append(regions.PointSkyRegion(
-            coordinates.SkyCoord(ra, dec, unit='deg')))
+        nrs_regions.append(
+            regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit="deg"))
+        )
     for aperture_name in apertures:
         aperture = nirspec.apertures[aperture_name]
         aperture.set_attitude_matrix(attmat)
-        poly_points = aperture.closed_polygon_points('sky')
+        poly_points = aperture.closed_polygon_points("sky")
 
-        sky_coord = coordinates.SkyCoord(*poly_points, unit='deg')
+        sky_coord = coordinates.SkyCoord(*poly_points, unit="deg")
         reg = regions.PolygonSkyRegion(sky_coord)
         nrs_regions.append(reg)
 
@@ -91,8 +102,9 @@ def nirspec_footprint(ra, dec, pa, *, include_center=True, apertures=None):
     return nrs_regions
 
 
-def nircam_short_footprint(ra, dec, pa, *, v2_offset=0.0, v3_offset=0.0,
-                           include_center=True, apertures=None):
+def nircam_short_footprint(
+    ra, dec, pa, *, v2_offset=0.0, v3_offset=0.0, include_center=True, apertures=None
+):
     """
     Create NIRCam short channel footprint regions in sky coordinates.
 
@@ -138,35 +150,43 @@ def nircam_short_footprint(ra, dec, pa, *, v2_offset=0.0, v3_offset=0.0,
         Output regions are in sky coordinates.
     """
     if apertures is None:
-        apertures = ['NRCA1_FULL', 'NRCA2_FULL', 'NRCA3_FULL', 'NRCA4_FULL',
-                     'NRCB1_FULL', 'NRCB2_FULL', 'NRCB3_FULL', 'NRCB4_FULL']
+        apertures = [
+            "NRCA1_FULL",
+            "NRCA2_FULL",
+            "NRCA3_FULL",
+            "NRCA4_FULL",
+            "NRCB1_FULL",
+            "NRCB2_FULL",
+            "NRCB3_FULL",
+            "NRCB4_FULL",
+        ]
 
     # Siaf interface for NIRCam
-    nircam = pysiaf.Siaf('NIRCam')
+    nircam = pysiaf.Siaf("NIRCam")
 
     # Get center and PA offset from full aperture
-    nrc_full = nircam.apertures['NRCALL_FULL']
-    nrc_corners = nrc_full.corners('tel', rederive=False)
+    nrc_full = nircam.apertures["NRCALL_FULL"]
+    nrc_corners = nrc_full.corners("tel", rederive=False)
     nrc_v2 = np.mean(nrc_corners[0]) - v2_offset
     nrc_v3 = np.mean(nrc_corners[1]) + v3_offset
     pa_offset = nrc_full.V3IdlYAngle
 
     # Attitude matrix for sky coordinates
-    attmat = pysiaf.utils.rotations.attitude(
-        nrc_v2, nrc_v3, ra, dec, pa - pa_offset)
+    attmat = pysiaf.utils.rotations.attitude(nrc_v2, nrc_v3, ra, dec, pa - pa_offset)
 
     # Aperture regions
     nrc_regions = []
     if include_center:
-        nrc_regions.append(regions.PointSkyRegion(
-            coordinates.SkyCoord(ra, dec, unit='deg')))
+        nrc_regions.append(
+            regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit="deg"))
+        )
 
     for aperture_name in apertures:
         aperture = nircam.apertures[aperture_name]
         aperture.set_attitude_matrix(attmat)
-        poly_points = aperture.closed_polygon_points('sky')
+        poly_points = aperture.closed_polygon_points("sky")
 
-        sky_coord = coordinates.SkyCoord(*poly_points, unit='deg')
+        sky_coord = coordinates.SkyCoord(*poly_points, unit="deg")
         reg = regions.PolygonSkyRegion(sky_coord)
         nrc_regions.append(reg)
 
@@ -174,8 +194,9 @@ def nircam_short_footprint(ra, dec, pa, *, v2_offset=0.0, v3_offset=0.0,
     return nrc_regions
 
 
-def nircam_long_footprint(ra, dec, pa, *, v2_offset=0.0, v3_offset=0.0,
-                          include_center=True, apertures=None):
+def nircam_long_footprint(
+    ra, dec, pa, *, v2_offset=0.0, v3_offset=0.0, include_center=True, apertures=None
+):
     """
     Create NIRCam long channel footprint regions in sky coordinates.
 
@@ -214,33 +235,33 @@ def nircam_long_footprint(ra, dec, pa, *, v2_offset=0.0, v3_offset=0.0,
         Output regions are in sky coordinates.
     """
     if apertures is None:
-        apertures = ['NRCA5_FULL', 'NRCB5_FULL']
+        apertures = ["NRCA5_FULL", "NRCB5_FULL"]
 
     # Siaf interface for NIRCam
-    nircam = pysiaf.Siaf('NIRCam')
+    nircam = pysiaf.Siaf("NIRCam")
 
     # Get center and PA offset from full aperture
-    nrc_full = nircam.apertures['NRCALL_FULL']
-    nrc_corners = nrc_full.corners('tel', rederive=False)
+    nrc_full = nircam.apertures["NRCALL_FULL"]
+    nrc_corners = nrc_full.corners("tel", rederive=False)
     nrc_v2 = np.mean(nrc_corners[0]) - v2_offset
     nrc_v3 = np.mean(nrc_corners[1]) + v3_offset
     pa_offset = nrc_full.V3IdlYAngle
 
     # Attitude matrix for sky coordinates
-    attmat = pysiaf.utils.rotations.attitude(
-        nrc_v2, nrc_v3, ra, dec, pa - pa_offset)
+    attmat = pysiaf.utils.rotations.attitude(nrc_v2, nrc_v3, ra, dec, pa - pa_offset)
 
     # Aperture regions
     nrc_regions = []
     if include_center:
-        nrc_regions.append(regions.PointSkyRegion(
-            coordinates.SkyCoord(ra, dec, unit='deg')))
+        nrc_regions.append(
+            regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit="deg"))
+        )
     for aperture_name in apertures:
         aperture = nircam.apertures[aperture_name]
         aperture.set_attitude_matrix(attmat)
-        poly_points = aperture.closed_polygon_points('sky')
+        poly_points = aperture.closed_polygon_points("sky")
 
-        sky_coord = coordinates.SkyCoord(*poly_points, unit='deg')
+        sky_coord = coordinates.SkyCoord(*poly_points, unit="deg")
         reg = regions.PolygonSkyRegion(sky_coord)
         nrc_regions.append(reg)
 
@@ -248,10 +269,18 @@ def nircam_long_footprint(ra, dec, pa, *, v2_offset=0.0, v3_offset=0.0,
     return nrc_regions
 
 
-def nircam_dither_footprint(ra, dec, pa, *, dither_pattern='NONE',
-                            channel='long', add_mosaic=False,
-                            mosaic_offset=None, include_center=True,
-                            apertures=None):
+def nircam_dither_footprint(
+    ra,
+    dec,
+    pa,
+    *,
+    dither_pattern="NONE",
+    channel="long",
+    add_mosaic=False,
+    mosaic_offset=None,
+    include_center=True,
+    apertures=None,
+):
     """
     Dither and/or mosaic the NIRCam aperture footprint.
 
@@ -293,12 +322,14 @@ def nircam_dither_footprint(ra, dec, pa, *, dither_pattern='NONE',
     """
     pattern = dither_pattern.strip().upper()
     if pattern not in NIRCAM_DITHER_OFFSETS:
-        msg = (f'Dither pattern {dither_pattern} not recognized. '
-               f'Options are: {list(NIRCAM_DITHER_OFFSETS.keys())}.')
+        msg = (
+            f"Dither pattern {dither_pattern} not recognized. "
+            f"Options are: {list(NIRCAM_DITHER_OFFSETS.keys())}."
+        )
         raise ValueError(msg)
     dither_offsets = NIRCAM_DITHER_OFFSETS[pattern]
 
-    if channel.strip().lower() == 'short':
+    if channel.strip().lower() == "short":
         footprint_func = nircam_short_footprint
     else:
         footprint_func = nircam_long_footprint
@@ -311,8 +342,10 @@ def nircam_dither_footprint(ra, dec, pa, *, dither_pattern='NONE',
     # note: if offsets are 0 but add_mosaic is set, two
     # footprint tiles are still created
     if add_mosaic:
-        center_offset = [(mosaic_offset[0] / 2, -mosaic_offset[1] / 2),
-                         (-mosaic_offset[0] / 2, mosaic_offset[1] / 2)]
+        center_offset = [
+            (mosaic_offset[0] / 2, -mosaic_offset[1] / 2),
+            (-mosaic_offset[0] / 2, mosaic_offset[1] / 2),
+        ]
     else:
         center_offset = [(0, 0)]
 
@@ -321,10 +354,15 @@ def nircam_dither_footprint(ra, dec, pa, *, dither_pattern='NONE',
         for offset in dither_offsets:
             v2 = offset[0] + mosaic_position[0]
             v3 = offset[1] + mosaic_position[1]
-            reg_list = footprint_func(ra, dec, pa,
-                                      v2_offset=v2, v3_offset=v3,
-                                      include_center=include_center,
-                                      apertures=apertures)
+            reg_list = footprint_func(
+                ra,
+                dec,
+                pa,
+                v2_offset=v2,
+                v3_offset=v3,
+                include_center=include_center,
+                apertures=apertures,
+            )
             # include center only once
             include_center = False
 
@@ -364,33 +402,40 @@ def source_catalog(catalog_file):
     # load the source catalog
     if isinstance(catalog_file, pd.DataFrame):
         catalog = catalog_file
-        if 'flag' not in catalog:
-            catalog['flag'] = 'P'
+        if "flag" not in catalog:
+            catalog["flag"] = "P"
     else:
         try:
-            catalog = pd.read_csv(catalog_file, names=['ra', 'dec', 'flag'],
-                                  delim_whitespace=True, usecols=[0, 1, 2])
+            catalog = pd.read_csv(
+                catalog_file,
+                names=["ra", "dec", "flag"],
+                delim_whitespace=True,
+                usecols=[0, 1, 2],
+            )
         except ValueError:
             # try again with two columns
-            catalog = pd.read_csv(catalog_file, names=['ra', 'dec'],
-                                  delim_whitespace=True, usecols=[0, 1])
-            catalog['flag'] = 'P'
+            catalog = pd.read_csv(
+                catalog_file, names=["ra", "dec"], delim_whitespace=True, usecols=[0, 1]
+            )
+            catalog["flag"] = "P"
 
     if len(catalog.index) == 0:
-        msg = 'Catalog file is empty.'
+        msg = "Catalog file is empty."
         raise ValueError(msg)
 
-    filler = (catalog['flag'] == 'F')
+    filler = catalog["flag"] == "F"
     primary = ~filler
 
     primary_regions = []
-    for ra, dec in zip(catalog['ra'][primary], catalog['dec'][primary]):
+    for ra, dec in zip(catalog["ra"][primary], catalog["dec"][primary]):
         primary_regions.append(
-            regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit='deg')))
+            regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit="deg"))
+        )
 
     filler_regions = []
-    for ra, dec in zip(catalog['ra'][filler], catalog['dec'][filler]):
+    for ra, dec in zip(catalog["ra"][filler], catalog["dec"][filler]):
         filler_regions.append(
-            regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit='deg')))
+            regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit="deg"))
+        )
 
     return regions.Regions(primary_regions), regions.Regions(filler_regions)

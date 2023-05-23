@@ -5,10 +5,10 @@ import ipywidgets as ipw
 
 from jwst_novt.constants import NOVT_DIR
 
-__all__ = ['read_image', 'ToggleButton', 'FileDownloadLink']
+__all__ = ["read_image", "ToggleButton", "FileDownloadLink"]
 
 
-def read_image(image_file, width='100px', height='100px', margin='10px'):
+def read_image(image_file, width="100px", height="100px", margin="10px"):
     """
     Read an image file into a displayable widget.
 
@@ -28,12 +28,11 @@ def read_image(image_file, width='100px', height='100px', margin='10px'):
     widget : ipywidgets.Image
         Image widget.
     """
-    image_path = NOVT_DIR / 'data' / image_file
-    with image_path.open('rb') as fh:
+    image_path = NOVT_DIR / "data" / image_file
+    with image_path.open("rb") as fh:
         image = fh.read()
-    image_widget = ipw.Image(value=image, format='png',
-                             width=width, height=height)
-    image_widget.layout.object_fit = 'contain'
+    image_widget = ipw.Image(value=image, format="png", width=width, height=height)
+    image_widget.layout.object_fit = "contain"
     if margin is not None:
         image_widget.layout.margin = margin
     return image_widget
@@ -53,29 +52,28 @@ class ToggleButton(v.Btn):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(class_='mx-2 my-2 primary active',
-                         **kwargs)
-        self.alternate_class = 'accent'
+        super().__init__(class_="mx-2 my-2 primary active", **kwargs)
+        self.alternate_class = "accent"
         self.disabled = True
 
     def is_active(self):
         """Test whether button is currently active."""
-        return 'active' in self.class_
+        return "active" in self.class_
 
     def reset(self):
         """Reset button to active, enabled state."""
-        self.class_list.add('active')
-        self.class_list.replace(self.alternate_class, 'primary')
+        self.class_list.add("active")
+        self.class_list.replace(self.alternate_class, "primary")
         self.disabled = False
 
     def toggle(self):
         """Toggle button between active and inactive states."""
         if self.is_active():
-            self.class_list.remove('active')
-            self.class_list.replace('primary', self.alternate_class)
+            self.class_list.remove("active")
+            self.class_list.replace("primary", self.alternate_class)
         else:
-            self.class_list.add('active')
-            self.class_list.replace(self.alternate_class, 'primary')
+            self.class_list.add("active")
+            self.class_list.replace(self.alternate_class, "primary")
 
 
 class FileDownloadLink(ipw.HTML):
@@ -92,11 +90,11 @@ class FileDownloadLink(ipw.HTML):
     """
 
     def __init__(self, *args, **kwargs):
-        self.value = ''
-        self.prefix = kwargs.get('value', '')
-        self.url = ''
-        self.style_value = 'color: #00617E'
-        self.down_arrow = '\u2913'
+        self.value = ""
+        self.prefix = kwargs.get("value", "")
+        self.url = ""
+        self.style_value = "color: #00617E"
+        self.down_arrow = "\u2913"
 
         super().__init__(*args, **kwargs)
         self.disabled = True
@@ -116,18 +114,20 @@ class FileDownloadLink(ipw.HTML):
         payload = b64.decode()
         self.url = f"data:text/plain;base64,{payload}"
 
-        html = (f'<a '
-                f'style="{self.style_value}"'
-                f'download="{filename}" '
-                f'href="{self.url}" '
-                f'target="_blank">'
-                f'{self.prefix} {filename} {self.down_arrow}'
-                f'</a>')
+        html = (
+            f"<a "
+            f'style="{self.style_value}"'
+            f'download="{filename}" '
+            f'href="{self.url}" '
+            f'target="_blank">'
+            f"{self.prefix} {filename} {self.down_arrow}"
+            f"</a>"
+        )
         self.value = html
         self.disabled = False
 
     def clear_link(self, *args, **kwargs):
         """Clear any current link out of the HTML element and disable it."""
-        self.url = ''
+        self.url = ""
         self.value = self.prefix
         self.disabled = True

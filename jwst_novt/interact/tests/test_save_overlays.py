@@ -12,16 +12,14 @@ else:
     HAS_DISPLAY = True
 
 
-@pytest.mark.skipif(not HAS_DISPLAY, reason='Missing optional dependencies')
+@pytest.mark.skipif(not HAS_DISPLAY, reason="Missing optional dependencies")
 class TestSaveOverlays:
     def test_init(self, overlay_controls):
         so = u.SaveOverlays(overlay_controls)
         assert isinstance(so.widgets, ipw.Widget)
 
-    @pytest.mark.parametrize('coords', ['pixel coordinates',
-                                        'sky coordinates'])
-    def test_make_regions(self, overlay_controls, catalog_file,
-                          bad_wcs, coords):
+    @pytest.mark.parametrize("coords", ["pixel coordinates", "sky coordinates"])
+    def test_make_regions(self, overlay_controls, catalog_file, bad_wcs, coords):
         so = u.SaveOverlays(overlay_controls)
         so.set_coordinates.value = coords
 
@@ -38,7 +36,7 @@ class TestSaveOverlays:
 
         # file link is updated with downloadable data
         so.make_regions()
-        assert so.file_link.url.startswith('data:text/plain')
+        assert so.file_link.url.startswith("data:text/plain")
         one_reg = so.file_link.url
 
         # turn on both nircam overlays: url is longer because it
@@ -49,7 +47,7 @@ class TestSaveOverlays:
         overlay_controls.toggle_footprint(button, None, None)
 
         so.make_regions()
-        assert so.file_link.url.startswith('data:text/plain')
+        assert so.file_link.url.startswith("data:text/plain")
         more_reg = so.file_link.url
         assert len(more_reg) > len(one_reg)
 
@@ -59,7 +57,7 @@ class TestSaveOverlays:
             overlay_controls.toggle_catalog(button, None, None)
 
         so.make_regions()
-        assert so.file_link.url.startswith('data:text/plain')
+        assert so.file_link.url.startswith("data:text/plain")
         even_more_reg = so.file_link.url
         assert len(even_more_reg) > len(more_reg)
 
@@ -69,7 +67,7 @@ class TestSaveOverlays:
             overlay_controls.toggle_catalog(button, None, None)
 
         so.make_regions()
-        assert so.file_link.url.startswith('data:text/plain')
+        assert so.file_link.url.startswith("data:text/plain")
         same_reg = so.file_link.url
         assert same_reg == even_more_reg
 
@@ -97,19 +95,18 @@ class TestSaveOverlays:
         assert not so.config_file_link.url
 
         # add a config value
-        so.show_overlays.uploaded_data.configuration = {
-            'nirspec': {'ra': 100.0}}
+        so.show_overlays.uploaded_data.configuration = {"nirspec": {"ra": 100.0}}
 
         # file link is updated with downloadable data
         so.make_config()
-        assert so.config_file_link.url.startswith('data:text/plain')
+        assert so.config_file_link.url.startswith("data:text/plain")
         one_value = so.config_file_link.url
 
         # add another: url is longer because it
         # contains more encoded data
-        so.show_overlays.uploaded_data.configuration['nirspec']['pa'] = 90.0
+        so.show_overlays.uploaded_data.configuration["nirspec"]["pa"] = 90.0
         so.make_config()
-        assert so.config_file_link.url.startswith('data:text/plain')
+        assert so.config_file_link.url.startswith("data:text/plain")
         more_values = so.config_file_link.url
         assert len(more_values) > len(one_value)
 
