@@ -16,7 +16,7 @@ class SaveOverlays(HasTraits):
     """Widgets to save currently displayed overlay regions."""
 
     coordinates = Unicode("pixel coordinates").tag(sync=True)
-    region_filename = Unicode("novt_overlays.ds9").tag(sync=True)
+    region_filename = Unicode("novt_overlays.reg").tag(sync=True)
     config_filename = Unicode("novt_config.yaml").tag(sync=True)
 
     def __init__(self, show_overlays, *, allow_configuration=False):
