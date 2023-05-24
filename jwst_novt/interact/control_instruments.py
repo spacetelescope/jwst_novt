@@ -199,7 +199,7 @@ class ControlInstruments(HasTraits):
 
         self.set_mosaic_v2 = ipw.BoundedFloatText(
             description="Horizontal offset (arcsec)",
-            min=0,
+            min=-3600,
             max=3600,
             step=5,
             continuous_update=False,
@@ -208,7 +208,7 @@ class ControlInstruments(HasTraits):
         )
         self.set_mosaic_v3 = ipw.BoundedFloatText(
             description="Vertical offset (arcsec)",
-            min=0,
+            min=-3600,
             max=3600,
             step=5,
             continuous_update=False,
