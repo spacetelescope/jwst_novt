@@ -28,11 +28,12 @@ def nirspec_footprint(ra, dec, pa, *, include_center=True, apertures=None):
         - NRS_FULL_MSA3
         - NRS_FULL_MSA4
         - NRS_FULL_IFU
-        - NRS_FULL_IFU
-        - NRS_S400A1_SLIT
-        - NRS_S400A1_SLIT
+        - NRS_S200A1_SLIT
         - NRS_S200A2_SLIT
+        - NRS_S400A1_SLIT
+        - NRS_S1600A1_SLIT
         - NRS_S200B1_SLIT
+
 
     Parameters
     ----------
@@ -63,10 +64,10 @@ def nirspec_footprint(ra, dec, pa, *, include_center=True, apertures=None):
             "NRS_FULL_MSA3",
             "NRS_FULL_MSA4",
             "NRS_FULL_IFU",
-            "NRS_FULL_IFU",
-            "NRS_S400A1_SLIT",
-            "NRS_S400A1_SLIT",
+            "NRS_S200A1_SLIT",
             "NRS_S200A2_SLIT",
+            "NRS_S400A1_SLIT",
+            "NRS_S1600A1_SLIT",
             "NRS_S200B1_SLIT",
         ]
 
