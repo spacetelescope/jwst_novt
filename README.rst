@@ -70,7 +70,7 @@ It is highly recommended that the user install the NOVT package into a virtual
 environment.  For example, use conda to create and activate a virtual environment
 before following the installation steps::
 
-    $ conda env create -n jwst_novt python
+    $ conda create -n jwst_novt python
     $ conda activate jwst_novt
 
 Core tools only
