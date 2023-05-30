@@ -393,7 +393,7 @@ def bqplot_timeline(
     start_date=None,
     end_date=None,
     instrument=None,
-    show_v3pa=False,
+    show_v3pa=True,
     colors=None,
 ):
     """
