@@ -1,17 +1,15 @@
 JWST NIRSpec Observation Visualization Tool (NOVT)
 ==================================================
 
-..
-    .. image:: https://github.com/spacetelescope/jwst_novt/workflows/CI/badge.svg
-        :target: https://github.com/spacetelescope/jwst_novt/actions
-        :alt: GitHub Actions CI Status
-    .. image:: https://codecov.io/gh/spacetelescope/jwst_novt/branch/main/graph/badge.svg
-        :target: https://codecov.io/gh/spacetelescope/jwst_novt
-        :alt: Coverage Status
-    .. image:: https://readthedocs.org/projects/jwst_novt/badge/?version=latest
-        :target: https://jwst_novt.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
-
+.. image:: https://github.com/spacetelescope/jwst_novt/workflows/CI/badge.svg
+    :target: https://github.com/spacetelescope/jwst_novt/actions
+    :alt: GitHub Actions CI Status
+.. image:: https://codecov.io/gh/spacetelescope/jwst_novt/branch/main/graph/badge.svg
+    :target: https://codecov.io/gh/spacetelescope/jwst_novt
+    :alt: Coverage Status
+.. image:: https://readthedocs.org/projects/jwst_novt/badge/?version=latest
+    :target: https://jwst_novt.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
    :target: http://www.astropy.org
    :alt: Powered by Astropy Badge
