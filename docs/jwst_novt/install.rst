@@ -1,11 +1,14 @@
-The NIRSpec Observation Visualization Tool (NOVT) visualizes projected footprints
-for the NIRSpec and NIRCam instruments on the James Webb Space Telescope (JWST).
-It is intended to aid in planning NIRCam pre-imaging for NIRSpec MOS observations,
-by allowing simultaneous display and configuration of the NIRSpec and NIRCam
-fields of view for a given sky position.
+Available modules
+-----------------
 
-Modules
--------
+The NOVT package includes tools for calculating footprints and visibility timelines
+and tools for interactively configuring and displaying them.  The dependencies for
+the interactive tools are much more extensive than the core tools require, so the
+package allows installation of the core tools without the optional dependencies
+required by the interactive tools.
+
+See the `online documentation <https://jwst-novt.readthedocs.io/en/latest/>`__
+for more information on the contents of the software modules.
 
 Core tools: jwst_novt
 ~~~~~~~~~~~~~~~~~~~~~
