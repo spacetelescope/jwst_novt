@@ -151,6 +151,7 @@ pygments_style = "sphinx"
 # a list of builtin themes.
 html_theme = "stsci_rtd_theme"
 html_theme_path = [stsci_rtd_theme.get_html_theme_path()]
+html_context = {"github_version": "main"}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -263,7 +264,7 @@ latex_domain_indices = True
 man_pages = [("index", f"{project}", f"{project} Documentation", [f"{project}"], 1)]
 
 # If true, show URL addresses after external links.
-man_show_urls = True
+man_show_urls = False
 
 # -- Options for Texinfo output -------------------------------------------
 
