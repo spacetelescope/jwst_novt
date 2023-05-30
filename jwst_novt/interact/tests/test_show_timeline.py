@@ -61,19 +61,19 @@ class TestShowTimeline:
         if inst == "NIRSpec":
             n_plot = 2
             assert len(timeline_controls.figure.marks) == n_plot
-            assert timeline_controls.figure.marks[0].colors == [DEFAULT_COLOR['V3PA']]
+            assert timeline_controls.figure.marks[0].colors == [DEFAULT_COLOR["V3PA"]]
             assert timeline_controls.figure.marks[1].colors == [DEFAULT_COLOR[inst]]
         elif inst == "NIRCam":
             n_plot = 2
             assert len(timeline_controls.figure.marks) == n_plot
-            assert timeline_controls.figure.marks[0].colors == [DEFAULT_COLOR['V3PA']]
+            assert timeline_controls.figure.marks[0].colors == [DEFAULT_COLOR["V3PA"]]
             assert timeline_controls.figure.marks[1].colors == [
                 DEFAULT_COLOR["NIRCam Short"]
             ]
         else:
             n_plot = 3
             assert len(timeline_controls.figure.marks) == n_plot
-            assert timeline_controls.figure.marks[0].colors == [DEFAULT_COLOR['V3PA']]
+            assert timeline_controls.figure.marks[0].colors == [DEFAULT_COLOR["V3PA"]]
             assert timeline_controls.figure.marks[1].colors == [
                 DEFAULT_COLOR["NIRSpec"]
             ]
