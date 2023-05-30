@@ -15,7 +15,7 @@ Usage
 .. toctree::
    :maxdepth: 2
 
-   novt/usage
+   jwst_novt/usage
 
 Reference/API
 -------------
@@ -23,4 +23,4 @@ Reference/API
 .. toctree::
    :maxdepth: 2
 
-   novt/index
+   jwst_novt/index

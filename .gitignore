@@ -60,4 +60,4 @@ pip-wheel-metadata/
 .DS_Store
 
 # Files saved by local notebook runs
-novt/notebooks/*.reg
+jwst_novt/notebooks/*.reg

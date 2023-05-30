@@ -5,7 +5,7 @@ include CITATION
 
 include pyproject.toml
 
-recursive-include novt *.pyx *.c *.pxd
+recursive-include jwst_novt *.pyx *.c *.pxd
 recursive-include docs *
 
 prune build
