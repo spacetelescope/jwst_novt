@@ -26,7 +26,7 @@ from jwst_novt.constants import NOVT_DIR
 __all__ = ["main"]
 
 
-def main(notebook_name):
+def main(notebook_name, *, serve_only=False):
     """
     Run a NOVT notebook as a Voila application.
 
@@ -36,6 +36,8 @@ def main(notebook_name):
         The notebook to run. May be either a full path to an
         existing notebook or else the base name of a notebook installed
         in the jwst_novt/notebooks directory.
+    serve_only: bool, optional
+        If set, the application is served without opening a browser window.
     """
     if not HAS_VOILA:
         sys.exit(1)
@@ -67,6 +69,8 @@ def main(notebook_name):
         VoilaConfiguration.theme = "light"
         VoilaConfiguration.enable_nbextensions = True
         VoilaConfiguration.file_whitelist = [".*"]
+        if serve_only:
+            Voila.open_browser = False
         sys.exit(Voila().launch_instance(argv=[]))
     finally:
         os.chdir(start_dir)
@@ -86,5 +90,13 @@ def _main():  # pragma: no cover
         default="novt",
         help="Path to a notebook file or name of a NOVT notebook.",
     )
+    parser.add_argument(
+        "-s",
+        "--serve-only",
+        dest="serve_only",
+        action="store_true",
+        default=False,
+        help="Serve the notebook without opening a browser.",
+    )
     args = parser.parse_args()
-    main(args.notebook)
+    main(args.notebook, serve_only=args.serve_only)
