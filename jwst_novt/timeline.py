@@ -1,14 +1,18 @@
 import datetime
+import re
 import warnings
 
 import numpy as np
 import pandas as pd
+import requests
 from astropy.time import Time
 
 try:
+    from jwst_gtvt.constants import URL
     from jwst_gtvt.jwst_tvt import Ephemeris
 except ImportError:  # pragma: no cover
     warnings.warn("Missing refactored jwst_gtvt; using local copy.", stacklevel=2)
+    from jwst_novt.ephemeris.constants import URL
     from jwst_novt.ephemeris.jwst_tvt import Ephemeris
 
     GTVT_VERSION = "local"
@@ -17,7 +21,7 @@ else:  # pragma: no cover
 
 from jwst_novt.constants import JWST_MAXIMUM_DATE, JWST_MINIMUM_DATE
 
-__all__ = ["timeline"]
+__all__ = ["timeline", "jwst_maximum_date"]
 
 
 def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
@@ -73,8 +77,9 @@ def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
     if start_date < Time(JWST_MINIMUM_DATE) - datetime.timedelta(days=1):
         msg = f"No JWST ephemeris available prior to {JWST_MINIMUM_DATE}"
         raise ValueError(msg)
-    if end_date > Time(JWST_MAXIMUM_DATE):
-        msg = f"No JWST ephemeris available after {JWST_MAXIMUM_DATE}"
+    max_date = jwst_maximum_date()
+    if end_date > Time(max_date):
+        msg = f"No JWST ephemeris available after {max_date}"
         raise ValueError(msg)
 
     ephemeris = Ephemeris(start_date=start_date, end_date=end_date)
@@ -104,3 +109,31 @@ def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
             timeline_data[col.replace("pa_angle", "PA")] = ephem[col]
 
     return pd.DataFrame(timeline_data)
+
+
+def jwst_maximum_date():
+    """Retrieve the last available date for JWST ephemerides."""
+    # attempt to retrieve an ephemeris for a date too far in the future
+    start_date = JWST_MINIMUM_DATE
+    future_date = "9999-01-01"
+    request_url = URL.format(start_date, future_date)
+    try:
+        # this should return an error message containing the last good date
+        ephemeris_request = requests.get(request_url)
+
+        # parse the date from the message
+        m = re.match(
+            r".*after A\.D\. (\d{4}-[a-zA-Z]+-\d{1,2})", ephemeris_request.text
+        )
+        dt = m.groups()[0]
+        end_date = (
+            datetime.datetime.strptime(dt, "%Y-%b-%d")
+            .astimezone(datetime.timezone.utc)
+            .strftime("%Y-%m-%d")
+        )
+
+    except Exception:
+        # if the above fails for any reason, fall back to a known good date
+        end_date = JWST_MAXIMUM_DATE
+
+    return end_date

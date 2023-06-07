@@ -6,10 +6,10 @@ from traitlets import Any, Float, HasTraits, Unicode
 
 from jwst_novt.constants import (
     DEFAULT_COLOR,
-    JWST_MAXIMUM_DATE,
     JWST_MINIMUM_DATE,
 )
 from jwst_novt.interact import display as nd
+from jwst_novt.timeline import jwst_maximum_date
 
 __all__ = ["ShowTimeline"]
 
@@ -44,7 +44,8 @@ class ShowTimeline(HasTraits):
 
         # start, end dates
         min_date = datetime.date.fromisoformat(JWST_MINIMUM_DATE)
-        max_date = datetime.date.fromisoformat(JWST_MAXIMUM_DATE)
+        max_date = datetime.date.fromisoformat(jwst_maximum_date())
+
         self.set_start = ipw.DatePicker(
             description="Start date",
             style={"description_width": "initial"},

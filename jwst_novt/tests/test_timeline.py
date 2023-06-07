@@ -1,9 +1,12 @@
+import datetime
+
 import numpy as np
 import pandas as pd
 import pytest
 from astropy.time import Time
 
 from jwst_novt import timeline as tl
+from jwst_novt.constants import JWST_MAXIMUM_DATE
 
 
 def test_timeline():
@@ -67,3 +70,15 @@ def test_timeline_errors():
 
     with pytest.raises(ValueError, match="No JWST ephemeris available"):
         tl.timeline(ra, dec, end_date=Time("2050-01-01"))
+
+
+def test_jwst_maximum_date(mocker):
+    expected = datetime.date.fromisoformat(JWST_MAXIMUM_DATE)
+
+    retrieved = tl.jwst_maximum_date()
+    assert datetime.date.fromisoformat(retrieved) >= expected
+
+    # trigger an error to check fallback
+    mocker.patch.object(tl.requests, "get", side_effect=ValueError("bad request"))
+    fallback = tl.jwst_maximum_date()
+    assert datetime.date.fromisoformat(fallback) == expected
