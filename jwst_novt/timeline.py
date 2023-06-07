@@ -119,7 +119,7 @@ def jwst_maximum_date():
     request_url = URL.format(start_date, future_date)
     try:
         # this should return an error message containing the last good date
-        ephemeris_request = requests.get(request_url)
+        ephemeris_request = requests.get(request_url, timeout=10)
 
         # parse the date from the message
         m = re.match(
