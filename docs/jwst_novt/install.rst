@@ -30,12 +30,15 @@ Display and interactive tools: jwst_novt.interact
 The `jwst_novt.interact` package contains tools to configure, visualize, and interact
 with the instrument apertures and visibility timeline in a Jupyter notebook
 context. A default application is provided that can be run in a local notebook
-server, or as a remote web application.  STScI serves this application for the
-public at: `TBD <tbd>`__
+server, or as a remote web application.  STScI plans to serves this application for the
+public soon.  In the meantime, the default application can be run locally by following the
+installation instructions below, then running the command::
 
-See the `novt_interact` notebook in the `notebooks` directory of the source
+    $ novt
+
+See also the `novt_interact` notebook in the `notebooks` directory of the source
 distribution for an example of using NOVT tools with the Imviz display tool in
-a local notebook.
+a custom notebook.
 
 See the `NOVT JDox article <https://jwst-docs.stsci.edu/jwst-near-infrared-spectrograph/nirspec-apt-templates/nirspec-multi-object-spectroscopy-apt-template/nirspec-observation-visualization-tool-help>`__
 for usage information for the web application.

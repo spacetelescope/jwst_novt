@@ -61,7 +61,7 @@ User interface
 --------------
 
 NOVT tools may be used directly by a user by installing the Python package, or they may
-be accessed via a web application served by STScI at `TBD <TBD>`__.  For more information on
+be accessed via a web application served by STScI (coming soon).  For more information on
 using the Python tools, see the `software documentation <jwst_novt>`__ or the
 example notebooks in the
 `source distribution <https://github.com/spacetelescope/jwst_novt/jwst_novt/notebooks>`__. The below
