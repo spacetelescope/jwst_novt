@@ -6,7 +6,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "jwst_novt"
-description = "Package description"
+description = "JWST NIRSpec Observation Visualization Tool"
 authors = [{name = "STScI", email = "help@stsci.edu"}]
 license = {file = "LICENSE.rst"}
 dynamic = ["version"]
