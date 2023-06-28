@@ -81,7 +81,7 @@ JWST_MINIMUM_DATE = "2021-12-27"
 """str : Minimum available date for JWST ephemeris."""
 
 
-JWST_MAXIMUM_DATE = "2025-06-12"
+JWST_MAXIMUM_DATE = "2025-06-26"
 """str : Fallback maximum available date for JWST ephemeris.
 
 See: https://ssd.jpl.nasa.gov/horizons/time_spans.html
