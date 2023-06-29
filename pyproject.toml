@@ -13,7 +13,7 @@ dynamic = ["version"]
 requires-python = ">=3.9"
 dependencies = [
     "astropy>=5.2",
-    "jwst_gtvt>=0.3.1",
+    "jwst_gtvt>=1.0.0",
     "numpy>=1.24",
     "pandas>=1.4.0",
     "pysiaf>=0.19.1",
@@ -81,8 +81,7 @@ testpaths = [
 ]
 norecursedirs = [
     "build",
-    "docs/_build",
-    "jwst_novt/ephemeris"
+    "docs/_build"
 ]
 astropy_header = "true"
 doctest_plus = "enabled"
@@ -94,8 +93,7 @@ addopts = "-p no:warnings"
 source = ["jwst_novt",]
 omit = [
     "jwst_novt/tests/*",
-    "jwst_novt/version*",
-    "jwst_novt/ephemeris/*"
+    "jwst_novt/version*"
 ]
 
 [tool.coverage.report]
@@ -110,8 +108,7 @@ exclude_lines = [
 omit = [
     "jwst_novt/tests/*",
     "jwst_novt/interact/tests/*",
-    "jwst_novt/version*",
-    "jwst_novt/ephemeris/*"
+    "jwst_novt/version*"
 ]
 
 [tool.ruff]
@@ -123,8 +120,7 @@ ignore =[
 ]
 exclude = [
     "version.py",
-    "conf.py",
-    "ephemeris"
+    "conf.py"
 ]
 
 [tool.ruff.per-file-ignores]

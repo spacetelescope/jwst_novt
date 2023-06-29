@@ -1,23 +1,12 @@
 import datetime
 import re
-import warnings
 
 import numpy as np
 import pandas as pd
 import requests
 from astropy.time import Time
-
-try:
-    from jwst_gtvt.constants import URL
-    from jwst_gtvt.jwst_tvt import Ephemeris
-except ImportError:  # pragma: no cover
-    warnings.warn("Missing refactored jwst_gtvt; using local copy.", stacklevel=2)
-    from jwst_novt.ephemeris.constants import URL
-    from jwst_novt.ephemeris.jwst_tvt import Ephemeris
-
-    GTVT_VERSION = "local"
-else:  # pragma: no cover
-    GTVT_VERSION = "released"
+from jwst_gtvt.constants import URL
+from jwst_gtvt.jwst_tvt import Ephemeris
 
 from jwst_novt.constants import JWST_MAXIMUM_DATE, JWST_MINIMUM_DATE
 
@@ -54,14 +43,6 @@ def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
         and {instrument}_max_PA (maximum PA for instrument),
         where instrument may be NIRCAM, NIRSPEC, or both.
     """
-    if GTVT_VERSION == "local":  # pragma: no cover
-        warnings.warn(
-            "Timeline should be computed with the "
-            "refactored `jwst_gtvt` package, when available.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
     # default start date to now
     if start_date is None:
         start_date = Time.now()
