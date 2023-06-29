@@ -1,0 +1,22 @@
+{
+    "Voila": {
+        "open_browser": false
+    },
+    "VoilaConfiguration": {
+        "enable_nbextensions": true,
+        "preheat_kernel": true,
+        "default_pool_size": 3,
+        "theme": "light"
+    },
+    "MappingKernelManager": {
+        "cull_interval": 60,
+        "cull_idle_timeout": 120
+    },
+    "VoilaKernelManager": {
+        "kernel_pools_config": {
+            "default": {
+                "pool_size": 3
+            }
+        }
+    }
+}
