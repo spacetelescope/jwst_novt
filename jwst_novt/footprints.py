@@ -99,8 +99,7 @@ def nirspec_footprint(ra, dec, pa, *, include_center=True, apertures=None):
         reg = regions.PolygonSkyRegion(sky_coord)
         nrs_regions.append(reg)
 
-    nrs_regions = regions.Regions(nrs_regions)
-    return nrs_regions
+    return regions.Regions(nrs_regions)
 
 
 def nircam_short_footprint(
@@ -191,8 +190,7 @@ def nircam_short_footprint(
         reg = regions.PolygonSkyRegion(sky_coord)
         nrc_regions.append(reg)
 
-    nrc_regions = regions.Regions(nrc_regions)
-    return nrc_regions
+    return regions.Regions(nrc_regions)
 
 
 def nircam_long_footprint(
@@ -266,8 +264,7 @@ def nircam_long_footprint(
         reg = regions.PolygonSkyRegion(sky_coord)
         nrc_regions.append(reg)
 
-    nrc_regions = regions.Regions(nrc_regions)
-    return nrc_regions
+    return regions.Regions(nrc_regions)
 
 
 def nircam_dither_footprint(
