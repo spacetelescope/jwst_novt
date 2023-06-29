@@ -85,12 +85,12 @@ class TestShowTimeline:
         timeline_controls.nircam_color = "red"
         timeline_controls.nirspec_color = "blue"
         if inst == "NIRSpec":
-            assert timeline_controls.figure.marks[0].colors == ["blue"]
+            assert timeline_controls.figure.marks[1].colors == ["blue"]
         elif inst == "NIRCam":
-            assert timeline_controls.figure.marks[0].colors == ["red"]
-        else:
-            assert timeline_controls.figure.marks[0].colors == ["blue"]
             assert timeline_controls.figure.marks[1].colors == ["red"]
+        else:
+            assert timeline_controls.figure.marks[1].colors == ["blue"]
+            assert timeline_controls.figure.marks[2].colors == ["red"]
 
     @pytest.mark.parametrize("start_date", [False, True])
     def test_save_plot(self, timeline_controls, mocker, start_date):

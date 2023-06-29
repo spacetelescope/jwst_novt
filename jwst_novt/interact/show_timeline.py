@@ -199,9 +199,9 @@ class ShowTimeline(HasTraits):
         instrument = self.set_instrument.value
 
         if instrument == "NIRCam":
-            self.figure.marks[0].colors = [self.nircam_color]
-        elif instrument == "NIRSpec":
-            self.figure.marks[0].colors = [self.nirspec_color]
-        else:
-            self.figure.marks[0].colors = [self.nirspec_color]
             self.figure.marks[1].colors = [self.nircam_color]
+        elif instrument == "NIRSpec":
+            self.figure.marks[1].colors = [self.nirspec_color]
+        else:
+            self.figure.marks[1].colors = [self.nirspec_color]
+            self.figure.marks[2].colors = [self.nircam_color]
