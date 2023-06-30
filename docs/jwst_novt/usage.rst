@@ -2,7 +2,7 @@ NOVT Usage
 ==========
 
 ..
-   Text based on JDox article, 5/19/23
+   Text based on existing JDox article, 5/19/23
 
 The NIRSpec Observation Visualization Tool (NOVT) was created to help users
 simultaneously visualize the fields of view of both the NIRSpec
@@ -17,15 +17,9 @@ in the `Astronomers Proposal Tool (APT) <https://jwst-docs.stsci.edu/jwst-astron
 
 NOVT is meant to improve user understanding of the observatory orientation and field constraints.
 It is not recommended to use the tool to derive strict execution orientation restrictions on either
-the NIRCam or NIRSpec observations. As true for all JWST programs, observations are easier
+the NIRCam or NIRSpec observations. As is true for all JWST programs, observations are easier
 to schedule and accommodate in observatory planning if they have no execution orientation
-restrictions at proposal submission. A minimum range of possible angles for observation execution
-is recommended to be 20°, to ensure program schedulability.
-
-As a reminder, teams are not allowed to add orientation constraints to observations that have
-already been accepted. Any necessary
-`angle special requirement <https://jwst-docs.stsci.edu/jppom/special-requirements/aperture-position-angle-special-requirements>`__
-must be defined at proposal time.
+restrictions at proposal submission.
 
 Motivation
 ----------
@@ -166,7 +160,7 @@ where in place of 'image.fits' you should use the name of your file.
 The information provided by this command will help you identify the extension number
 of your science data. If the science data is in extension 0, then the FITS
 file is valid. If the science data is in another extension, consider creating a new FITS file
-using the information provided in
+using the information provided in the
 `astropy.io.fits documentation <http://docs.astropy.org/en/stable/io/fits/>`__.
 
 In order to verify the validity of the WCS keywords in the header of your image, you may also
@@ -394,7 +388,7 @@ with the MSA footprint overplotted on M51.
 
    The 8NIRSPEC FULLBOX dither pattern shown using the LWC (left) and SWC (right).
    The background image is an HST/ACS mosaic of the galaxy pair NGC5194+NGC5195.
-   The aperture position angle used for this figure is 0°. This pattern covers a
+   The aperture position angle used for this figure is 60°. This pattern covers a
    rectangular region without gaps.
 
 .. figure:: images/nirspec_with_dither.png
@@ -420,7 +414,7 @@ to one pointing. Only 2-tile mosaics are supported by this application. Offsets 
 aperture's reference position in that aperture’s ideal coordinate system (X, Y). For NIRCam, all aperture
 Ideal coordinate systems are nearly aligned (to ~1° rotation) with the JWST coordinate system (V2, V3).
 
-The offsets are defined in NOVT by setting both the vertical and horizontal values in units of
+The offsets are defined in NOVT by setting both `Vertical offset` and `Horizontal offset` values in units of
 arcsec. Once those numbers are entered, set the `Mosaic` field to 'Yes' and the footprint overlays
 will automatically update. :numref:`nircam_mosaic` shows an example of a NIRCam mosaic on top of the MSA footprint.
 
@@ -436,7 +430,7 @@ will automatically update. :numref:`nircam_mosaic` shows an example of a NIRCam 
    and 48" for the long wavelength detectors. In this case we chose 48" as the horizontal offset
    and 60" for the vertical offset. For reference, the MSA field of view is also shown in red using
    the same equatorial coordinates (RA, DEC) for the fiducial point. MSA quadrants 1 and 4 are
-   completely covered by the NIRCam detectors. The NIRcam aperture position angle is 0° and the
+   completely covered by the NIRCam detectors. The NIRCam aperture position angle is 0° and the
    NIRSpec aperture position angle is 45°.
 
 
@@ -471,12 +465,13 @@ close to the North Celestial Pole.
          PA for a target at RA=0, Dec=88 degrees. Date range for both is January
          2023 to January 2025.
 
-   Visibility tool output plots
+   Visibility tool plots
 
 Aperture position angle plotted as a function of time using the Visibility Tool.
 [Bottom] Visibility plot obtained for a target located close to the north celestial
 pole (RA=0.0º, Dec=+88.0º). [Top] Visibility plot obtained for a target located close
-to the equator (RA=0.0º, Dec=+2.0º). Blue represents NIRCam, red represents NIRSpec.
+to the equator (RA=0.0º, Dec=+2.0º). Blue represents NIRCam, red represents NIRSpec;
+the gray line represents the position angle of the V3 axis (V3_PA).
 
 This Target Visibility plot is a "quick look" tool for pre-planning purposes, but the
 APT defines if it is possible to schedule a given proposed observation. It is advisable
