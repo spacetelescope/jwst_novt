@@ -181,6 +181,10 @@ Imviz is a full-featured FITS image display tool developed by STScI as part of t
 `Jdaviz <https://github.com/spacetelescope/jdaviz>`__ package. You can use the toolbars included
 in Imviz to configure your image display (image stretch and colormap, zoom and pan, etc.).
 
+Note that only one FITS image can be loaded into NOVT in a session.  If you need to replace an uploaded
+image with a new one, save your work if needed (see :ref:`save_data`), then reload the browser window
+to reset NOVT.
+
 .. figure:: images/view_image.png
    :name: view_image
    :alt: Imviz viewer showing an example FITS image of NGC 5194 and NGC 5195.

@@ -115,7 +115,7 @@ omit = [
 line-length = 88
 select = ["ALL"]
 ignore =[
-    "ANN", "S", "BLE", "SLF",
+    "ANN", "S", "BLE", "SLF", "PERF",
     "PLR0913", "SIM108", "D100", "D104", "COM812"
 ]
 exclude = [
