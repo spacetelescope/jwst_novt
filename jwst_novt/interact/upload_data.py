@@ -31,6 +31,7 @@ class UploadData(HasTraits):
         self.viz = viz
         self.viewer = viz.default_viewer
         self.image_files = {}
+        self.allow_data_replace = False
 
         # make widgets to display
         self.image_label = ipw.Label(
@@ -171,6 +172,13 @@ class UploadData(HasTraits):
         New images are loaded into the viewer. Removed files are removed
         from the viewer. The loaded data remains accessible to the viewer
         and can be manually reloaded by the user if desired.
+
+        Due to limited support for data removal in Imviz, the UI currently
+        supports uploading only one image per session. After a successful
+        upload, the file input field is disabled. If desired, this behavior
+        can be changed by setting the `allow_data_replace` attribute to True.
+        If set, data can be removed from the viewer and replaced with a new
+        image, but the old data will not necessarily be released from memory.
         """
         self.has_wcs = False
         self.image_file_name = None
@@ -195,7 +203,8 @@ class UploadData(HasTraits):
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore")
                         self._load_hdul_in_viz(uploaded_file)
-        change["owner"].disabled = False
+        if self.allow_data_replace or len(self.image_files) == 0:
+            change["owner"].disabled = False
 
     def load_catalog(self, change):
         """
