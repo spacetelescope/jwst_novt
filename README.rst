@@ -63,7 +63,7 @@ See also the `novt_interact` notebook in the `notebooks` directory of the source
 distribution for an example of using NOVT tools with the Imviz display tool in
 a custom notebook.
 
-See the `NOVT JDox article <https://jwst-docs.stsci.edu/jwst-near-infrared-spectrograph/nirspec-apt-templates/nirspec-multi-object-spectroscopy-apt-template/nirspec-observation-visualization-tool-help>`__
+See the `NOVT JDox article <https://jwst-docs.stsci.edu/jwst-other-tools/nirspec-observation-visualization-tool-help>`__
 for usage information for the web application.
 
 Installation

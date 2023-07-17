@@ -28,7 +28,7 @@ INSTRUMENT_NAMES = {
 # see JDox article, Table 1:
 # https://jwst-docs.stsci.edu/jwst-near-infrared-spectrograph/
 #    nirspec-operations/nirspec-mos-operations/
-#    nirspec-mos-operations-pre-imaging-using-nircam,
+#    nirspec-mos-operations-pre-imaging-using-nircam
 NIRCAM_DITHER_OFFSETS = {
     "NONE": [(0.0, 0.0)],
     "FULL3": [(-58.0, -23.5), (0.0, 0.0), (58.0, 23.5)],

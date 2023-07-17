@@ -75,9 +75,7 @@ class StyleApplication:
         self.jwst_logo = read_image("JWSTlogo.png")
         self.stsci_logo = read_image("STScIlogo.png")
         self.docs_link = (
-            "https://jwst-docs.stsci.edu/jwst-near-infrared-spectrograph/"
-            "nirspec-apt-templates/"
-            "nirspec-multi-object-spectroscopy-apt-template/"
+            "https://jwst-docs.stsci.edu/jwst-other-tools/"
             "nirspec-observation-visualization-tool-help"
         )
         self.header = ipw.Box(
