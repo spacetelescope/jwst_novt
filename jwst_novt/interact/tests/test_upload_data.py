@@ -20,8 +20,10 @@ class TestUploadData:
         assert ud.image_file_name is None
         assert ud.catalog_file is None
 
-    def test_load_image(self, mocker, imviz, image_file):
+    @pytest.mark.parametrize("allow_reload", [True, False])
+    def test_load_image(self, mocker, imviz, image_file, allow_reload):
         ud = u.UploadData(imviz)
+        ud.allow_data_replace = allow_reload
 
         # nothing happens if button does not have new files
         change = {"new": [], "old": [], "owner": ud.image_file_upload}
@@ -42,6 +44,12 @@ class TestUploadData:
         # viewer has data
         assert image_name in str(ud.viz.app.data_collection)
 
+        # changing the image via the UI is blocked if necessary
+        if allow_reload:
+            assert not ud.image_file_upload.disabled
+        else:
+            assert ud.image_file_upload.disabled
+
         # remove the file
         change = {"new": [], "old": [file_info], "owner": ud.image_file_upload}
         ud.load_image(change)
@@ -50,6 +58,9 @@ class TestUploadData:
 
         # viewer no longer has data
         assert image_name not in str(ud.viz.app.data_collection)
+
+        # when image list is empty, UI upload is not blocked, regardless of setting
+        assert not ud.image_file_upload.disabled
 
     def test_load_image_errors(
         self, mocker, imviz, image_file_no_wcs, bad_catalog_file

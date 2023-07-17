@@ -181,6 +181,10 @@ Imviz is a full-featured FITS image display tool developed by STScI as part of t
 `Jdaviz <https://github.com/spacetelescope/jdaviz>`__ package. You can use the toolbars included
 in Imviz to configure your image display (image stretch and colormap, zoom and pan, etc.).
 
+Note that only one FITS image can be loaded into NOVT in a session.  If you need to replace an uploaded
+image with a new one, save your work if needed (see :ref:`save_data`), then reload the browser window
+to reset NOVT.
+
 .. figure:: images/view_image.png
    :name: view_image
    :alt: Imviz viewer showing an example FITS image of NGC 5194 and NGC 5195.
@@ -223,6 +227,10 @@ shows an example of sources displayed close to the center of M51.
    Imviz viewer with loaded primary and filler source catalogs
 
 To upload your catalog, use the `Catalog file` button in the `Upload Data` tab.
+The expected file extension is ".radec". If your text file has a different extension,
+you may need to use the options in the file dialog to enable all files before your catalog
+can be selected.
+
 To turn on or off catalog overlays in your FITS image, toggle the
 `Primary Sources` or `Filler Sources` buttons above the viewer, in the `View Image`
 tab. The colors assigned to the catalogs may be edited in the `Appearance` tab,
@@ -277,9 +285,9 @@ may be configured in the `Appearance` tab under `Configure NIRSpec Apertures`.
 
 The center of the field is defined by the user with the form fields `RA` and `Dec` in
 the `Position` tab under `Configure NIRSpec Apertures`. These parameters must be entered in
-decimal degrees.
+decimal degrees. After entering a value, hit return or click away from the field to apply the change.
 
-The `PA` field should be set to the aperture position angle of the MSA, expressed
+The `PA` field should be set to the aperture position angle (APA) of the MSA, expressed
 in units of degrees. The allowed values for this angle for a specified date range are given by the
 `JWST General Target Visibility Tool (GTVT) <https://jwst-docs.stsci.edu/jwst-other-tools/jwst-target-visibility-tools/jwst-general-target-visibility-tool-help>`__.
 A customized interface to this tool is provided in NOVT; see :ref:`show_timeline`.
@@ -328,8 +336,11 @@ aperture position angle of the fiducial point. These parameters are independent
 of the MSA parameters because they are meant to design a NIRCam observation that
 may take place months before the NIRSpec spectroscopy.
 
-Enter RA, Dec, and PA in the `Configure NIRCam Apertures` tab, using the same format rules
-as with the MSA parameters. Toggle the `NIRCam Short` or `NIRCam Long` buttons to show or
+Enter RA, Dec, and aperture PA in the `Configure NIRCam Apertures` tab, using the same format rules
+as with the MSA parameters. After entering a value, hit return or click away from the field to apply
+the change.
+
+Toggle the `NIRCam Short` or `NIRCam Long` buttons to show or
 hide the NIRCam footprints in the viewer (:numref:`nircam_overlay`).
 The colors and fill opacities for the overlays may be configured in the `Appearance` tab
 under `Configure NIRCam Apertures`.
