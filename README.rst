@@ -110,7 +110,7 @@ for the interact module.
 
 License
 -------
-See `LICENSE.md` in the `source distribution <https://github.com/spacetelescope/jwst_novt>`__ for more information.
+See `LICENSE.rst` in the `source distribution <https://github.com/spacetelescope/jwst_novt>`__ for more information.
 
 
 Contributing
