@@ -32,7 +32,7 @@ def main():
     config_file = NOVT_DIR / "data" / "voila.json"
 
     # copy the notebook to the current directory
-    nbdir = Path(".").absolute()
+    nbdir = Path().absolute()
     nbname = Path(nbdir) / notebook_file.name
     shutil.copyfile(notebook_file, nbname)
 
