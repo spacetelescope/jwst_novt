@@ -53,7 +53,7 @@ def main(notebook_name, *, serve_only=False):
 
     # run a copy of the notebook from a temp directory,
     # but keep track of start directory to reset
-    start_dir = Path(".").absolute()
+    start_dir = Path().absolute()
     nbdir = tempfile.mkdtemp()
     nbname = Path(nbdir) / notebook_name.name
 

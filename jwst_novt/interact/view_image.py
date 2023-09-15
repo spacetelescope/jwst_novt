@@ -43,7 +43,6 @@ class ViewImage:
         # based on MAST Jdaviz configuration
         cc = get_configuration("imviz")
         cc["settings"]["viewer_spec"] = cc["settings"].get("configuration", "default")
-        cc["settings"]["configuration"] = "novt"
         cc["settings"]["visible"] = {
             "menu_bar": False,
             "toolbar": False,
