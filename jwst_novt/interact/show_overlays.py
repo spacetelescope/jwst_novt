@@ -16,7 +16,7 @@ class ShowOverlays:
         # internal data
         self.title = "Show Overlays"
         self.viz = viz
-        self.viewer = viz.default_viewer
+        self.viewer = viz.default_viewer._obj
         self.uploaded_data = uploaded_data
         self.nirspec_controls = nirspec
         self.nircam_controls = nircam

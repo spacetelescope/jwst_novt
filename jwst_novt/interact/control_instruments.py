@@ -28,7 +28,7 @@ class ControlInstruments(HasTraits):
         self.instrument = instrument
         self.title = f"Configure {instrument} Apertures"
         self.viz = viz
-        self.viewer = viz.default_viewer
+        self.viewer = viz.default_viewer._obj
         self.dither_values = list(NIRCAM_DITHER_OFFSETS.keys())
 
         # instrument logo image

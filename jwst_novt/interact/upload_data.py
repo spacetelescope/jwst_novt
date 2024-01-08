@@ -29,7 +29,7 @@ class UploadData(HasTraits):
         # internal data
         self.title = "Upload Data"
         self.viz = viz
-        self.viewer = viz.default_viewer
+        self.viewer = viz.default_viewer._obj
         self.image_files = {}
         self.allow_data_replace = False
 
