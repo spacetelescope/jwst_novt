@@ -69,7 +69,7 @@ class TestUploadData:
 
         # mock hub broadcast to check for error messages
         m1 = mocker.patch.object(ud.viz.app.hub, "broadcast")
-        base_count = 12  # normal messages broadcast on load
+        base_count = 13  # normal messages broadcast on load
 
         # mock the file upload
         image_name = image_file_no_wcs.name
