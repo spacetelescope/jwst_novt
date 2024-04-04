@@ -38,7 +38,7 @@ interact = [
     "voila>=0.4"
 ]
 test = [
-    "ruff",
+    "ruff>0.3",
     "pytest",
     "pytest-coverage",
     "pytest-mock"
@@ -113,24 +113,25 @@ omit = [
 ]
 
 [tool.ruff]
-line-length = 88
-select = ["ALL"]
-ignore =[
-    "ANN", "S", "BLE", "SLF", "PERF",
-    "PLR0913", "SIM108", "D100", "D104", "COM812"
-]
 exclude = [
     "version.py",
     "conf.py"
 ]
+line-length = 88
+lint.select = ["ALL"]
+lint.ignore =[
+    "ANN", "S", "BLE", "SLF", "PERF",
+    "PLR0913", "SIM108", "D100", "D104", "COM812"
+]
 
-[tool.ruff.per-file-ignores]
+
+[tool.ruff.lint.per-file-ignores]
 "*test*.py" = ["D101", "D102", "D103"]
 "test_display.py" = ["T201"]
 "__init__.py" = ["F403"]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
-[tool.ruff.flake8-unused-arguments]
+[tool.ruff.lint.flake8-unused-arguments]
 ignore-variadic-names = true
