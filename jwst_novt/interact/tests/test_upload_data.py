@@ -69,7 +69,6 @@ class TestUploadData:
 
         # mock hub broadcast to check for error messages
         m1 = mocker.patch.object(ud.viz.app.hub, "broadcast")
-        base_count = 13  # normal messages broadcast on load
 
         # mock the file upload
         image_name = image_file_no_wcs.name
@@ -86,7 +85,9 @@ class TestUploadData:
         assert image_name in str(ud.viz.app.data_collection)
 
         # viewer shows error message
-        assert m1.call_count == base_count + 1
+        last_message = m1.call_args_list[-1][0][0]
+        assert "No WCS" in last_message.text
+        base_count = m1.call_count
 
         # try uploading something non-FITS - should throw error and
         # not appear in viewer or uploaded data
@@ -99,7 +100,9 @@ class TestUploadData:
         assert ud.image_file_name is None
         assert not ud.has_wcs
         assert image_name not in str(ud.viz.app.data_collection)
-        assert m1.call_count == base_count + 2
+        assert m1.call_count == base_count + 1
+        last_message = m1.call_args_list[-1][0][0]
+        assert "valid FITS" in last_message.text
 
     def test_load_catalog(self, mocker, imviz, catalog_file):
         ud = u.UploadData(imviz)
