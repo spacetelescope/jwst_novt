@@ -1,3 +1,7 @@
+0.1.4 (2024-04-22)
+==================
+- Minor changes for compatibility with Jdaviz v3.9.1.
+
 0.1.3 (2024-01-08)
 ==================
 - Minor changes for compatibility with Jdaviz v3.8.1.
