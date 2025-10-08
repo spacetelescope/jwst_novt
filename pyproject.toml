@@ -1,7 +1,7 @@
 [project]
 name = "jwst_novt"
 description = "JWST NIRSpec Observation Visualization Tool"
-authors = [{name = "STScI", email = "help@stsci.edu"}]
+authors = [{name = "STScI"}]
 license = {file = "LICENSE.rst"}
 dynamic = ["version"]
 requires-python = ">=3.9"
