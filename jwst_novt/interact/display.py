@@ -293,7 +293,7 @@ def bqplot_catalog(
         catalog = pd.read_csv(
             catalog_file,
             names=["ra", "dec", "flag"],
-            delim_whitespace=True,
+            sep=r"\s+",
             usecols=[0, 1, 2],
         )
     except ValueError:
@@ -303,7 +303,7 @@ def bqplot_catalog(
             catalog_file.seek(0)
 
         catalog = pd.read_csv(
-            catalog_file, names=["ra", "dec"], delim_whitespace=True, usecols=[0, 1]
+            catalog_file, names=["ra", "dec"], sep=r"\s+", usecols=[0, 1]
         )
         catalog["flag"] = "P"
     finally:

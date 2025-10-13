@@ -407,13 +407,13 @@ def source_catalog(catalog_file):
             catalog = pd.read_csv(
                 catalog_file,
                 names=["ra", "dec", "flag"],
-                delim_whitespace=True,
+                sep=r"\s+",
                 usecols=[0, 1, 2],
             )
         except ValueError:
             # try again with two columns
             catalog = pd.read_csv(
-                catalog_file, names=["ra", "dec"], delim_whitespace=True, usecols=[0, 1]
+                catalog_file, names=["ra", "dec"], sep=r"\s+", usecols=[0, 1]
             )
             catalog["flag"] = "P"
 
