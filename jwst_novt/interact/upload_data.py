@@ -145,7 +145,7 @@ class UploadData(HasTraits):
             hdul = fits.open(uploaded_file["file_obj"])
             self.viz.load_data(hdul, data_label=uploaded_file["name"])
 
-            wcs = self.viewer.state.reference_data.coords
+            wcs = getattr(self.viewer.state.reference_data, "coords", None)
             if wcs is None or not wcs.has_celestial:
                 msg_text = (
                     "No WCS associated with image. "
