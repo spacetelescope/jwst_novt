@@ -129,6 +129,7 @@ lint.ignore =[
 "*test*.py" = ["D101", "D102", "D103"]
 "test_display.py" = ["T201"]
 "__init__.py" = ["F403"]
+"*.ipynb" = ["A004", "FBT003", "PTH123", "T201"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

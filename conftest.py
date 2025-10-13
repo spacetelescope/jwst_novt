@@ -7,7 +7,7 @@ from astropy.time import Time
 from astropy.wcs import WCS
 
 
-@pytest.fixture()
+@pytest.fixture
 def catalog_file(tmp_path):
     filename = tmp_path / "sources.radec"
     with filename.open("w") as fh:
@@ -23,7 +23,7 @@ def catalog_file(tmp_path):
     return filename
 
 
-@pytest.fixture()
+@pytest.fixture
 def catalog_file_2col(tmp_path):
     filename = tmp_path / "sources_2col.radec"
     with filename.open("w") as fh:
@@ -39,7 +39,7 @@ def catalog_file_2col(tmp_path):
     return filename
 
 
-@pytest.fixture()
+@pytest.fixture
 def catalog_dataframe():
     return pd.DataFrame(
         {
@@ -66,7 +66,7 @@ def catalog_dataframe():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def catalog_dataframe_2col():
     return pd.DataFrame(
         {
@@ -92,14 +92,14 @@ def catalog_dataframe_2col():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def bad_catalog_file(tmp_path):
     filename = tmp_path / "bad.radec"
     filename.write_text("bad\n")
     return filename
 
 
-@pytest.fixture()
+@pytest.fixture
 def timeline_data():
     times = [
         Time("2022-01-04"),
@@ -161,7 +161,7 @@ def timeline_data():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def image_2d_wcs():
     return WCS(
         {
@@ -179,14 +179,14 @@ def image_2d_wcs():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def bad_wcs():
     return WCS(
         {"CDELT1": 1, "CRPIX1": 1, "CRVAL1": 1, "CDELT2": 1, "CRPIX2": 1, "CRVAL2": 1}
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def image_file(tmp_path, image_2d_wcs):
     hdul = fits.HDUList(
         fits.PrimaryHDU(np.zeros((10, 10)), header=image_2d_wcs.to_header())
@@ -197,7 +197,7 @@ def image_file(tmp_path, image_2d_wcs):
     return filename
 
 
-@pytest.fixture()
+@pytest.fixture
 def image_file_no_wcs(tmp_path):
     hdul = fits.HDUList(fits.PrimaryHDU(np.zeros((10, 10))))
     filename = tmp_path / "image_no_wcs.fits"

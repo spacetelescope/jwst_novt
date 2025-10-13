@@ -27,12 +27,12 @@ else:
     HAS_DISPLAY = True
 
 
-@pytest.fixture()
+@pytest.fixture
 def imviz():
     return jdaviz.Imviz()
 
 
-@pytest.fixture()
+@pytest.fixture
 def loaded_imviz(image_2d_wcs):
     imviz = jdaviz.Imviz()
     arr = np.ones((10, 10))
@@ -40,34 +40,32 @@ def loaded_imviz(image_2d_wcs):
     imviz.load(ndd)
     return imviz
 
-@pytest.fixture()
+@pytest.fixture
 def bad_wcs_ndd(bad_wcs):
     arr = np.ones((10, 10))
-    ndd = NDData(arr, wcs=bad_wcs)
-    return ndd
+    return NDData(arr, wcs=bad_wcs)
 
-
-@pytest.fixture()
+@pytest.fixture
 def image_viewer():
     return ViewImage()
 
 
-@pytest.fixture()
+@pytest.fixture
 def uploaded_data(loaded_imviz):
     return UploadData(loaded_imviz)
 
 
-@pytest.fixture()
+@pytest.fixture
 def nirspec_controls(loaded_imviz):
     return ControlInstruments("NIRSpec", loaded_imviz)
 
 
-@pytest.fixture()
+@pytest.fixture
 def nircam_controls(loaded_imviz):
     return ControlInstruments("NIRCam", loaded_imviz)
 
 
-@pytest.fixture()
+@pytest.fixture
 def overlay_controls(
     loaded_imviz, uploaded_data, nirspec_controls, nircam_controls, catalog_file
 ):
@@ -83,17 +81,17 @@ def overlay_controls(
     return ctrl
 
 
-@pytest.fixture()
+@pytest.fixture
 def timeline_controls():
     return ShowTimeline()
 
 
-@pytest.fixture()
+@pytest.fixture
 def save_controls(overlay_controls):
     return SaveOverlays(overlay_controls)
 
 
-@pytest.fixture()
+@pytest.fixture
 def application_style(
     image_viewer,
     uploaded_data,
@@ -114,7 +112,7 @@ def application_style(
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def config_file(tmp_path):
     config = {
         "nirspec": {"color_primary": "red"},

@@ -7,10 +7,10 @@ from astropy import coordinates
 from jwst_novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC
 
 __all__ = [
-    "nirspec_footprint",
-    "nircam_short_footprint",
-    "nircam_long_footprint",
     "nircam_dither_footprint",
+    "nircam_long_footprint",
+    "nircam_short_footprint",
+    "nirspec_footprint",
     "source_catalog",
 ]
 

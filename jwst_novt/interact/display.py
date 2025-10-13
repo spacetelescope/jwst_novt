@@ -17,13 +17,13 @@ from jwst_novt import timeline as tl
 from jwst_novt.constants import DEFAULT_COLOR, INSTRUMENT_NAMES
 
 __all__ = [
-    "hold_all_sync",
+    "BqplotToolbar",
+    "bqplot_catalog",
     "bqplot_figure",
     "bqplot_footprint",
-    "bqplot_catalog",
     "bqplot_timeline",
+    "hold_all_sync",
     "remove_bqplot_patches",
-    "BqplotToolbar",
 ]
 
 

@@ -10,7 +10,7 @@ from jwst_gtvt.jwst_tvt import Ephemeris
 
 from jwst_novt.constants import JWST_MAXIMUM_DATE, JWST_MINIMUM_DATE
 
-__all__ = ["timeline", "jwst_maximum_date"]
+__all__ = ["jwst_maximum_date", "timeline"]
 
 
 def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
@@ -83,9 +83,9 @@ def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
     # relevant data for this application is the V3 position angle (PA)
     # and NIRSpec and NIRCam min and max PA
     timeline_data = {"Time": times, "V3PA": ephem["V3PA"]}
-    for instrument in instruments:
+    for ins in instruments:
         for key in ["min", "max"]:
-            col = instrument.upper() + f"_{key}_pa_angle"
+            col = ins.upper() + f"_{key}_pa_angle"
             ephem.loc[not_visible, col] = np.nan
             timeline_data[col.replace("pa_angle", "PA")] = ephem[col]
 

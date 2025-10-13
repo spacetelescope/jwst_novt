@@ -73,7 +73,6 @@ class TestSaveOverlays:
 
         # if wcs is bad, nothing happens
         overlay_controls.viz.load(bad_wcs_ndd)
-        # overlay_controls.viewer.state.reference_data.coords = bad_wcs
         so.make_regions()
         assert so.file_link.url == same_reg
         overlay_controls.viewer.state.reference_data = None
