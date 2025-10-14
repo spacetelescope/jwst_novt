@@ -24,10 +24,10 @@ class ShowTimeline(HasTraits):
     nirspec_color = Unicode(DEFAULT_COLOR["NIRSpec"]).tag(sync=True)
     nircam_color = Unicode(DEFAULT_COLOR["NIRCam Short"]).tag(sync=True)
     start_date = Any(
-        datetime.datetime.now(tz=datetime.timezone.utc).date(), allow_none=True
+        datetime.datetime.now(tz=datetime.UTC).date(), allow_none=True
     ).tag(sync=True)
     end_date = Any(
-        datetime.datetime.now(tz=datetime.timezone.utc).date()
+        datetime.datetime.now(tz=datetime.UTC).date()
         + datetime.timedelta(days=365),
         allow_none=True,
     ).tag(sync=True)
@@ -173,7 +173,7 @@ class ShowTimeline(HasTraits):
 
         start_date = self.set_start.value
         if start_date is None:
-            start_date = datetime.datetime.now(tz=datetime.timezone.utc).date()
+            start_date = datetime.datetime.now(tz=datetime.UTC).date()
         filename = f"novt_timeline_{start_date.strftime('%Y%m%d')}"
 
         end_date = self.set_end.value

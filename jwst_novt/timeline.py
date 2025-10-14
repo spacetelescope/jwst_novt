@@ -109,7 +109,7 @@ def jwst_maximum_date():
         dt = m.groups()[0]
         end_date = (
             datetime.datetime.strptime(dt, "%Y-%b-%d")
-            .astimezone(datetime.timezone.utc)
+            .astimezone(datetime.UTC)
             .strftime("%Y-%m-%d")
         )
 

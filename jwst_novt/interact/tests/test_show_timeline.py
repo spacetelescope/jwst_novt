@@ -98,7 +98,7 @@ class TestShowTimeline:
         if not start_date:
             timeline_controls.set_start.value = None
             timeline_controls.set_end.value = None
-            date_str = datetime.datetime.now(tz=datetime.timezone.utc).strftime(
+            date_str = datetime.datetime.now(tz=datetime.UTC).strftime(
                 "%Y%m%d"
             )
         else:

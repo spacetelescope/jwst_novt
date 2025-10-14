@@ -425,13 +425,13 @@ def source_catalog(catalog_file):
     primary = ~filler
 
     primary_regions = []
-    for ra, dec in zip(catalog["ra"][primary], catalog["dec"][primary]):
+    for ra, dec in zip(catalog["ra"][primary], catalog["dec"][primary], strict=True):
         primary_regions.append(
             regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit="deg"))
         )
 
     filler_regions = []
-    for ra, dec in zip(catalog["ra"][filler], catalog["dec"][filler]):
+    for ra, dec in zip(catalog["ra"][filler], catalog["dec"][filler], strict=True):
         filler_regions.append(
             regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit="deg"))
         )
