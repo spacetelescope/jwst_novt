@@ -7,10 +7,10 @@ from astropy import coordinates
 from jwst_novt.constants import NIRCAM_DITHER_OFFSETS, NO_MOSAIC
 
 __all__ = [
-    "nirspec_footprint",
-    "nircam_short_footprint",
-    "nircam_long_footprint",
     "nircam_dither_footprint",
+    "nircam_long_footprint",
+    "nircam_short_footprint",
+    "nirspec_footprint",
     "source_catalog",
 ]
 
@@ -407,13 +407,13 @@ def source_catalog(catalog_file):
             catalog = pd.read_csv(
                 catalog_file,
                 names=["ra", "dec", "flag"],
-                delim_whitespace=True,
+                sep=r"\s+",
                 usecols=[0, 1, 2],
             )
         except ValueError:
             # try again with two columns
             catalog = pd.read_csv(
-                catalog_file, names=["ra", "dec"], delim_whitespace=True, usecols=[0, 1]
+                catalog_file, names=["ra", "dec"], sep=r"\s+", usecols=[0, 1]
             )
             catalog["flag"] = "P"
 
@@ -425,13 +425,13 @@ def source_catalog(catalog_file):
     primary = ~filler
 
     primary_regions = []
-    for ra, dec in zip(catalog["ra"][primary], catalog["dec"][primary]):
+    for ra, dec in zip(catalog["ra"][primary], catalog["dec"][primary], strict=True):
         primary_regions.append(
             regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit="deg"))
         )
 
     filler_regions = []
-    for ra, dec in zip(catalog["ra"][filler], catalog["dec"][filler]):
+    for ra, dec in zip(catalog["ra"][filler], catalog["dec"][filler], strict=True):
         filler_regions.append(
             regions.PointSkyRegion(coordinates.SkyCoord(ra, dec, unit="deg"))
         )

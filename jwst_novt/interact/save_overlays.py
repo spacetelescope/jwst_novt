@@ -182,13 +182,13 @@ class SaveOverlays(HasTraits):
         regions : regions.Regions
             New astropy region set.
         """
-        primary, filler = [], []
+        primary = []
         if isinstance(cat_file, str):
             # assume it is a file name
-            primary, filler = fp.source_catalog(cat_file)
+            primary, _ = fp.source_catalog(cat_file)
         else:
             try:
-                primary, filler = fp.source_catalog(cat_file["file_obj"])
+                primary, _ = fp.source_catalog(cat_file["file_obj"])
             finally:  # pragma: no cover
                 with contextlib.suppress(Exception):
                     cat_file["file_obj"].seek(0)

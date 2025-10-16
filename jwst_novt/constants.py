@@ -2,14 +2,14 @@
 import pathlib
 
 __all__ = [
-    "NOVT_DIR",
-    "INSTRUMENT_NAMES",
-    "NIRCAM_DITHER_OFFSETS",
-    "NO_MOSAIC",
-    "DEFAULT_COLOR",
-    "JWST_MINIMUM_DATE",
-    "JWST_MAXIMUM_DATE",
     "CONFIGURABLE",
+    "DEFAULT_COLOR",
+    "INSTRUMENT_NAMES",
+    "JWST_MAXIMUM_DATE",
+    "JWST_MINIMUM_DATE",
+    "NIRCAM_DITHER_OFFSETS",
+    "NOVT_DIR",
+    "NO_MOSAIC",
 ]
 
 

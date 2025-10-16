@@ -17,13 +17,13 @@ from jwst_novt import timeline as tl
 from jwst_novt.constants import DEFAULT_COLOR, INSTRUMENT_NAMES
 
 __all__ = [
-    "hold_all_sync",
+    "BqplotToolbar",
+    "bqplot_catalog",
     "bqplot_figure",
     "bqplot_footprint",
-    "bqplot_catalog",
     "bqplot_timeline",
+    "hold_all_sync",
     "remove_bqplot_patches",
-    "BqplotToolbar",
 ]
 
 
@@ -293,7 +293,7 @@ def bqplot_catalog(
         catalog = pd.read_csv(
             catalog_file,
             names=["ra", "dec", "flag"],
-            delim_whitespace=True,
+            sep=r"\s+",
             usecols=[0, 1, 2],
         )
     except ValueError:
@@ -303,7 +303,7 @@ def bqplot_catalog(
             catalog_file.seek(0)
 
         catalog = pd.read_csv(
-            catalog_file, names=["ra", "dec"], delim_whitespace=True, usecols=[0, 1]
+            catalog_file, names=["ra", "dec"], sep=r"\s+", usecols=[0, 1]
         )
         catalog["flag"] = "P"
     finally:

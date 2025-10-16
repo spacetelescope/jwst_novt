@@ -20,7 +20,7 @@ else:
 from jwst_novt.constants import DEFAULT_COLOR
 
 
-@pytest.fixture()
+@pytest.fixture
 def image_2d_wcs():
     return WCS(
         {

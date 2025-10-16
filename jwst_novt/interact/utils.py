@@ -5,7 +5,7 @@ import ipywidgets as ipw
 
 from jwst_novt.constants import NOVT_DIR
 
-__all__ = ["read_image", "ToggleButton", "FileDownloadLink"]
+__all__ = ["FileDownloadLink", "ToggleButton", "read_image"]
 
 
 def read_image(image_file, width="100px", height="100px", margin="10px"):

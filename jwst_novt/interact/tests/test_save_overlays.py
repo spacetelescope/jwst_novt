@@ -19,7 +19,7 @@ class TestSaveOverlays:
         assert isinstance(so.widgets, ipw.Widget)
 
     @pytest.mark.parametrize("coords", ["pixel coordinates", "sky coordinates"])
-    def test_make_regions(self, overlay_controls, catalog_file, bad_wcs, coords):
+    def test_make_regions(self, overlay_controls, catalog_file, bad_wcs_ndd, coords):
         so = u.SaveOverlays(overlay_controls)
         so.set_coordinates.value = coords
 
@@ -72,7 +72,7 @@ class TestSaveOverlays:
         assert same_reg == even_more_reg
 
         # if wcs is bad, nothing happens
-        overlay_controls.viewer.state.reference_data.coords = bad_wcs
+        overlay_controls.viz.load(bad_wcs_ndd)
         so.make_regions()
         assert so.file_link.url == same_reg
         overlay_controls.viewer.state.reference_data = None
