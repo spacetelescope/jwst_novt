@@ -39,7 +39,8 @@ jobs:
           python-version: 3.12
         - linux: test-alldeps
           python-version: 3.13
-        - macos: test-alldeps
+        - macos: py313-test-alldeps
           python-version: 3.13
-        - linux: test-alldeps-cov
+        - linux: py313-test-alldeps-cov
+          python-version: 3.13
           coverage: codecov
