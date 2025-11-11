@@ -50,8 +50,11 @@ It is highly recommended that the user install the NOVT package into a virtual
 environment.  For example, use conda to create and activate a virtual environment
 before following the installation steps::
 
-    $ conda create -n jwst_novt python
+    $ conda create -n jwst_novt python=3.13
     $ conda activate jwst_novt
+
+.. warning::
+    JWST NOVT is currently only compatible with python versions 3.11, 3.12, and 3.13.
 
 Core tools only
 ~~~~~~~~~~~~~~~
