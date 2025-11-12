@@ -4,7 +4,8 @@ description = "JWST NIRSpec Observation Visualization Tool"
 authors = [{name = "STScI"}]
 license = {file = "LICENSE.rst"}
 dynamic = ["version"]
-requires-python = ">=3.11"
+# TODO remove python upper pin and pin solara once solara supports python >=3.14
+requires-python = ">=3.11,<3.14"
 dependencies = [
     "astropy>=5.2.2",
     "jwst_gtvt>=1.0.0",

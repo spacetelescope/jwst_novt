@@ -39,7 +39,11 @@ jobs:
           python-version: 3.12
         - linux: test-alldeps
           python-version: 3.13
-        - macos: test-alldeps
+        # `tox` may overwrite the `requires-python` version when creating a test environment;
+        # if that occurs specify the version in the tox environment e.g., py313-test-alldeps;
+        # TODO:  remove py313- pin from tox environment once solara is supported on py314
+        - macos: py313-test-alldeps
           python-version: 3.13
-        - linux: test-alldeps-cov
+        - linux: py313-test-alldeps-cov
+          python-version: 3.13
           coverage: codecov
