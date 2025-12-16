@@ -1,6 +1,8 @@
-0.1.5
+0.1.5 (2025-12-16)
 ==================
 - Minor changes for compatibility with Jdaviz v4.4.1
+- Require python <3.14 to avoid issues with current the current solara version
+  dependency.
 
 0.1.4 (2024-04-22)
 ==================
