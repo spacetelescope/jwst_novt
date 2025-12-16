@@ -27,8 +27,7 @@ class ShowTimeline(HasTraits):
         datetime.datetime.now(tz=datetime.UTC).date(), allow_none=True
     ).tag(sync=True)
     end_date = Any(
-        datetime.datetime.now(tz=datetime.UTC).date()
-        + datetime.timedelta(days=365),
+        datetime.datetime.now(tz=datetime.UTC).date() + datetime.timedelta(days=365),
         allow_none=True,
     ).tag(sync=True)
 

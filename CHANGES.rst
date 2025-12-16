@@ -1,3 +1,7 @@
+0.1.7
+==================
+- Minor changes for compatibility with Jdaviz v4.5.0 updates to the viewer API.
+
 0.1.6 (2025-02-13)
 ==================
 - Set upper pin on ipykernel < 7 to fix a bug causing images not to display

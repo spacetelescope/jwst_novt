@@ -145,7 +145,7 @@ class UploadData(HasTraits):
             hdul = fits.open(uploaded_file["file_obj"])
             self.viz.load_data(hdul, data_label=uploaded_file["name"])
 
-            wcs = getattr(self.viewer.state.reference_data, "coords", None)
+            wcs = getattr(self.viewer.glue_viewer.state.reference_data, "coords", None)
             if wcs is None or not wcs.has_celestial:
                 msg_text = (
                     "No WCS associated with image. "
@@ -191,7 +191,7 @@ class UploadData(HasTraits):
                 for data_set in self.viz.app.data_collection:
                     if data_set.label.startswith(old_file["name"]):
                         self.viz.app.remove_data_from_viewer(
-                            self.viewer.reference_id, data_set.label
+                            self.viewer.glue_viewer.reference_id, data_set.label
                         )
                         self.viz.app.data_collection.remove(data_set)
                 del self.image_files[old_file["name"]]

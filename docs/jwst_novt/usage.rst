@@ -110,7 +110,7 @@ The FITS file can be obtained from the
 under target name "NGC 5194 + 5195 FULL Mosaic". This is the FITS file F814W mosaic with name
 "hlsp_legus_hst_acs_ngc5194-ngc5195-mosaic_f814w_v1_sci.fits".
 The source catalog
-(`m51.radec <https://jwst-docs.stsci.edu/files/154687319/154687335/1/1714071871209/m51.radec>`__)
+(`m51.radec <https://jwst-docs.stsci.edu/files/216453887/216453903/1/1762450824499/m51.radec>`__)
 contains a selection of massive young clusters. Its format is described in :numref:`m51_catalog_format`.
 
 For NOVT purposes, only the first 3 columns are used.  The first two (RA and Dec)
