@@ -1,3 +1,8 @@
+0.1.6 (2025-02-13)
+==================
+- Set upper pin on ipykernel < 7 to fix a bug causing images not to display
+  when running NOVT in interactive mode.
+
 0.1.5 (2025-12-16)
 ==================
 - Minor changes for compatibility with Jdaviz v4.4.1
