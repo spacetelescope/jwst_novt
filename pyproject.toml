@@ -121,7 +121,8 @@ line-length = 88
 lint.select = ["ALL"]
 lint.ignore =[
     "ANN", "S", "BLE", "SLF", "PERF",
-    "PLR0913", "SIM108", "D100", "D104", "COM812"
+    "PLR0913", "SIM108", "D100", "D104", "COM812",
+    "CPY001", "PLR0917"
 ]
 
 

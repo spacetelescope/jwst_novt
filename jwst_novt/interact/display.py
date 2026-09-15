@@ -512,8 +512,8 @@ def bqplot_timeline(
                     timeline_data["Time"],
                     timeline_data[f"{inst_.upper()}_min_PA"],
                     timeline_data[f"{inst_.upper()}_max_PA"],
-                    scales["x"].min,
-                    scales["x"].max,
+                    min_time=scales["x"].min,
+                    max_time=scales["x"].max,
                 )
                 line_.labels = [inst_, pa_label]
 
