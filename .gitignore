@@ -55,6 +55,7 @@ pip-wheel-metadata/
 .tox
 .*.sw[op]
 *~
+.venv
 
 # Mac OSX
 .DS_Store
