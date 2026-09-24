@@ -13,7 +13,7 @@ This tool can be used for observation planning for programs that seek to acquire
 imaging using NIRCam (especially NIRCam pre-imaging). However, it can also be used to
 visualize NIRSpec MOS observations prior to observation planning using the
 `MSA Planning Tool (MPT) <https://jwst-docs.stsci.edu/jwst-near-infrared-spectrograph/nirspec-apt-templates/nirspec-multi-object-spectroscopy-apt-template/nirspec-msa-planning-tool-mpt>`__
-in the `Astronomers Proposal Tool (APT) <https://jwst-docs.stsci.edu/jwst-astronomer-s-proposal-tool-overview>`__.
+in the `Astronomers Proposal Tool (APT) <https://jwst-docs.stsci.edu/jwst-astronomers-proposal-tool-overview>`__.
 
 NOVT is meant to improve user understanding of the observatory orientation and field constraints.
 It is not recommended to use the tool to derive strict execution orientation restrictions on either
@@ -110,7 +110,7 @@ The FITS file can be obtained from the
 under target name "NGC 5194 + 5195 FULL Mosaic". This is the FITS file F814W mosaic with name
 "hlsp_legus_hst_acs_ngc5194-ngc5195-mosaic_f814w_v1_sci.fits".
 The source catalog
-(`m51.radec <https://jwst-docs.stsci.edu/files/154687319/154687335/1/1714071871209/m51.radec>`__)
+(`m51.radec <https://jwst-docs.stsci.edu/files/216453887/216453903/1/1762450824499/m51.radec>`__)
 contains a selection of massive young clusters. Its format is described in :numref:`m51_catalog_format`.
 
 For NOVT purposes, only the first 3 columns are used.  The first two (RA and Dec)
@@ -292,7 +292,7 @@ in units of degrees. The allowed values for this angle for a specified date rang
 `JWST General Target Visibility Tool (GTVT) <https://jwst-docs.stsci.edu/jwst-other-tools/jwst-target-visibility-tools/jwst-general-target-visibility-tool-help>`__.
 A customized interface to this tool is provided in NOVT; see :ref:`show_timeline`.
 Further information on JWST position angles can be found in the
-`Specifying JWST Position Angles <https://jwst-docs.stsci.edu/jwst-observatory-characteristics-and-performance/jwst-position-angles-ranges-and-offsets>`__
+`Specifying JWST Position Angles <https://jwst-docs.stsci.edu/jwst-observatory-characteristics/jwst-position-angles-ranges-and-offsets>`__
 article.
 
 The recommended practice in MSA observation planning is to experiment with a range of aperture
