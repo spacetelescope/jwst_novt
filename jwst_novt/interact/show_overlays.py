@@ -84,7 +84,7 @@ class ShowOverlays:
         # clear any old overlays on change in the image file
         for instrument in self.footprint_patches:
             nd.remove_bqplot_patches(
-                self.viewer.figure, self.footprint_patches[instrument]
+                self.viewer.glue_viewer.figure, self.footprint_patches[instrument]
             )
         self.footprint_patches = {}
 
@@ -111,7 +111,7 @@ class ShowOverlays:
             return False
 
         status = True
-        wcs = self.viewer.state.reference_data.coords
+        wcs = self.viewer.glue_viewer.state.reference_data.coords
         catalog_file = self.uploaded_data.catalog_file
         if catalog_file is not None:
             if isinstance(catalog_file, str):
@@ -121,7 +121,7 @@ class ShowOverlays:
                 catalog = catalog_file["file_obj"]
             try:
                 primary, filler = nd.bqplot_catalog(
-                    self.viewer.figure,
+                    self.viewer.glue_viewer.figure,
                     catalog,
                     wcs,
                     visible=False,
@@ -148,12 +148,12 @@ class ShowOverlays:
         # clear any old markers on change in the catalog file
         if "primary" in self.catalog_markers:
             nd.remove_bqplot_patches(
-                self.viewer.figure, [self.catalog_markers["primary"]]
+                self.viewer.glue_viewer.figure, [self.catalog_markers["primary"]]
             )
             del self.catalog_markers["primary"]
         if "filler" in self.catalog_markers:
             nd.remove_bqplot_patches(
-                self.viewer.figure, [self.catalog_markers["filler"]]
+                self.viewer.glue_viewer.figure, [self.catalog_markers["filler"]]
             )
             del self.catalog_markers["filler"]
 
@@ -202,7 +202,7 @@ class ShowOverlays:
         else:
             button.toggle()
             nd.remove_bqplot_patches(
-                self.viewer.figure, self.footprint_patches[button.value]
+                self.viewer.glue_viewer.figure, self.footprint_patches[button.value]
             )
             del self.footprint_patches[button.value]
 
@@ -232,13 +232,14 @@ class ShowOverlays:
         """
         if not self.uploaded_data.has_wcs:
             return
-        wcs = self.viewer.state.reference_data.coords
+        wcs = self.viewer.glue_viewer.state.reference_data.coords
         with nd.hold_all_sync(self.all_patches()):
             for instrument in instruments:
                 # any old patches need to be removed first
                 if instrument in self.footprint_patches:
                     nd.remove_bqplot_patches(
-                        self.viewer.figure, self.footprint_patches[instrument]
+                        self.viewer.glue_viewer.figure,
+                        self.footprint_patches[instrument],
                     )
 
                 # make new patches
@@ -248,7 +249,7 @@ class ShowOverlays:
                     color = controls.color_primary
                 add_mosaic = controls.mosaic == "Yes"
                 self.footprint_patches[instrument] = nd.bqplot_footprint(
-                    self.viewer.figure,
+                    self.viewer.glue_viewer.figure,
                     instrument,
                     controls.ra,
                     controls.dec,
@@ -277,7 +278,7 @@ class ShowOverlays:
         """
         if not self.uploaded_data.has_wcs:
             return
-        wcs = self.viewer.state.reference_data.coords
+        wcs = self.viewer.glue_viewer.state.reference_data.coords
         with nd.hold_all_sync(self.all_patches()):
             for instrument in instruments:
                 if instrument in self.footprint_patches:
@@ -286,7 +287,7 @@ class ShowOverlays:
                     else:
                         color = controls.color_primary
                     self.footprint_patches[instrument] = nd.bqplot_footprint(
-                        self.viewer.figure,
+                        self.viewer.glue_viewer.figure,
                         instrument,
                         controls.ra,
                         controls.dec,

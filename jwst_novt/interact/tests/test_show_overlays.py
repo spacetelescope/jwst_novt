@@ -58,12 +58,12 @@ class TestShowOverlays:
         overlay_controls._show_footprint(["NIRSpec"], overlay_controls.nirspec_controls)
         nrs_patches = overlay_controls.footprint_patches["NIRSpec"]
         assert len(nrs_patches) > 1
-        assert nrs_patches[0] in overlay_controls.viewer.figure.marks
+        assert nrs_patches[0] in overlay_controls.viewer.glue_viewer.figure.marks
 
         # clear overlays - gone from figure and from tracking
         overlay_controls.clear_overlays()
         assert "NIRSpec" not in overlay_controls.footprint_patches
-        assert nrs_patches[0] not in overlay_controls.viewer.figure.marks
+        assert nrs_patches[0] not in overlay_controls.viewer.glue_viewer.figure.marks
 
         # button is reset to enabled if there is a good wcs
         assert not overlay_controls.footprint_buttons[0].disabled
@@ -78,7 +78,7 @@ class TestShowOverlays:
         overlay_controls._load_catalog()
         cat_markers = overlay_controls.catalog_markers["primary"]
         assert isinstance(cat_markers, bqplot.Scatter)
-        assert cat_markers in overlay_controls.viewer.figure.marks
+        assert cat_markers in overlay_controls.viewer.glue_viewer.figure.marks
         assert not cat_markers.visible
 
         # toggle catalog overlay on and off
@@ -91,8 +91,8 @@ class TestShowOverlays:
         overlay_controls.clear_catalog()
         new_markers = overlay_controls.catalog_markers["primary"]
         assert new_markers is not cat_markers
-        assert new_markers in overlay_controls.viewer.figure.marks
-        assert cat_markers not in overlay_controls.viewer.figure.marks
+        assert new_markers in overlay_controls.viewer.glue_viewer.figure.marks
+        assert cat_markers not in overlay_controls.viewer.glue_viewer.figure.marks
         assert not new_markers.visible
 
         # button is not disabled since catalog is still available
@@ -134,7 +134,7 @@ class TestShowOverlays:
         # footprint visible
         patches = overlay_controls.footprint_patches[inst]
         assert len(patches) > 1
-        assert patches[0] in overlay_controls.viewer.figure.marks
+        assert patches[0] in overlay_controls.viewer.glue_viewer.figure.marks
         assert patches[0].visible
 
         # toggle footprint off
@@ -143,7 +143,7 @@ class TestShowOverlays:
 
         # footprint should be removed
         assert inst not in overlay_controls.footprint_patches
-        assert patches[0] not in overlay_controls.viewer.figure.marks
+        assert patches[0] not in overlay_controls.viewer.glue_viewer.figure.marks
 
         # if no wcs is available, footprint is not created,
         # button stays active
@@ -180,16 +180,16 @@ class TestShowOverlays:
 
         nrs_patches = overlay_controls.footprint_patches["NIRSpec"]
         assert len(nrs_patches) > 1
-        assert nrs_patches[0] in overlay_controls.viewer.figure.marks
+        assert nrs_patches[0] in overlay_controls.viewer.glue_viewer.figure.marks
 
         # show again: old patches are removed and replaced with new ones
         overlay_controls._show_footprint(["NIRSpec"], overlay_controls.nirspec_controls)
 
         new_patches = overlay_controls.footprint_patches["NIRSpec"]
         assert len(new_patches) == len(nrs_patches)
-        assert new_patches[0] in overlay_controls.viewer.figure.marks
+        assert new_patches[0] in overlay_controls.viewer.glue_viewer.figure.marks
         assert new_patches[0] is not nrs_patches[0]
-        assert nrs_patches[0] not in overlay_controls.viewer.figure.marks
+        assert nrs_patches[0] not in overlay_controls.viewer.glue_viewer.figure.marks
 
         # with no wcs, nothing happens
         overlay_controls.uploaded_data.has_wcs = False
@@ -209,7 +209,7 @@ class TestShowOverlays:
         overlay_controls._show_footprint([inst], controls)
         patches = overlay_controls.footprint_patches[inst]
         assert len(patches) > 1
-        assert patches[0] in overlay_controls.viewer.figure.marks
+        assert patches[0] in overlay_controls.viewer.glue_viewer.figure.marks
         assert patches[0].colors == [DEFAULT_COLOR[inst]]
 
         # update with new color
@@ -222,7 +222,7 @@ class TestShowOverlays:
         assert len(patches) == len(new_patches)
         for i, patch in enumerate(new_patches):
             assert patch is patches[i]
-        assert new_patches[0] in overlay_controls.viewer.figure.marks
+        assert new_patches[0] in overlay_controls.viewer.glue_viewer.figure.marks
         if inst == "NIRCam Long":
             assert new_patches[0].colors == ["blue"]
         else:
