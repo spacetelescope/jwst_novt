@@ -260,7 +260,7 @@ class SaveOverlays(HasTraits):
             All created astropy regions. Instrument sets are tagged.
             Colors are set in the style metadata.
         """
-        ref_data = self.show_overlays.viewer.state.reference_data
+        ref_data = self.show_overlays.viewer.glue_viewer.state.reference_data
         if ref_data is None or not ref_data.coords.has_celestial:
             return None
 
