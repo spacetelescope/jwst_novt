@@ -1,4 +1,5 @@
 import contextlib
+import io
 
 import ipyvuetify as v
 import ipywidgets as ipw
@@ -188,10 +189,12 @@ class SaveOverlays(HasTraits):
             primary, _ = fp.source_catalog(cat_file)
         else:
             try:
-                primary, _ = fp.source_catalog(cat_file["file_obj"])
+                primary, _ = fp.source_catalog(io.BytesIO(cat_file["content"]))
+            # TODO make sure that this still works as intended
+            # I'm not sure that you can seek on bytes
             finally:  # pragma: no cover
                 with contextlib.suppress(Exception):
-                    cat_file["file_obj"].seek(0)
+                    cat_file["content"].seek(0)
 
         cat_markers = self.show_overlays.catalog_markers
         cat_regions = {}

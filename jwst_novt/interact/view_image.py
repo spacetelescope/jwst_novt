@@ -1,5 +1,5 @@
 import ipywidgets as ipw
-from jdaviz.app import Application
+from jdaviz.app import PrivateApplication
 from jdaviz.configs.imviz.helper import Imviz
 from jdaviz.core.config import get_configuration
 
@@ -13,7 +13,7 @@ class ViewImage:
         self.title = "View Image"
 
         # start imviz viewer with custom configuration
-        self.app = Application(self._config())
+        self.app = PrivateApplication(self._config())
         self.viz = Imviz(self.app)
 
         # set up viewer sizing for voila app

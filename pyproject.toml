@@ -28,10 +28,10 @@ readme = "README.rst"
 [project.optional-dependencies]
 interact = [
     "bqplot>=0.12.37",
-    "ipykernel>=6.19.4,<7",
+    "ipykernel>=6.19.4",
     "ipyvuetify>=1.7.0",
     "ipywidgets>=8.0.4",
-    "jdaviz>=4.5.0,<4.5.1",
+    "jdaviz>=5.0",
     "pyyaml>=5.4.1",
     "solara>=1.55.0",
     "traitlets>=5.0.5",

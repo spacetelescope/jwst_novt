@@ -1,4 +1,5 @@
 import contextlib
+import io
 
 import ipywidgets as ipw
 from jdaviz.core.events import SnackbarMessage
@@ -34,7 +35,7 @@ class ShowOverlays:
 
         # watch for changes to uploaded files
         self.uploaded_data.image_file_upload.observe(
-            self.clear_overlays, names="file_info"
+            self.clear_overlays, names="value"
         )
         self.uploaded_data.observe(self.clear_catalog, names="catalog_file")
         self.uploaded_data.observe(
@@ -118,7 +119,7 @@ class ShowOverlays:
                 # assume it's a path to a file on disk
                 catalog = catalog_file
             else:
-                catalog = catalog_file["file_obj"]
+                catalog = io.BytesIO(catalog_file["content"])
             try:
                 primary, filler = nd.bqplot_catalog(
                     self.viewer.glue_viewer.figure,

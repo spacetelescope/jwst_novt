@@ -1,6 +1,6 @@
+import io
 import warnings
 
-import ipyvuetify.extra as ve
 import ipywidgets as ipw
 import yaml
 from astropy.io import fits
@@ -10,6 +10,7 @@ from traitlets import Any, Bool, Dict, HasTraits, Unicode
 from jwst_novt.constants import DEFAULT_COLOR
 
 __all__ = ["UploadData"]
+
 
 
 class UploadData(HasTraits):
@@ -41,7 +42,7 @@ class UploadData(HasTraits):
             tooltip="FITS image for display, with associated WCS, in the "
             "primary or SCI extension",
         )
-        self.image_file_upload = ve.FileInput(
+        self.image_file_upload = ipw.FileUpload(
             accept=".fits", multiple=False, layout=ipw.Layout(width="500px")
         )
 
@@ -53,7 +54,7 @@ class UploadData(HasTraits):
             "or 3 (RA, Dec, Flag), "
             "where Flag is 'P' for primary or 'F' for filler sources",
         )
-        self.catalog_file_upload = ve.FileInput(
+        self.catalog_file_upload = ipw.FileUpload(
             accept=".radec", multiple=False, layout=ipw.Layout(width="500px")
         )
 
@@ -64,7 +65,7 @@ class UploadData(HasTraits):
                 layout=ipw.Layout(width="150px"),
                 tooltip="YAML file specifying field values for NOVT configuration.",
             )
-            self.config_file_upload = ve.FileInput(
+            self.config_file_upload = ipw.FileUpload(
                 accept=".yaml", multiple=False, layout=ipw.Layout(width="500px")
             )
         else:
@@ -125,10 +126,10 @@ class UploadData(HasTraits):
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
         # connect callbacks
-        self.image_file_upload.observe(self.load_image, names="file_info")
-        self.catalog_file_upload.observe(self.load_catalog, names="file_info")
+        self.image_file_upload.observe(self.load_image, names="value")
+        self.catalog_file_upload.observe(self.load_catalog, names="value")
         if allow_configuration:
-            self.config_file_upload.observe(self.load_config, names="file_info")
+            self.config_file_upload.observe(self.load_config, names="value")
 
     def _load_hdul_in_viz(self, uploaded_file):
         """
@@ -142,11 +143,11 @@ class UploadData(HasTraits):
         """
         hdul = None
         try:
-            hdul = fits.open(uploaded_file["file_obj"])
-            self.viz.load_data(hdul, data_label=uploaded_file["name"])
+            hdul = fits.open(io.BytesIO(uploaded_file["content"]))
+            self.viz.load_data(hdul, data_label=uploaded_file["name"], show_in_viewer=True)
 
-            wcs = getattr(self.viewer.glue_viewer.state.reference_data, "coords", None)
-            if wcs is None or not wcs.has_celestial:
+            has_celestial_wcs = hasattr(self.viewer.glue_viewer.state.reference_data, 'coords') and self.viewer.glue_viewer.state.reference_data.coords.has_celestial
+            if not has_celestial_wcs:
                 msg_text = (
                     "No WCS associated with image. "
                     "Overlay functions will not be "
@@ -196,7 +197,7 @@ class UploadData(HasTraits):
                         self.viz.app.data_collection.remove(data_set)
                 del self.image_files[old_file["name"]]
         if len(change["new"]) > 0:
-            uploaded_files = change["owner"].get_files()
+            uploaded_files = change["owner"].value
             if len(uploaded_files) > 0:
                 for uploaded_file in uploaded_files:
                     self.image_files[uploaded_file["name"]] = uploaded_file
@@ -218,7 +219,7 @@ class UploadData(HasTraits):
         # watch for uploaded files
         change["owner"].disabled = True
         if len(change["new"]) > 0:
-            uploaded_files = change["owner"].get_files()
+            uploaded_files = change["owner"].value
             if len(uploaded_files) > 0:
                 self.has_catalog = True
                 self.catalog_file = uploaded_files[0]
@@ -236,10 +237,10 @@ class UploadData(HasTraits):
         # watch for new files
         change["owner"].disabled = True
         if len(change["new"]) > 0:
-            uploaded_files = change["owner"].get_files()
+            uploaded_files = change["owner"].value
             if len(uploaded_files) > 0:
                 try:
-                    new_config = yaml.safe_load(uploaded_files[0]["file_obj"])
+                    new_config = yaml.safe_load(io.BytesIO(uploaded_files[0]["content"]))
                     self.configuration = new_config
                 except Exception as err:
                     msg_text = f"Error loading configuration: {err}"
@@ -247,3 +248,4 @@ class UploadData(HasTraits):
                     self.viz.app.hub.broadcast(msg)
 
         change["owner"].disabled = False
+
