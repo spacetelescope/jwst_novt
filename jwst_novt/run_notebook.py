@@ -25,6 +25,8 @@ from jwst_novt.constants import NOVT_DIR
 
 __all__ = ["main"]
 
+MAX_SIZE_BYTES = 4194304000
+
 
 def main(notebook_name, *, serve_only=False):
     """
@@ -69,6 +71,10 @@ def main(notebook_name, *, serve_only=False):
         VoilaConfiguration.theme = "light"
         VoilaConfiguration.enable_nbextensions = True
         VoilaConfiguration.file_whitelist = [".*"]
+        Voila.tornado_settings = {
+            'websocket_max_message_size': MAX_SIZE_BYTES,
+            'max_buffer_size': MAX_SIZE_BYTES
+        }
         if serve_only:
             Voila.open_browser = False
         sys.exit(Voila().launch_instance(argv=[]))
