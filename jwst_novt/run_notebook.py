@@ -25,6 +25,7 @@ from jwst_novt.constants import NOVT_DIR
 
 __all__ = ["main"]
 
+# Max byte size set to 4Gb = 4000 * 1024 * 1024
 MAX_SIZE_BYTES = 4194304000
 
 
@@ -71,9 +72,10 @@ def main(notebook_name, *, serve_only=False):
         VoilaConfiguration.theme = "light"
         VoilaConfiguration.enable_nbextensions = True
         VoilaConfiguration.file_whitelist = [".*"]
+        # Set max tornado web socket size so that large files can be uploaded.
         Voila.tornado_settings = {
-            'websocket_max_message_size': MAX_SIZE_BYTES,
-            'max_buffer_size': MAX_SIZE_BYTES
+            "websocket_max_message_size": MAX_SIZE_BYTES,
+            "max_buffer_size": MAX_SIZE_BYTES,
         }
         if serve_only:
             Voila.open_browser = False
