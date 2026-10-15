@@ -3,14 +3,12 @@ import warnings
 
 import ipywidgets as ipw
 import yaml
-from astropy.io import fits
 from jdaviz.core.events import SnackbarMessage
 from traitlets import Any, Bool, Dict, HasTraits, Unicode
 
 from jwst_novt.constants import DEFAULT_COLOR
 
 __all__ = ["UploadData"]
-
 
 
 class UploadData(HasTraits):
@@ -141,12 +139,19 @@ class UploadData(HasTraits):
             File structure corresponding to uploaded data in
             the FileInput widget.
         """
-        hdul = None
         try:
-            hdul = fits.open(io.BytesIO(uploaded_file["content"]))
-            self.viz.load_data(hdul, data_label=uploaded_file["name"], show_in_viewer=True)
+            data = io.BytesIO(uploaded_file["content"])
+            self.viz.load(
+                data,
+                data_label=uploaded_file["name"],
+                format="Image",
+                viewer=self.viewer.name,
+            )
 
-            has_celestial_wcs = hasattr(self.viewer.glue_viewer.state.reference_data, 'coords') and self.viewer.glue_viewer.state.reference_data.coords.has_celestial
+            has_celestial_wcs = (
+                hasattr(self.viewer.glue_viewer.state.reference_data, "coords")
+                and self.viewer.glue_viewer.state.reference_data.coords.has_celestial
+            )
             if not has_celestial_wcs:
                 msg_text = (
                     "No WCS associated with image. "
@@ -162,9 +167,6 @@ class UploadData(HasTraits):
             msg_text = f"Error loading image: {err}"
             msg = SnackbarMessage(msg_text, sender=self, color="warning")
             self.viz.app.hub.broadcast(msg)
-        finally:
-            if hdul is not None:
-                hdul.close()
 
     def load_image(self, change):
         """
@@ -240,7 +242,9 @@ class UploadData(HasTraits):
             uploaded_files = change["owner"].value
             if len(uploaded_files) > 0:
                 try:
-                    new_config = yaml.safe_load(io.BytesIO(uploaded_files[0]["content"]))
+                    new_config = yaml.safe_load(
+                        io.BytesIO(uploaded_files[0]["content"])
+                    )
                     self.configuration = new_config
                 except Exception as err:
                     msg_text = f"Error loading configuration: {err}"
@@ -248,4 +252,3 @@ class UploadData(HasTraits):
                     self.viz.app.hub.broadcast(msg)
 
         change["owner"].disabled = False
-
