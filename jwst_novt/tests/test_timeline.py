@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 
 import numpy as np
 import pandas as pd
@@ -73,12 +73,12 @@ def test_timeline_errors():
 
 
 def test_jwst_maximum_date(mocker):
-    expected = datetime.date.fromisoformat(JWST_MAXIMUM_DATE)
+    expected = dt.date.fromisoformat(JWST_MAXIMUM_DATE)
 
     retrieved = tl.jwst_maximum_date()
-    assert datetime.date.fromisoformat(retrieved) >= expected
+    assert dt.date.fromisoformat(retrieved) >= expected
 
     # trigger an error to check fallback
     mocker.patch.object(tl.requests, "get", side_effect=ValueError("bad request"))
     fallback = tl.jwst_maximum_date()
-    assert datetime.date.fromisoformat(fallback) == expected
+    assert dt.date.fromisoformat(fallback) == expected

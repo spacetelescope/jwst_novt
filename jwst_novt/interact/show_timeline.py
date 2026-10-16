@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 
 import ipyvuetify as v
 import ipywidgets as ipw
@@ -23,12 +23,9 @@ class ShowTimeline(HasTraits):
     instrument = Unicode("NIRSpec, NIRCam").tag(sync=True)
     nirspec_color = Unicode(DEFAULT_COLOR["NIRSpec"]).tag(sync=True)
     nircam_color = Unicode(DEFAULT_COLOR["NIRCam Short"]).tag(sync=True)
-    start_date = Any(
-        datetime.datetime.now(tz=datetime.UTC).date(), allow_none=True
-    ).tag(sync=True)
+    start_date = Any(dt.datetime.now(tz=dt.UTC).date(), allow_none=True).tag(sync=True)
     end_date = Any(
-        datetime.datetime.now(tz=datetime.UTC).date()
-        + datetime.timedelta(days=365),
+        dt.datetime.now(tz=dt.UTC).date() + dt.timedelta(days=365),
         allow_none=True,
     ).tag(sync=True)
 
@@ -43,8 +40,8 @@ class ShowTimeline(HasTraits):
         self.figure_container = ipw.VBox()
 
         # start, end dates
-        min_date = datetime.date.fromisoformat(JWST_MINIMUM_DATE)
-        max_date = datetime.date.fromisoformat(jwst_maximum_date())
+        min_date = dt.date.fromisoformat(JWST_MINIMUM_DATE)
+        max_date = dt.date.fromisoformat(jwst_maximum_date())
 
         self.set_start = ipw.DatePicker(
             description="Start date",
@@ -173,7 +170,7 @@ class ShowTimeline(HasTraits):
 
         start_date = self.set_start.value
         if start_date is None:
-            start_date = datetime.datetime.now(tz=datetime.UTC).date()
+            start_date = dt.datetime.now(tz=dt.UTC).date()
         filename = f"novt_timeline_{start_date.strftime('%Y%m%d')}"
 
         end_date = self.set_end.value

@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import re
 
 import numpy as np
@@ -49,13 +49,13 @@ def timeline(ra, dec, start_date=None, end_date=None, instrument=None):
 
     # default end date to start date + one year
     if end_date is None:
-        end_date = start_date + datetime.timedelta(days=365)
+        end_date = start_date + dt.timedelta(days=365)
 
     # check for reasonable values
     if end_date <= start_date:
         msg = "End date must be later than start date."
         raise ValueError(msg)
-    if start_date < Time(JWST_MINIMUM_DATE) - datetime.timedelta(days=1):
+    if start_date < Time(JWST_MINIMUM_DATE) - dt.timedelta(days=1):
         msg = f"No JWST ephemeris available prior to {JWST_MINIMUM_DATE}"
         raise ValueError(msg)
     max_date = jwst_maximum_date()
@@ -106,10 +106,10 @@ def jwst_maximum_date():
         m = re.match(
             r".*after A\.D\. (\d{4}-[a-zA-Z]+-\d{1,2})", ephemeris_request.text
         )
-        dt = m.groups()[0]
+        message_dt = m.groups()[0]
         end_date = (
-            datetime.datetime.strptime(dt, "%Y-%b-%d")
-            .astimezone(datetime.UTC)
+            dt.datetime.strptime(message_dt, "%Y-%b-%d")
+            .astimezone(dt.UTC)
             .strftime("%Y-%m-%d")
         )
 

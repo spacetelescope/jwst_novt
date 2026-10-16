@@ -40,10 +40,12 @@ def loaded_imviz(image_2d_wcs):
     imviz.load(ndd)
     return imviz
 
+
 @pytest.fixture
 def bad_wcs_ndd(bad_wcs):
     arr = np.ones((10, 10))
     return NDData(arr, wcs=bad_wcs)
+
 
 @pytest.fixture
 def image_viewer():

@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 
 import pytest
 
@@ -98,12 +98,10 @@ class TestShowTimeline:
         if not start_date:
             timeline_controls.set_start.value = None
             timeline_controls.set_end.value = None
-            date_str = datetime.datetime.now(tz=datetime.UTC).strftime(
-                "%Y%m%d"
-            )
+            date_str = dt.datetime.now(tz=dt.UTC).strftime("%Y%m%d")
         else:
-            timeline_controls.set_start.value = datetime.date(2022, 1, 5)
-            timeline_controls.set_end.value = datetime.date(2022, 1, 9)
+            timeline_controls.set_start.value = dt.date(2022, 1, 5)
+            timeline_controls.set_end.value = dt.date(2022, 1, 9)
             date_str = "20220105-20220109"
 
         # show the plot to make the figure then clear it

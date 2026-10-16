@@ -1,4 +1,5 @@
 """Constants to standardize names and values."""
+
 import pathlib
 
 __all__ = [
