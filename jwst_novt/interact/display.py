@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import re
 from contextlib import ExitStack, contextmanager, suppress
 from functools import partial
@@ -442,7 +442,7 @@ def bqplot_timeline(
     fig.marks = [message]
 
     if start_date is not None:
-        start_date = Time(start_date) - datetime.timedelta(days=1)
+        start_date = Time(start_date) - dt.timedelta(days=1)
     if end_date is not None:
         end_date = Time(end_date)
 
