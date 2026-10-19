@@ -28,17 +28,19 @@ else:
 
 
 @pytest.fixture
-def imviz():
-    return jdaviz.Imviz()
+def viz():
+    image_viewer = ViewImage()
+    return image_viewer.viz
 
 
 @pytest.fixture
-def loaded_imviz(image_2d_wcs):
-    imviz = jdaviz.Imviz()
+def loaded_viz(image_2d_wcs):
+    image_viewer = ViewImage()
+    viz = image_viewer.viz
     arr = np.ones((10, 10))
     ndd = NDData(arr, wcs=image_2d_wcs)
-    imviz.load(ndd)
-    return imviz
+    viz.load(ndd)
+    return viz
 
 
 @pytest.fixture

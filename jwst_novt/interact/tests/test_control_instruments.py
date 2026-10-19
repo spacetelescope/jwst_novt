@@ -15,9 +15,9 @@ else:
 
 @pytest.mark.skipif(not HAS_DISPLAY, reason="Missing optional dependencies")
 class TestControlInstrument:
-    def test_control_nirspec(self, imviz):
+    def test_control_nirspec(self, viz):
         """Test NIRSpec controls."""
-        ci = u.ControlInstruments("NIRSpec", imviz)
+        ci = u.ControlInstruments("NIRSpec", viz)
         assert ci.instrument == "NIRSpec"
 
         # expected nirspec components
@@ -33,8 +33,8 @@ class TestControlInstrument:
         for widget in not_controls:
             assert getattr(ci, widget) is None
 
-    def test_control_nircam(self, imviz):
-        ci = u.ControlInstruments("NIRCam", imviz)
+    def test_control_nircam(self, viz):
+        ci = u.ControlInstruments("NIRCam", viz)
         assert ci.instrument == "NIRCam"
 
         # expected nircam components
@@ -57,8 +57,8 @@ class TestControlInstrument:
         assert isinstance(ci.color_pickers[0], ipw.Widget)
         assert isinstance(ci.color_pickers[1], ipw.Widget)
 
-    def test_wrap_angle(self, imviz):
-        ci = u.ControlInstruments("test", imviz)
+    def test_wrap_angle(self, viz):
+        ci = u.ControlInstruments("test", viz)
         assert ci.pa == 0
         assert ci.set_pa.value == 0
 
@@ -77,8 +77,8 @@ class TestControlInstrument:
         assert ci.pa == expected
         assert ci.set_pa.value == expected
 
-    def test_set_from_wcs(self, imviz, loaded_imviz):
-        ci = u.ControlInstruments("test", imviz)
+    def test_set_from_wcs(self, viz, loaded_viz):
+        ci = u.ControlInstruments("test", viz)
         assert ci.ra == 0
         assert ci.dec == 0
 
@@ -88,7 +88,7 @@ class TestControlInstrument:
         assert np.allclose(ci.dec, 0)
 
         # if imviz already has data, ra and dec are pre-populated
-        ci = u.ControlInstruments("test", loaded_imviz)
+        ci = u.ControlInstruments("test", loaded_viz)
         expected_ra, expected_dec = 202.4695898, 47.1951868
         assert ci.ra == expected_ra
         assert ci.dec == expected_dec
@@ -98,8 +98,8 @@ class TestControlInstrument:
         assert np.allclose(ci.ra, 202.4695898)
         assert np.allclose(ci.dec, 47.1951868)
 
-    def test_check_mosaic_from_dither(self, imviz):
-        ci = u.ControlInstruments("NIRCam", imviz)
+    def test_check_mosaic_from_dither(self, viz):
+        ci = u.ControlInstruments("NIRCam", viz)
 
         # check various combos of mosaic on/off and allowed
         ci.mosaic = "No"
@@ -126,8 +126,8 @@ class TestControlInstrument:
         assert ci.set_mosaic_v2.disabled
         assert ci.set_mosaic_v3.disabled
 
-    def test_check_mosaic(self, imviz):
-        ci = u.ControlInstruments("NIRCam", imviz)
+    def test_check_mosaic(self, viz):
+        ci = u.ControlInstruments("NIRCam", viz)
 
         # check mosaic on/off
         ci._check_mosaic({"new": "No"})

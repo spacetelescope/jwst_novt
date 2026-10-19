@@ -18,32 +18,32 @@ from jwst_novt.constants import DEFAULT_COLOR
 
 @pytest.mark.skipif(not HAS_DISPLAY, reason="Missing optional dependencies")
 class TestShowOverlays:
-    def test_init(self, imviz, uploaded_data, nirspec_controls, nircam_controls):
+    def test_init(self, viz, uploaded_data, nirspec_controls, nircam_controls):
         # instruments are both optional
-        so = u.ShowOverlays(imviz, uploaded_data, nirspec=nirspec_controls)
+        so = u.ShowOverlays(viz, uploaded_data, nirspec=nirspec_controls)
         assert isinstance(so.widgets, ipw.Widget)
         assert so.instruments == ["NIRSpec"]
 
-        so = u.ShowOverlays(imviz, uploaded_data, nircam=nircam_controls)
+        so = u.ShowOverlays(viz, uploaded_data, nircam=nircam_controls)
         assert isinstance(so.widgets, ipw.Widget)
         assert so.instruments == ["NIRCam Short", "NIRCam Long"]
 
         so = u.ShowOverlays(
-            imviz, uploaded_data, nirspec=nirspec_controls, nircam=nircam_controls
+            viz, uploaded_data, nirspec=nirspec_controls, nircam=nircam_controls
         )
         assert isinstance(so.widgets, ipw.Widget)
         assert so.instruments == ["NIRSpec", "NIRCam Short", "NIRCam Long"]
 
-        so = u.ShowOverlays(imviz, uploaded_data)
+        so = u.ShowOverlays(viz, uploaded_data)
         assert isinstance(so.widgets, ipw.Widget)
         assert so.instruments == []
 
     def test_init_preloaded(
-        self, loaded_imviz, uploaded_data, nirspec_controls, nircam_controls
+        self, loaded_viz, uploaded_data, nirspec_controls, nircam_controls
     ):
         uploaded_data.has_wcs = True
         so = u.ShowOverlays(
-            loaded_imviz,
+            loaded_viz,
             uploaded_data,
             nirspec=nirspec_controls,
             nircam=nircam_controls,

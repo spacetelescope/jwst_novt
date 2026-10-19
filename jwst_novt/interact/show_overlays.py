@@ -34,9 +34,7 @@ class ShowOverlays:
             self.catalog_buttons.append(button)
 
         # watch for changes to uploaded files
-        self.uploaded_data.image_file_upload.observe(
-            self.clear_overlays, names="value"
-        )
+        self.uploaded_data.image_file_upload.observe(self.clear_overlays, names="value")
         self.uploaded_data.observe(self.clear_catalog, names="catalog_file")
         self.uploaded_data.observe(
             self.update_catalog, names=["color_primary", "color_alternate"]
