@@ -45,7 +45,7 @@ class TestUploadData:
         assert ud.image_file_name == image_name
 
         # viewer has data
-        assert image_name in str(ud.viz.app.data_collection)
+        assert image_name in str(ud.viz._app.data_collection)
 
         # changing the image via the UI is blocked if necessary
         if allow_reload:
@@ -60,7 +60,7 @@ class TestUploadData:
         assert ud.image_file_name is None
 
         # viewer no longer has data
-        assert image_name not in str(ud.viz.app.data_collection)
+        assert image_name not in str(ud.viz._app.data_collection)
 
         # when image list is empty, UI upload is not blocked, regardless of setting
         assert not ud.image_file_upload.disabled
@@ -69,7 +69,7 @@ class TestUploadData:
         ud = u.UploadData(viz)
 
         # mock hub broadcast to check for error messages
-        m1 = mocker.patch.object(ud.viz.app.hub, "broadcast")
+        m1 = mocker.patch.object(ud.viz._app.hub, "broadcast")
 
         # mock the file upload
         image_name = image_file_no_wcs.name
@@ -85,7 +85,7 @@ class TestUploadData:
         assert not ud.has_wcs
 
         # viewer has data
-        assert image_name in str(ud.viz.app.data_collection)
+        assert image_name in str(ud.viz._app.data_collection)
 
         # viewer shows error message
         last_message = m1.call_args_list[-1][0][0]
@@ -103,7 +103,7 @@ class TestUploadData:
 
         assert ud.image_file_name is None
         assert not ud.has_wcs
-        assert image_name not in str(ud.viz.app.data_collection)
+        assert image_name not in str(ud.viz._app.data_collection)
         last_message = m1.call_args_list[-1][0][0]
         assert "No valid loaders" in last_message.text
 

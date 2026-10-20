@@ -55,31 +55,34 @@ def image_viewer():
 
 
 @pytest.fixture
-def uploaded_data(loaded_imviz):
-    return UploadData(loaded_imviz)
+def uploaded_data(loaded_viz):
+    return UploadData(loaded_viz)
 
 
 @pytest.fixture
-def nirspec_controls(loaded_imviz):
-    return ControlInstruments("NIRSpec", loaded_imviz)
+def nirspec_controls(loaded_viz):
+    return ControlInstruments("NIRSpec", loaded_viz)
 
 
 @pytest.fixture
-def nircam_controls(loaded_imviz):
-    return ControlInstruments("NIRCam", loaded_imviz)
+def nircam_controls(loaded_viz):
+    return ControlInstruments("NIRCam", loaded_viz)
 
 
 @pytest.fixture
 def overlay_controls(
-    loaded_imviz, uploaded_data, nirspec_controls, nircam_controls, catalog_file
+    loaded_viz, uploaded_data, nirspec_controls, nircam_controls, catalog_file
 ):
     ctrl = ShowOverlays(
-        loaded_imviz, uploaded_data, nirspec=nirspec_controls, nircam=nircam_controls
+        loaded_viz, uploaded_data, nirspec=nirspec_controls, nircam=nircam_controls
     )
+
+    with catalog_file.open("rb") as file:
+        catalog_file_content = file.read()
 
     # minimum settings to allow overlays to be turned on
     ctrl.uploaded_data.has_wcs = True
-    ctrl.uploaded_data.catalog_file = {"file_obj": catalog_file}
+    ctrl.uploaded_data.catalog_file = {"content": catalog_file_content}
     ctrl.uploaded_data.has_catalog = True
 
     return ctrl

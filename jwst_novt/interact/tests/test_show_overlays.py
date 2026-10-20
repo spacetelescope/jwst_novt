@@ -104,7 +104,9 @@ class TestShowOverlays:
         assert overlay_controls.catalog_buttons[0].disabled
 
     def test_load_catalog_error(self, overlay_controls, bad_catalog_file):
-        overlay_controls.uploaded_data.catalog_file = {"file_obj": bad_catalog_file}
+        with bad_catalog_file.open("rb") as file:
+            bad_catalog_content = file.read()
+        overlay_controls.uploaded_data.catalog_file = {"content": bad_catalog_content}
         overlay_controls._load_catalog()
         assert "primary" not in overlay_controls.catalog_markers
 
