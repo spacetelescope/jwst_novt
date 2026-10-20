@@ -58,9 +58,6 @@ class ViewImage:
             "tray": False,
             "tab_headers": False,
         }
-        for tool in ["g-data-tools", "g-viewer-creator", "g-image-viewer-creator"]:
-            if tool in cc["toolbar"]:
-                cc["toolbar"].remove(tool)
 
         # Configure viewer area with a single imviz-image-viewer
         # so that we can pre-populate it in the app without
