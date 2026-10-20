@@ -133,7 +133,7 @@ class ShowOverlays:
                 status = False
                 msg_text = f"Error reading catalog: {err}"
                 msg = SnackbarMessage(msg_text, sender=self, color="warning")
-                self.viz.app.hub.broadcast(msg)
+                self.viz._app.hub.broadcast(msg)
             else:
                 self.catalog_markers["primary"] = primary
                 self.catalog_markers["filler"] = filler

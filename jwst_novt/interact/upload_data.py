@@ -159,14 +159,14 @@ class UploadData(HasTraits):
                     "available."
                 )
                 msg = SnackbarMessage(msg_text, sender=self, color="warning")
-                self.viz.app.hub.broadcast(msg)
+                self.viz._app.hub.broadcast(msg)
             else:
                 self.has_wcs = True
                 self.image_file_name = uploaded_file["name"]
         except Exception as err:
             msg_text = f"Error loading image: {err}"
             msg = SnackbarMessage(msg_text, sender=self, color="warning")
-            self.viz.app.hub.broadcast(msg)
+            self.viz._app.hub.broadcast(msg)
 
     def load_image(self, change):
         """
@@ -191,12 +191,12 @@ class UploadData(HasTraits):
         if len(change["old"]) > 0:
             # clear any removed data from viewer
             for old_file in change["old"]:
-                for data_set in self.viz.app.data_collection:
+                for data_set in self.viz._app.data_collection:
                     if data_set.label.startswith(old_file["name"]):
-                        self.viz.app.remove_data_from_viewer(
+                        self.viz._app.remove_data_from_viewer(
                             self.viewer.glue_viewer.reference_id, data_set.label
                         )
-                        self.viz.app.data_collection.remove(data_set)
+                        self.viz._app.data_collection.remove(data_set)
                 del self.image_files[old_file["name"]]
         if len(change["new"]) > 0:
             uploaded_files = change["owner"].value
@@ -249,6 +249,6 @@ class UploadData(HasTraits):
                 except Exception as err:
                     msg_text = f"Error loading configuration: {err}"
                     msg = SnackbarMessage(msg_text, sender=self, color="warning")
-                    self.viz.app.hub.broadcast(msg)
+                    self.viz._app.hub.broadcast(msg)
 
         change["owner"].disabled = False
