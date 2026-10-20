@@ -190,8 +190,6 @@ class SaveOverlays(HasTraits):
         else:
             try:
                 primary, _ = fp.source_catalog(io.BytesIO(cat_file["content"]))
-            # TODO make sure that this still works as intended
-            # I'm not sure that you can seek on bytes
             finally:  # pragma: no cover
                 with contextlib.suppress(Exception):
                     cat_file["content"].seek(0)
