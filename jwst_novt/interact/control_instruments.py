@@ -1,7 +1,12 @@
 import ipywidgets as ipw
 from traitlets import Float, HasTraits, Unicode
 
-from jwst_novt.constants import DEFAULT_COLOR, NIRCAM_DITHER_OFFSETS, NO_MOSAIC
+from jwst_novt.constants import (
+    DEFAULT_COLOR,
+    NIRCAM_DITHER_OFFSETS,
+    NO_MOSAIC,
+    VIEWER_NAME,
+)
 from jwst_novt.interact.utils import read_image
 
 __all__ = ["ControlInstruments"]
@@ -28,7 +33,7 @@ class ControlInstruments(HasTraits):
         self.instrument = instrument
         self.title = f"Configure {instrument} Apertures"
         self.viz = viz
-        self.viewer = viz.default_viewer._obj
+        self.viewer = viz.viewers[VIEWER_NAME]._obj
         self.dither_values = list(NIRCAM_DITHER_OFFSETS.keys())
 
         # instrument logo image

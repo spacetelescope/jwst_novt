@@ -4,6 +4,7 @@ import io
 import ipywidgets as ipw
 from jdaviz.core.events import SnackbarMessage
 
+from jwst_novt.constants import VIEWER_NAME
 from jwst_novt.interact import display as nd
 from jwst_novt.interact.utils import ToggleButton
 
@@ -17,7 +18,7 @@ class ShowOverlays:
         # internal data
         self.title = "Show Overlays"
         self.viz = viz
-        self.viewer = viz.default_viewer._obj
+        self.viewer = viz.viewers[VIEWER_NAME]._obj
         self.uploaded_data = uploaded_data
         self.nirspec_controls = nirspec
         self.nircam_controls = nircam

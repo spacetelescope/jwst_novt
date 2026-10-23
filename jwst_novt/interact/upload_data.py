@@ -6,7 +6,7 @@ import yaml
 from jdaviz.core.events import SnackbarMessage
 from traitlets import Any, Bool, Dict, HasTraits, Unicode
 
-from jwst_novt.constants import DEFAULT_COLOR
+from jwst_novt.constants import DEFAULT_COLOR, VIEWER_NAME
 
 __all__ = ["UploadData"]
 
@@ -28,7 +28,7 @@ class UploadData(HasTraits):
         # internal data
         self.title = "Upload Data"
         self.viz = viz
-        self.viewer = viz.default_viewer._obj
+        self.viewer = viz.viewers[VIEWER_NAME]._obj
         self.image_files = {}
         self.allow_data_replace = False
 

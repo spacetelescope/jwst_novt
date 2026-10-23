@@ -1,8 +1,9 @@
 import ipywidgets as ipw
-from jdaviz.app import PrivateApplication
-from jdaviz.configs.deconfigged.helper import App
-from jdaviz.configs.default.plugins.viewers import JdavizViewerWindow
-from jdaviz.core.config import get_configuration
+import jdaviz as jd
+from jdaviz.configs.imviz.plugins.viewers import ImvizImageView
+from jdaviz.core.events import NewViewerMessage
+
+from jwst_novt.constants import VIEWER_NAME
 
 __all__ = ["ViewImage"]
 
@@ -13,17 +14,18 @@ class ViewImage:
     def __init__(self):
         self.title = "View Image"
 
-        # start jdaviz app with custom configuration
-        self.app = PrivateApplication(self._config())
-        self.viz = App(app=self.app)
+        # start the jdaviz app
+        self.viz = jd.new_app()
 
-        # Set the pre-configured viewer as the default viewer
-        self.viz._default_viewer = self.viz._app.get_viewer_by_id(
-            f"{self.viz._app.config}-0"
+        # Add a jdaviz viewer so that we can pre-populate it in the app
+        # without having to first upload an image.
+        nv = self.viz._app._on_new_viewer(
+            NewViewerMessage(ImvizImageView, data=None, sender=self.viz._app),
+            vid=VIEWER_NAME,
+            name=VIEWER_NAME,
         )
-        self.viz.default_viewer = JdavizViewerWindow(
-            self.viz._default_viewer, app=self.viz._app
-        ).user_api
+
+        nv.toggle_focus_mode(focus=True)
 
         # set up viewer sizing for voila app
         self.style = (
@@ -34,40 +36,10 @@ class ViewImage:
             "padding-right: 0.5px !important}"
         )
 
-        # widgets to display
+        # Without a defined height in jdaviz>=5.1, the veiwer scales to
+        # very small windows.
         style_html = ipw.HTML(f"<style>{self.style}</style>")
         box_layout = ipw.Layout(
-            display="flex", flex_flow="column", align_items="stretch"
+            display="flex", flex_flow="column", align_items="stretch", height="600px"
         )
-        self.widgets = ipw.Box(children=[style_html, self.app], layout=box_layout)
-
-    @staticmethod
-    def _config():
-        """
-        Generate custom configuration for remote viewer.
-
-        Local file imports and new viewer creation are removed from the
-        configuration.
-        """
-        # based on MAST Jdaviz configuration
-        cc = get_configuration("deconfigged")
-        cc["settings"]["viewer_spec"] = cc["settings"].get("configuration", "default")
-        cc["settings"]["visible"] = {
-            "menu_bar": False,
-            "toolbar": False,
-            "tray": False,
-            "tab_headers": False,
-        }
-
-        # Configure viewer area with a single imviz-image-viewer
-        # so that we can pre-populate it in the app without
-        # having to first upload an image.
-        viewer = {
-            "name": "deconfigged-0",
-            "plot": "imviz-image-viewer",
-            "reference": "deconfigged-0",
-        }
-        child = {"container": "row", "viewers": [viewer]}
-        cc["viewer_area"] = [{"container": "col", "children": [child]}]
-
-        return cc
+        self.widgets = ipw.Box(children=[style_html, self.viz._app], layout=box_layout)
