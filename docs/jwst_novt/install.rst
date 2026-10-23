@@ -54,7 +54,7 @@ before following the installation steps::
     $ conda activate jwst_novt
 
 .. warning::
-    JWST NOVT is currently only compatible with python versions 3.11-3.14.
+    JWST NOVT is currently only compatible with python versions 3.12-3.14.
 
 Core tools only
 ~~~~~~~~~~~~~~~
