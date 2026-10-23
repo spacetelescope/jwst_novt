@@ -4,7 +4,7 @@ description = "JWST NIRSpec Observation Visualization Tool"
 authors = [{name = "STScI"}]
 license-files = ["LICENSE.rst"]
 dynamic = ["version"]
-requires-python = ">=3.11,<3.15"
+requires-python = ">=3.12,<3.15"
 dependencies = [
     "astropy>=5.2.2",
     "jwst_gtvt>=1.0.0",
