@@ -18,6 +18,10 @@ NOVT_DIR = pathlib.Path(__file__).parent.resolve()
 """pathlib.Path : Path to the top-level package directory."""
 
 
+VIEWER_NAME = "Image"
+"""str : Name of the default jdaviz viewer"""
+
+
 INSTRUMENT_NAMES = {
     "nirspec": "NIRSpec",
     "nircam_long": "NIRCam Long",

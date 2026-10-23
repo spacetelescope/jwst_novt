@@ -14,15 +14,15 @@ else:
 
 @pytest.mark.skipif(not HAS_DISPLAY, reason="Missing optional dependencies")
 class TestUploadData:
-    def test_init(self, imviz):
-        ud = u.UploadData(imviz)
+    def test_init(self, viz):
+        ud = u.UploadData(viz)
         assert isinstance(ud.widgets, ipw.Widget)
         assert ud.image_file_name is None
         assert ud.catalog_file is None
 
     @pytest.mark.parametrize("allow_reload", [True, False])
-    def test_load_image(self, mocker, imviz, image_file, allow_reload):
-        ud = u.UploadData(imviz)
+    def test_load_image(self, viz, image_file, allow_reload):
+        ud = u.UploadData(viz)
         ud.allow_data_replace = allow_reload
 
         # nothing happens if button does not have new files
@@ -34,15 +34,17 @@ class TestUploadData:
 
         # mock a file in input widget
         image_name = image_file.name
-        file_info = {"name": image_name, "file_obj": str(image_file)}
-        mocker.patch.object(ud.image_file_upload, "get_files", return_value=[file_info])
+        with image_file.open("rb") as file:
+            file_content = file.read()
+        file_info = {"name": image_name, "content": file_content}
+        ud.image_file_upload.value = (file_info,)
         change = {"new": [file_info], "old": [], "owner": ud.image_file_upload}
         ud.load_image(change)
         assert ud.has_wcs
         assert ud.image_file_name == image_name
 
         # viewer has data
-        assert image_name in str(ud.viz.app.data_collection)
+        assert image_name in str(ud.viz._app.data_collection)
 
         # changing the image via the UI is blocked if necessary
         if allow_reload:
@@ -57,23 +59,23 @@ class TestUploadData:
         assert ud.image_file_name is None
 
         # viewer no longer has data
-        assert image_name not in str(ud.viz.app.data_collection)
+        assert image_name not in str(ud.viz._app.data_collection)
 
         # when image list is empty, UI upload is not blocked, regardless of setting
         assert not ud.image_file_upload.disabled
 
-    def test_load_image_errors(
-        self, mocker, imviz, image_file_no_wcs, bad_catalog_file
-    ):
-        ud = u.UploadData(imviz)
+    def test_load_image_errors(self, mocker, viz, image_file_no_wcs, bad_catalog_file):
+        ud = u.UploadData(viz)
 
         # mock hub broadcast to check for error messages
-        m1 = mocker.patch.object(ud.viz.app.hub, "broadcast")
+        m1 = mocker.patch.object(ud.viz._app.hub, "broadcast")
 
         # mock the file upload
         image_name = image_file_no_wcs.name
-        file_info = {"name": image_name, "file_obj": str(image_file_no_wcs)}
-        mocker.patch.object(ud.image_file_upload, "get_files", return_value=[file_info])
+        with image_file_no_wcs.open("rb") as file:
+            file_content = file.read()
+        file_info = {"name": image_name, "content": file_content}
+        ud.image_file_upload.value = (file_info,)
         change = {"new": [file_info], "old": [], "owner": ud.image_file_upload}
         ud.load_image(change)
 
@@ -82,30 +84,30 @@ class TestUploadData:
         assert not ud.has_wcs
 
         # viewer has data
-        assert image_name in str(ud.viz.app.data_collection)
+        assert image_name in str(ud.viz._app.data_collection)
 
         # viewer shows error message
         last_message = m1.call_args_list[-1][0][0]
         assert "No WCS" in last_message.text
-        base_count = m1.call_count
 
         # try uploading something non-FITS - should throw error and
         # not appear in viewer or uploaded data
         image_name = bad_catalog_file.name
-        file_info = {"name": image_name, "file_obj": str(bad_catalog_file)}
-        mocker.patch.object(ud.image_file_upload, "get_files", return_value=[file_info])
+        with bad_catalog_file.open("rb") as file:
+            bad_file_content = file.read()
+        file_info = {"name": image_name, "content": bad_file_content}
+        ud.image_file_upload.value = (file_info,)
         change = {"new": [file_info], "old": [], "owner": ud.image_file_upload}
         ud.load_image(change)
 
         assert ud.image_file_name is None
         assert not ud.has_wcs
-        assert image_name not in str(ud.viz.app.data_collection)
-        assert m1.call_count == base_count + 1
+        assert image_name not in str(ud.viz._app.data_collection)
         last_message = m1.call_args_list[-1][0][0]
-        assert "valid FITS" in last_message.text
+        assert "No valid loaders" in last_message.text
 
-    def test_load_catalog(self, mocker, imviz, catalog_file):
-        ud = u.UploadData(imviz)
+    def test_load_catalog(self, viz, catalog_file):
+        ud = u.UploadData(viz)
 
         # nothing happens if button does not have new files
         change = {"new": [], "old": [], "owner": ud.catalog_file_upload}
@@ -116,10 +118,10 @@ class TestUploadData:
 
         # mock a file in input widget
         cat_name = catalog_file.name
-        file_info = {"name": cat_name, "file_obj": str(catalog_file)}
-        mocker.patch.object(
-            ud.catalog_file_upload, "get_files", return_value=[file_info]
-        )
+        with catalog_file.open("rb") as file:
+            catalog_file_content = file.read()
+        file_info = {"name": cat_name, "content": catalog_file_content}
+        ud.catalog_file_upload.value = (file_info,)
         change = {"new": [file_info], "old": [], "owner": ud.catalog_file_upload}
         ud.load_catalog(change)
         assert ud.has_catalog
@@ -131,27 +133,23 @@ class TestUploadData:
         assert not ud.has_catalog
         assert ud.catalog_file is None
 
-    def test_upload_config(self, mocker, imviz, config_file):
-        ud = u.UploadData(imviz, allow_configuration=True)
+    def test_upload_config(self, viz, config_file):
+        ud = u.UploadData(viz, allow_configuration=True)
         assert ud.config_file_upload is not None
         assert len(ud.configuration) == 0
 
         # bad config file - nothing happens
-        file_info = {"name": "bad", "file_obj": "bad"}
-        mocker.patch.object(
-            ud.catalog_file_upload, "get_files", return_value=[file_info]
-        )
+        file_info = {"name": "bad", "content": b"bad"}
+        ud.catalog_file_upload.value = (file_info,)
         change = {"new": [file_info], "old": [], "owner": ud.catalog_file_upload}
         ud.load_config(change)
         assert len(ud.configuration) == 0
 
         # upload a good config file
         cfg_name = config_file.name
-        with config_file.open() as fh:
-            file_info = {"name": cfg_name, "file_obj": fh}
-            mocker.patch.object(
-                ud.catalog_file_upload, "get_files", return_value=[file_info]
-            )
+        with config_file.open("rb") as fh:
+            file_info = {"name": cfg_name, "content": fh.read()}
+            ud.catalog_file_upload.value = (file_info,)
             change = {"new": [file_info], "old": [], "owner": ud.catalog_file_upload}
             ud.load_config(change)
 

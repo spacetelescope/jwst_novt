@@ -1,13 +1,12 @@
+import io
 import warnings
 
-import ipyvuetify.extra as ve
 import ipywidgets as ipw
 import yaml
-from astropy.io import fits
 from jdaviz.core.events import SnackbarMessage
 from traitlets import Any, Bool, Dict, HasTraits, Unicode
 
-from jwst_novt.constants import DEFAULT_COLOR
+from jwst_novt.constants import DEFAULT_COLOR, VIEWER_NAME
 
 __all__ = ["UploadData"]
 
@@ -29,7 +28,7 @@ class UploadData(HasTraits):
         # internal data
         self.title = "Upload Data"
         self.viz = viz
-        self.viewer = viz.default_viewer._obj
+        self.viewer = viz.viewers[VIEWER_NAME]._obj
         self.image_files = {}
         self.allow_data_replace = False
 
@@ -41,7 +40,7 @@ class UploadData(HasTraits):
             tooltip="FITS image for display, with associated WCS, in the "
             "primary or SCI extension",
         )
-        self.image_file_upload = ve.FileInput(
+        self.image_file_upload = ipw.FileUpload(
             accept=".fits", multiple=False, layout=ipw.Layout(width="500px")
         )
 
@@ -53,7 +52,7 @@ class UploadData(HasTraits):
             "or 3 (RA, Dec, Flag), "
             "where Flag is 'P' for primary or 'F' for filler sources",
         )
-        self.catalog_file_upload = ve.FileInput(
+        self.catalog_file_upload = ipw.FileUpload(
             accept=".radec", multiple=False, layout=ipw.Layout(width="500px")
         )
 
@@ -64,7 +63,7 @@ class UploadData(HasTraits):
                 layout=ipw.Layout(width="150px"),
                 tooltip="YAML file specifying field values for NOVT configuration.",
             )
-            self.config_file_upload = ve.FileInput(
+            self.config_file_upload = ipw.FileUpload(
                 accept=".yaml", multiple=False, layout=ipw.Layout(width="500px")
             )
         else:
@@ -125,10 +124,10 @@ class UploadData(HasTraits):
         self.widgets = ipw.Accordion(children=[box], titles=[self.title])
 
         # connect callbacks
-        self.image_file_upload.observe(self.load_image, names="file_info")
-        self.catalog_file_upload.observe(self.load_catalog, names="file_info")
+        self.image_file_upload.observe(self.load_image, names="value")
+        self.catalog_file_upload.observe(self.load_catalog, names="value")
         if allow_configuration:
-            self.config_file_upload.observe(self.load_config, names="file_info")
+            self.config_file_upload.observe(self.load_config, names="value")
 
     def _load_hdul_in_viz(self, uploaded_file):
         """
@@ -140,30 +139,34 @@ class UploadData(HasTraits):
             File structure corresponding to uploaded data in
             the FileInput widget.
         """
-        hdul = None
         try:
-            hdul = fits.open(uploaded_file["file_obj"])
-            self.viz.load_data(hdul, data_label=uploaded_file["name"])
+            data = io.BytesIO(uploaded_file["content"])
+            self.viz.load(
+                data,
+                data_label=uploaded_file["name"],
+                format="Image",
+                viewer=self.viewer.name,
+            )
 
-            wcs = getattr(self.viewer.state.reference_data, "coords", None)
-            if wcs is None or not wcs.has_celestial:
+            has_celestial_wcs = (
+                hasattr(self.viewer.glue_viewer.state.reference_data, "coords")
+                and self.viewer.glue_viewer.state.reference_data.coords.has_celestial
+            )
+            if not has_celestial_wcs:
                 msg_text = (
                     "No WCS associated with image. "
                     "Overlay functions will not be "
                     "available."
                 )
                 msg = SnackbarMessage(msg_text, sender=self, color="warning")
-                self.viz.app.hub.broadcast(msg)
+                self.viz._app.hub.broadcast(msg)
             else:
                 self.has_wcs = True
                 self.image_file_name = uploaded_file["name"]
         except Exception as err:
             msg_text = f"Error loading image: {err}"
             msg = SnackbarMessage(msg_text, sender=self, color="warning")
-            self.viz.app.hub.broadcast(msg)
-        finally:
-            if hdul is not None:
-                hdul.close()
+            self.viz._app.hub.broadcast(msg)
 
     def load_image(self, change):
         """
@@ -188,15 +191,15 @@ class UploadData(HasTraits):
         if len(change["old"]) > 0:
             # clear any removed data from viewer
             for old_file in change["old"]:
-                for data_set in self.viz.app.data_collection:
+                for data_set in self.viz._app.data_collection:
                     if data_set.label.startswith(old_file["name"]):
-                        self.viz.app.remove_data_from_viewer(
-                            self.viewer.reference_id, data_set.label
+                        self.viz._app.remove_data_from_viewer(
+                            self.viewer.glue_viewer.reference_id, data_set.label
                         )
-                        self.viz.app.data_collection.remove(data_set)
+                        self.viz._app.data_collection.remove(data_set)
                 del self.image_files[old_file["name"]]
         if len(change["new"]) > 0:
-            uploaded_files = change["owner"].get_files()
+            uploaded_files = change["owner"].value
             if len(uploaded_files) > 0:
                 for uploaded_file in uploaded_files:
                     self.image_files[uploaded_file["name"]] = uploaded_file
@@ -218,7 +221,7 @@ class UploadData(HasTraits):
         # watch for uploaded files
         change["owner"].disabled = True
         if len(change["new"]) > 0:
-            uploaded_files = change["owner"].get_files()
+            uploaded_files = change["owner"].value
             if len(uploaded_files) > 0:
                 self.has_catalog = True
                 self.catalog_file = uploaded_files[0]
@@ -236,14 +239,16 @@ class UploadData(HasTraits):
         # watch for new files
         change["owner"].disabled = True
         if len(change["new"]) > 0:
-            uploaded_files = change["owner"].get_files()
+            uploaded_files = change["owner"].value
             if len(uploaded_files) > 0:
                 try:
-                    new_config = yaml.safe_load(uploaded_files[0]["file_obj"])
+                    new_config = yaml.safe_load(
+                        io.BytesIO(uploaded_files[0]["content"])
+                    )
                     self.configuration = new_config
                 except Exception as err:
                     msg_text = f"Error loading configuration: {err}"
                     msg = SnackbarMessage(msg_text, sender=self, color="warning")
-                    self.viz.app.hub.broadcast(msg)
+                    self.viz._app.hub.broadcast(msg)
 
         change["owner"].disabled = False

@@ -75,7 +75,7 @@ class TestSaveOverlays:
         overlay_controls.viz.load(bad_wcs_ndd)
         so.make_regions()
         assert so.file_link.url == same_reg
-        overlay_controls.viewer.state.reference_data = None
+        overlay_controls.viewer.glue_viewer.state.reference_data = None
         so.make_regions()
         assert so.file_link.url == same_reg
 
