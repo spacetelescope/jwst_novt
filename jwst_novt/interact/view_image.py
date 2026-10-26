@@ -25,6 +25,9 @@ class ViewImage:
             name=VIEWER_NAME,
         )
 
+        # TODO ISEB-513 discuss with NIRSpec about use of focus mode and
+        # lack of analysis/subset plugins.  See ticket for additional
+        # work that may be desired for turning on focus mode by default.
         nv.toggle_focus_mode(focus=True)
 
         # set up viewer sizing for voila app
@@ -36,6 +39,7 @@ class ViewImage:
             "padding-right: 0.5px !important}"
         )
 
+        # TODO ISEB-517 investigate automatic setting of jdaviz box height.
         # Without a defined height in jdaviz>=5.1, the veiwer scales to
         # very small windows.
         style_html = ipw.HTML(f"<style>{self.style}</style>")

@@ -148,11 +148,8 @@ class UploadData(HasTraits):
                 viewer=self.viewer.name,
             )
 
-            has_celestial_wcs = (
-                hasattr(self.viewer.glue_viewer.state.reference_data, "coords")
-                and self.viewer.glue_viewer.state.reference_data.coords.has_celestial
-            )
-            if not has_celestial_wcs:
+            wcs = getattr(self.viewer.glue_viewer.state.reference_data, "coords", None)
+            if wcs is None or not wcs.has_celestial:
                 msg_text = (
                     "No WCS associated with image. "
                     "Overlay functions will not be "

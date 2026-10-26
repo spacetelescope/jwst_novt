@@ -25,6 +25,10 @@ from jwst_novt.constants import NOVT_DIR
 
 __all__ = ["main"]
 
+# TODO ISEB-514 This setting dictates how large of an image can be
+# uploaded in NOVT.  Investigate typical image sizes and what some
+# reasonable maximum should be.
+# Also need to change this number in data/voila.json
 # Max byte size set to 4Gb = 4000 * 1024 * 1024
 MAX_SIZE_BYTES = 4194304000
 
