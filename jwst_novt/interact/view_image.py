@@ -1,7 +1,9 @@
 import ipywidgets as ipw
-from jdaviz.app import Application
-from jdaviz.configs.imviz.helper import Imviz
-from jdaviz.core.config import get_configuration
+import jdaviz as jd
+from jdaviz.configs.imviz.plugins.viewers import ImvizImageView
+from jdaviz.core.events import NewViewerMessage
+
+from jwst_novt.constants import VIEWER_NAME
 
 __all__ = ["ViewImage"]
 
@@ -12,9 +14,21 @@ class ViewImage:
     def __init__(self):
         self.title = "View Image"
 
-        # start imviz viewer with custom configuration
-        self.app = Application(self._config())
-        self.viz = Imviz(self.app)
+        # start the jdaviz app
+        self.viz = jd.new_app()
+
+        # Add a jdaviz viewer so that we can pre-populate it in the app
+        # without having to first upload an image.
+        nv = self.viz._app._on_new_viewer(
+            NewViewerMessage(ImvizImageView, data=None, sender=self.viz._app),
+            vid=VIEWER_NAME,
+            name=VIEWER_NAME,
+        )
+
+        # TODO ISEB-513 discuss with NIRSpec about use of focus mode and
+        # lack of analysis/subset plugins.  See ticket for additional
+        # work that may be desired for turning on focus mode by default.
+        nv.toggle_focus_mode(focus=True)
 
         # set up viewer sizing for voila app
         self.style = (
@@ -25,31 +39,11 @@ class ViewImage:
             "padding-right: 0.5px !important}"
         )
 
-        # widgets to display
+        # TODO ISEB-517 investigate automatic setting of jdaviz box height.
+        # Without a defined height in jdaviz>=5.1, the veiwer scales to
+        # very small windows.
         style_html = ipw.HTML(f"<style>{self.style}</style>")
         box_layout = ipw.Layout(
-            display="flex", flex_flow="column", align_items="stretch"
+            display="flex", flex_flow="column", align_items="stretch", height="600px"
         )
-        self.widgets = ipw.Box(children=[style_html, self.app], layout=box_layout)
-
-    @staticmethod
-    def _config():
-        """
-        Generate custom configuration for remote viewer.
-
-        Local file imports and new viewer creation are removed from the
-        configuration.
-        """
-        # based on MAST Jdaviz configuration
-        cc = get_configuration("imviz")
-        cc["settings"]["viewer_spec"] = cc["settings"].get("configuration", "default")
-        cc["settings"]["visible"] = {
-            "menu_bar": False,
-            "toolbar": False,
-            "tray": False,
-            "tab_headers": False,
-        }
-        for tool in ["g-data-tools", "g-viewer-creator", "g-image-viewer-creator"]:
-            if tool in cc["toolbar"]:
-                cc["toolbar"].remove(tool)
-        return cc
+        self.widgets = ipw.Box(children=[style_html, self.viz._app], layout=box_layout)

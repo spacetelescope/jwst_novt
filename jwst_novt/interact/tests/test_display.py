@@ -17,7 +17,7 @@ except ImportError:
 else:
     HAS_DISPLAY = True
 
-from jwst_novt.constants import DEFAULT_COLOR
+from jwst_novt.constants import DEFAULT_COLOR, VIEWER_NAME
 
 
 @pytest.fixture
@@ -77,12 +77,14 @@ class TestDisplay:
         assert isinstance(fig, bqplot.Figure)
         assert isinstance(tb, ipw.Widget)
 
-    def test_bqplot_footprint(self, loaded_imviz):
+    def test_bqplot_footprint(self, loaded_viz):
         ra = 202.4695898
         dec = 47.1951868
         pa = 25.0
-        fig = loaded_imviz.default_viewer._obj.figure
-        wcs = loaded_imviz.default_viewer._obj.state.reference_data.coords
+        fig = loaded_viz.viewers[VIEWER_NAME]._obj.glue_viewer.figure
+        wcs = loaded_viz.viewers[
+            VIEWER_NAME
+        ]._obj.glue_viewer.state.reference_data.coords
         fp_marks = u.bqplot_footprint(fig, "nirspec", ra, dec, pa, wcs)
 
         # should return 11 patches for nirspec
@@ -115,12 +117,14 @@ class TestDisplay:
             else:
                 assert isinstance(mark, bqplot.Scatter)
 
-    def test_bqplot_footprint_mosaic(self, loaded_imviz):
+    def test_bqplot_footprint_mosaic(self, loaded_viz):
         ra = 202.4695898
         dec = 47.1951868
         pa = 25.0
-        fig = loaded_imviz.default_viewer._obj.figure
-        wcs = loaded_imviz.default_viewer._obj.state.reference_data.coords
+        fig = loaded_viz.viewers[VIEWER_NAME]._obj.glue_viewer.figure
+        wcs = loaded_viz.viewers[
+            VIEWER_NAME
+        ]._obj.glue_viewer.state.reference_data.coords
         fp_marks = u.bqplot_footprint(
             fig, "nircam long", ra, dec, pa, wcs, add_mosaic=False
         )
@@ -159,9 +163,11 @@ class TestDisplay:
         assert isinstance(fp_marks, list)
         assert len(fp_marks) == 2 * 3 * (expected_patches - 1) + 1
 
-    def test_bqplot_catalog(self, loaded_imviz, catalog_file):
-        fig = loaded_imviz.default_viewer._obj.figure
-        wcs = loaded_imviz.default_viewer._obj.state.reference_data.coords
+    def test_bqplot_catalog(self, loaded_viz, catalog_file):
+        fig = loaded_viz.viewers[VIEWER_NAME]._obj.glue_viewer.figure
+        wcs = loaded_viz.viewers[
+            VIEWER_NAME
+        ]._obj.glue_viewer.state.reference_data.coords
 
         # test catalog: 2 primary, 5 filler sources
         cat_marks = u.bqplot_catalog(fig, catalog_file, wcs)
@@ -179,9 +185,11 @@ class TestDisplay:
         assert cat_marks[0].colors == ["red"]
         assert cat_marks[1].colors == ["blue"]
 
-    def test_bqplot_catalog_errors(self, loaded_imviz, tmp_path, catalog_file_2col):
-        fig = loaded_imviz.default_viewer._obj.figure
-        wcs = loaded_imviz.default_viewer._obj.state.reference_data.coords
+    def test_bqplot_catalog_errors(self, loaded_viz, tmp_path, catalog_file_2col):
+        fig = loaded_viz.viewers[VIEWER_NAME]._obj.glue_viewer.figure
+        wcs = loaded_viz.viewers[
+            VIEWER_NAME
+        ]._obj.glue_viewer.state.reference_data.coords
 
         # empty catalog: raises value error
         bad_cat = tmp_path / "empty.txt"

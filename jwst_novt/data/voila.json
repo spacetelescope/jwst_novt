@@ -1,6 +1,9 @@
 {
     "Voila": {
-        "open_browser": false
+        "open_browser": false,
+        "tornado_settings": {
+            "websocket_max_message_size": 4194304000
+        }
     },
     "VoilaConfiguration": {
         "enable_nbextensions": true,

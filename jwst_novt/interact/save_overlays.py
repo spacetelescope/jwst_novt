@@ -1,4 +1,5 @@
 import contextlib
+import io
 
 import ipyvuetify as v
 import ipywidgets as ipw
@@ -188,10 +189,10 @@ class SaveOverlays(HasTraits):
             primary, _ = fp.source_catalog(cat_file)
         else:
             try:
-                primary, _ = fp.source_catalog(cat_file["file_obj"])
+                primary, _ = fp.source_catalog(io.BytesIO(cat_file["content"]))
             finally:  # pragma: no cover
                 with contextlib.suppress(Exception):
-                    cat_file["file_obj"].seek(0)
+                    cat_file["content"].seek(0)
 
         cat_markers = self.show_overlays.catalog_markers
         cat_regions = {}
@@ -260,7 +261,7 @@ class SaveOverlays(HasTraits):
             All created astropy regions. Instrument sets are tagged.
             Colors are set in the style metadata.
         """
-        ref_data = self.show_overlays.viewer.state.reference_data
+        ref_data = self.show_overlays.viewer.glue_viewer.state.reference_data
         if ref_data is None or not ref_data.coords.has_celestial:
             return None
 

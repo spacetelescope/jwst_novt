@@ -4,15 +4,14 @@ description = "JWST NIRSpec Observation Visualization Tool"
 authors = [{name = "STScI"}]
 license-files = ["LICENSE.rst"]
 dynamic = ["version"]
-# TODO remove python upper pin and pin solara once solara supports python >=3.14
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.12,<3.15"
 dependencies = [
-    "astropy>=5.2.2",
-    "jwst_gtvt>=1.0.0",
-    "numpy>=1.24.3",
-    "pandas>=2.0.1",
-    "pysiaf>=0.19.1",
-    "regions>=0.7",
+    "astropy>=6.1",
+    "jwst_gtvt>=1.1",
+    "numpy>=2",
+    "pandas>=2.3",
+    "pysiaf>=0.24",
+    "regions>=0.9",
     "requests>=2.28",
     "setuptools>=61.2"
 ]
@@ -29,11 +28,13 @@ readme = "README.rst"
 [project.optional-dependencies]
 interact = [
     "bqplot>=0.12.37",
-    "ipykernel>=6.19.4,<7",
+    "ipykernel>=6.19.4",
     "ipyvuetify>=1.7.0",
     "ipywidgets>=8.0.4",
-    "jdaviz>=4.3.0,<4.5.0",
+    # "jdaviz>=5.1,<5.2",
+    "jdaviz @ git+https://github.com/spacetelescope/jdaviz.git@main",
     "pyyaml>=5.4.1",
+    "solara>=1.55.0",
     "traitlets>=5.0.5",
     "voila>=0.4"
 ]
@@ -120,7 +121,7 @@ exclude = [
 line-length = 88
 lint.select = ["ALL"]
 lint.ignore =[
-    "ANN", "S", "BLE", "SLF", "PERF",
+    "ANN", "S", "BLE", "SLF", "PERF", "FIX", "TD",
     "PLR0913", "SIM108", "D100", "D104", "COM812",
     "CPY001", "PLR0917"
 ]

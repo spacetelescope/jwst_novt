@@ -1,7 +1,12 @@
 import ipywidgets as ipw
 from traitlets import Float, HasTraits, Unicode
 
-from jwst_novt.constants import DEFAULT_COLOR, NIRCAM_DITHER_OFFSETS, NO_MOSAIC
+from jwst_novt.constants import (
+    DEFAULT_COLOR,
+    NIRCAM_DITHER_OFFSETS,
+    NO_MOSAIC,
+    VIEWER_NAME,
+)
 from jwst_novt.interact.utils import read_image
 
 __all__ = ["ControlInstruments"]
@@ -28,7 +33,7 @@ class ControlInstruments(HasTraits):
         self.instrument = instrument
         self.title = f"Configure {instrument} Apertures"
         self.viz = viz
-        self.viewer = viz.default_viewer._obj
+        self.viewer = viz.viewers[VIEWER_NAME]._obj
         self.dither_values = list(NIRCAM_DITHER_OFFSETS.keys())
 
         # instrument logo image
@@ -127,7 +132,7 @@ class ControlInstruments(HasTraits):
 
         # set a callback in the viewer to initialize RA/Dec
         # from WCS on data load
-        self.viewer.state.add_callback("reference_data", self._set_from_wcs)
+        self.viewer.glue_viewer.state.add_callback("reference_data", self._set_from_wcs)
 
         # also call it now in case viewer already has data loaded
         self._set_from_wcs()
@@ -235,8 +240,8 @@ class ControlInstruments(HasTraits):
 
     def _set_from_wcs(self, *args, **kwargs):
         """Set default RA and Dec from a newly uploaded file."""
-        if self.viewer.state.reference_data is not None:
-            coords = self.viewer.state.reference_data.coords
+        if self.viewer.glue_viewer.state.reference_data is not None:
+            coords = self.viewer.glue_viewer.state.reference_data.coords
             if coords is not None:
                 ra, dec = coords.wcs.crval
                 self.ra = float(ra)
