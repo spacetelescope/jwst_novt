@@ -9,6 +9,9 @@ from traitlets import Any, Bool, Dict, HasTraits, Unicode
 from jwst_novt.constants import DEFAULT_COLOR, VIEWER_NAME
 
 __all__ = ["UploadData"]
+LABEL_WIDTH = "150px"
+UPLOAD_WIDTH = "150px"
+OUTPUT_WIDTH = "1100px"
 
 
 class UploadData(HasTraits):
@@ -36,39 +39,39 @@ class UploadData(HasTraits):
         self.image_label = ipw.Label(
             "Image file (.fits):",
             style={"font_weight": "bold"},
-            layout=ipw.Layout(width="150px"),
+            layout=ipw.Layout(width=LABEL_WIDTH),
             tooltip="FITS image for display, with associated WCS, in the "
             "primary or SCI extension",
         )
         self.image_file_upload = ipw.FileUpload(
-            accept=".fits", multiple=False, layout=ipw.Layout(width="500px")
+            accept=".fits", multiple=False, layout=ipw.Layout(width=UPLOAD_WIDTH)
         )
-        self.image_output_txt = ipw.Output()
+        self.image_output_txt = ipw.Output(layout=ipw.Layout(width=OUTPUT_WIDTH))
 
         self.catalog_label = ipw.Label(
             "Catalog file (.radec):",
             style={"font_weight": "bold"},
-            layout=ipw.Layout(width="150px"),
+            layout=ipw.Layout(width=LABEL_WIDTH),
             tooltip="Text file with 2 columns (RA, Dec), "
             "or 3 (RA, Dec, Flag), "
             "where Flag is 'P' for primary or 'F' for filler sources",
         )
         self.catalog_file_upload = ipw.FileUpload(
-            accept=".radec", multiple=False, layout=ipw.Layout(width="500px")
+            accept=".radec", multiple=False, layout=ipw.Layout(width=UPLOAD_WIDTH)
         )
-        self.catalog_output_txt = ipw.Output()
+        self.catalog_output_txt = ipw.Output(layout=ipw.Layout(width=OUTPUT_WIDTH))
 
         if allow_configuration:
             self.config_label = ipw.Label(
                 "Config file (.yaml):",
                 style={"font_weight": "bold"},
-                layout=ipw.Layout(width="150px"),
+                layout=ipw.Layout(width=LABEL_WIDTH),
                 tooltip="YAML file specifying field values for NOVT configuration.",
             )
             self.config_file_upload = ipw.FileUpload(
-                accept=".yaml", multiple=False, layout=ipw.Layout(width="500px")
+                accept=".yaml", multiple=False, layout=ipw.Layout(width=UPLOAD_WIDTH)
             )
-            self.config_output_txt = ipw.Output()
+            self.config_output_txt = ipw.Output(layout=ipw.Layout(width=OUTPUT_WIDTH))
         else:
             self.config_label = None
             self.config_file_upload = None
