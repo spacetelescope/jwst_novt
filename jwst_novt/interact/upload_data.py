@@ -43,6 +43,7 @@ class UploadData(HasTraits):
         self.image_file_upload = ipw.FileUpload(
             accept=".fits", multiple=False, layout=ipw.Layout(width="500px")
         )
+        self.image_output_txt = ipw.Output()
 
         self.catalog_label = ipw.Label(
             "Catalog file (.radec):",
@@ -55,6 +56,7 @@ class UploadData(HasTraits):
         self.catalog_file_upload = ipw.FileUpload(
             accept=".radec", multiple=False, layout=ipw.Layout(width="500px")
         )
+        self.catalog_output_txt = ipw.Output()
 
         if allow_configuration:
             self.config_label = ipw.Label(
@@ -66,9 +68,11 @@ class UploadData(HasTraits):
             self.config_file_upload = ipw.FileUpload(
                 accept=".yaml", multiple=False, layout=ipw.Layout(width="500px")
             )
+            self.config_output_txt = ipw.Output()
         else:
             self.config_label = None
             self.config_file_upload = None
+            self.config_output_txt = None
 
         self.color_pickers = [
             ipw.ColorPicker(
@@ -90,17 +94,19 @@ class UploadData(HasTraits):
         # layout widgets
         button_layout = ipw.Layout(
             display="flex",
-            flex_flow="row",
+            flex_flow="row wrap",
             align_items="center",
             justify_content="flex-start",
             padding="0px",
+            width="100%",
         )
         box_layout = ipw.Layout(
             display="flex", flex_flow="column", align_items="stretch"
         )
 
         b1 = ipw.Box(
-            children=[self.image_label, self.image_file_upload], layout=button_layout
+            children=[self.image_label, self.image_file_upload, self.image_output_txt],
+            layout=button_layout
         )
         b2 = ipw.Box(
             children=[self.catalog_label, self.catalog_file_upload],
@@ -182,6 +188,7 @@ class UploadData(HasTraits):
         """
         self.has_wcs = False
         self.image_file_name = None
+        self.image_output_txt.clear_output()
 
         # watch for uploaded files
         change["owner"].disabled = True
@@ -203,6 +210,8 @@ class UploadData(HasTraits):
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore")
                         self._load_hdul_in_viz(uploaded_file)
+                with self.image_output_txt:
+                    print(",".join(self.image_files)) #noqa: T201
         if self.allow_data_replace or len(self.image_files) == 0:
             change["owner"].disabled = False
 
