@@ -105,17 +105,23 @@ class UploadData(HasTraits):
         )
 
         b1 = ipw.Box(
-            children=[self.image_label, self.image_file_upload, self.image_output_txt],
+            children=[self.image_label,
+                      self.image_file_upload,
+                      self.image_output_txt],
             layout=button_layout
         )
         b2 = ipw.Box(
-            children=[self.catalog_label, self.catalog_file_upload],
+            children=[self.catalog_label,
+                      self.catalog_file_upload,
+                      self.catalog_output_txt],
             layout=button_layout,
         )
         children = [b1, b2]
         if allow_configuration:
             b3 = ipw.Box(
-                children=[self.config_label, self.config_file_upload],
+                children=[self.config_label,
+                          self.config_file_upload,
+                          self.config_output_txt],
                 layout=button_layout,
             )
             children.append(b3)
@@ -223,6 +229,7 @@ class UploadData(HasTraits):
         traitlet. If files are removed, the traitlet is set to None.
         """
         self.has_catalog = False
+        self.catalog_output_txt.clear_output()
 
         # watch for uploaded files
         change["owner"].disabled = True
@@ -231,6 +238,8 @@ class UploadData(HasTraits):
             if len(uploaded_files) > 0:
                 self.has_catalog = True
                 self.catalog_file = uploaded_files[0]
+                with self.catalog_output_txt:
+                    print(self.catalog_file["name"]) #noqa: T201
         elif len(change["old"]) > 0:
             self.catalog_file = None
         change["owner"].disabled = False
@@ -242,6 +251,7 @@ class UploadData(HasTraits):
         Newly uploaded files are immediately read in to the configuration
         traitlet. If files are removed, the traitlet is set to None.
         """
+        self.config_output_txt.clear_output()
         # watch for new files
         change["owner"].disabled = True
         if len(change["new"]) > 0:
@@ -252,6 +262,8 @@ class UploadData(HasTraits):
                         io.BytesIO(uploaded_files[0]["content"])
                     )
                     self.configuration = new_config
+                    with self.config_output_txt:
+                        print(uploaded_files[0]["name"])#noqa: T201
                 except Exception as err:
                     msg_text = f"Error loading configuration: {err}"
                     msg = SnackbarMessage(msg_text, sender=self, color="warning")
