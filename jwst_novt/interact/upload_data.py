@@ -9,6 +9,9 @@ from traitlets import Any, Bool, Dict, HasTraits, Unicode
 from jwst_novt.constants import DEFAULT_COLOR, VIEWER_NAME
 
 __all__ = ["UploadData"]
+LABEL_WIDTH = "150px"
+UPLOAD_WIDTH = "150px"
+OUTPUT_WIDTH = "1100px"
 
 
 class UploadData(HasTraits):
@@ -36,39 +39,43 @@ class UploadData(HasTraits):
         self.image_label = ipw.Label(
             "Image file (.fits):",
             style={"font_weight": "bold"},
-            layout=ipw.Layout(width="150px"),
+            layout=ipw.Layout(width=LABEL_WIDTH),
             tooltip="FITS image for display, with associated WCS, in the "
             "primary or SCI extension",
         )
         self.image_file_upload = ipw.FileUpload(
-            accept=".fits", multiple=False, layout=ipw.Layout(width="500px")
+            accept=".fits", multiple=False, layout=ipw.Layout(width=UPLOAD_WIDTH)
         )
+        self.image_output_txt = ipw.Output(layout=ipw.Layout(width=OUTPUT_WIDTH))
 
         self.catalog_label = ipw.Label(
             "Catalog file (.radec):",
             style={"font_weight": "bold"},
-            layout=ipw.Layout(width="150px"),
+            layout=ipw.Layout(width=LABEL_WIDTH),
             tooltip="Text file with 2 columns (RA, Dec), "
             "or 3 (RA, Dec, Flag), "
             "where Flag is 'P' for primary or 'F' for filler sources",
         )
         self.catalog_file_upload = ipw.FileUpload(
-            accept=".radec", multiple=False, layout=ipw.Layout(width="500px")
+            accept=".radec", multiple=False, layout=ipw.Layout(width=UPLOAD_WIDTH)
         )
+        self.catalog_output_txt = ipw.Output(layout=ipw.Layout(width=OUTPUT_WIDTH))
 
         if allow_configuration:
             self.config_label = ipw.Label(
                 "Config file (.yaml):",
                 style={"font_weight": "bold"},
-                layout=ipw.Layout(width="150px"),
+                layout=ipw.Layout(width=LABEL_WIDTH),
                 tooltip="YAML file specifying field values for NOVT configuration.",
             )
             self.config_file_upload = ipw.FileUpload(
-                accept=".yaml", multiple=False, layout=ipw.Layout(width="500px")
+                accept=".yaml", multiple=False, layout=ipw.Layout(width=UPLOAD_WIDTH)
             )
+            self.config_output_txt = ipw.Output(layout=ipw.Layout(width=OUTPUT_WIDTH))
         else:
             self.config_label = None
             self.config_file_upload = None
+            self.config_output_txt = None
 
         self.color_pickers = [
             ipw.ColorPicker(
@@ -90,26 +97,34 @@ class UploadData(HasTraits):
         # layout widgets
         button_layout = ipw.Layout(
             display="flex",
-            flex_flow="row",
+            flex_flow="row wrap",
             align_items="center",
             justify_content="flex-start",
             padding="0px",
+            width="100%",
         )
         box_layout = ipw.Layout(
             display="flex", flex_flow="column", align_items="stretch"
         )
 
         b1 = ipw.Box(
-            children=[self.image_label, self.image_file_upload], layout=button_layout
+            children=[self.image_label,
+                      self.image_file_upload,
+                      self.image_output_txt],
+            layout=button_layout
         )
         b2 = ipw.Box(
-            children=[self.catalog_label, self.catalog_file_upload],
+            children=[self.catalog_label,
+                      self.catalog_file_upload,
+                      self.catalog_output_txt],
             layout=button_layout,
         )
         children = [b1, b2]
         if allow_configuration:
             b3 = ipw.Box(
-                children=[self.config_label, self.config_file_upload],
+                children=[self.config_label,
+                          self.config_file_upload,
+                          self.config_output_txt],
                 layout=button_layout,
             )
             children.append(b3)
@@ -182,6 +197,7 @@ class UploadData(HasTraits):
         """
         self.has_wcs = False
         self.image_file_name = None
+        self.image_output_txt.clear_output()
 
         # watch for uploaded files
         change["owner"].disabled = True
@@ -203,6 +219,8 @@ class UploadData(HasTraits):
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore")
                         self._load_hdul_in_viz(uploaded_file)
+                with self.image_output_txt:
+                    print(",".join(self.image_files)) #noqa: T201
         if self.allow_data_replace or len(self.image_files) == 0:
             change["owner"].disabled = False
 
@@ -214,6 +232,7 @@ class UploadData(HasTraits):
         traitlet. If files are removed, the traitlet is set to None.
         """
         self.has_catalog = False
+        self.catalog_output_txt.clear_output()
 
         # watch for uploaded files
         change["owner"].disabled = True
@@ -222,6 +241,8 @@ class UploadData(HasTraits):
             if len(uploaded_files) > 0:
                 self.has_catalog = True
                 self.catalog_file = uploaded_files[0]
+                with self.catalog_output_txt:
+                    print(self.catalog_file["name"]) #noqa: T201
         elif len(change["old"]) > 0:
             self.catalog_file = None
         change["owner"].disabled = False
@@ -233,6 +254,7 @@ class UploadData(HasTraits):
         Newly uploaded files are immediately read in to the configuration
         traitlet. If files are removed, the traitlet is set to None.
         """
+        self.config_output_txt.clear_output()
         # watch for new files
         change["owner"].disabled = True
         if len(change["new"]) > 0:
@@ -243,6 +265,8 @@ class UploadData(HasTraits):
                         io.BytesIO(uploaded_files[0]["content"])
                     )
                     self.configuration = new_config
+                    with self.config_output_txt:
+                        print(uploaded_files[0]["name"])#noqa: T201
                 except Exception as err:
                     msg_text = f"Error loading configuration: {err}"
                     msg = SnackbarMessage(msg_text, sender=self, color="warning")
